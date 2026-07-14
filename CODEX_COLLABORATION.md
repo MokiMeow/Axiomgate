@@ -14,6 +14,7 @@ How Codex and GPT-5.6 are used to build AxiomGate. Updated continuously.
 |---|---|---|---|---|
 | 2026-07-14 | 019f611c-3894-7780-8051-6acdec591dd2 | gpt-5.6-luna | F2 hook gate: observe spike | PASS — PreToolUse fires with exact command payload |
 | 2026-07-14 | 019f611c-9873-73f2-a05b-c556300489f1 | gpt-5.6-luna | F2 hook gate: exit-2 deny spike | FAIL — deny ignored under `approval_policy="never"` (fail-open finding) |
+| 2026-07-14 | 019f6129-9a31-7111-934d-7e1930b430ca | gpt-5.6-luna | F2 hook gate: JSON permissionDecision deny | **PASS — command blocked even under bypassPermissions; F2 gate cleared** |
 
 ## Primary build thread
 

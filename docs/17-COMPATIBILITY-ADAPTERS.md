@@ -10,6 +10,16 @@ Integration interfaces (all official): hooks (`PreToolUse`, `PermissionRequest`,
 
 **Phase 0 gate:** empirically verify on the installed Codex version — the `PermissionRequest` payload contents, deny semantics, fail-open/fail-closed behavior on hook error, and the `exec --json` usage fields. Record version numbers in the matrix below. If hooks fail open, missions must not claim enforcement until mitigated.
 
+### F2 gate results — codex-cli 0.144.0, 2026-07-14 (VERIFIED)
+
+- `hooks` feature: **stable, enabled**. `guardian_approval`: stable.
+- `PreToolUse` fires on live `codex exec`; stdin payload includes `session_id`, `turn_id`, `cwd`, `model`, `permission_mode`, `tool_name` ("Bash"), `tool_input.command` (exact command), `tool_use_id`, `transcript_path`.
+- **Deny via bare exit code 2: IGNORED under `approval_policy="never"` (bypassPermissions) — fail-open. Never rely on exit-2.**
+- **Deny via JSON `hookSpecificOutput.permissionDecision: "deny"`: ENFORCED even under bypassPermissions.** Router error surfaces the `permissionDecisionReason`; the command does not execute. This is the normative AxiomGate deny mechanism.
+- Hook config injectable per-run via `-c "hooks.PreToolUse=[{matcher=..., hooks=[{type=\"command\", command=...}]}]"` + `--dangerously-bypass-hook-trust` (acceptable only for AxiomGate-authored hooks).
+- Ops rule: every `codex exec` invocation gets a hard timeout; one transient ~6-min stall observed before any tool call.
+- Still to verify during G3/G4: `PermissionRequest` payload/behavior in `on-request` mode; `exec --json` usage fields (R1).
+
 ### Claude
 
 Independent review only (planning, adversarial testing, blueprint review); **no Build Week runtime implementation**. Core building happens through Codex in the primary `/feedback` thread. Do not make shared-skill installation, mission handoff, or runtime parity a requirement.
