@@ -170,4 +170,98 @@ describe("verifyMission", () => {
       rmSync(workspace, { recursive: true, force: true });
     }
   });
+
+  it("resolves default identity commands from the governed workspace", () => {
+    const workspace = mkdtempSync(join(tmpdir(), "axiomgate-verify-identity-"));
+    try {
+      const capturedAt = "2026-07-15T22:10:00.000Z";
+      const identity: IdentityReport = {
+        githubLogin: {
+          status: "RESOLVED",
+          value: "MokiMeow",
+          source: "gh api user",
+          confidence: "HIGH",
+          capturedAt,
+        },
+        gitRemotes: {
+          status: "RESOLVED",
+          value: [
+            {
+              name: "origin",
+              url: "https://github.com/MokiMeow/fixture.git",
+              direction: "fetch",
+            },
+            {
+              name: "origin",
+              url: "https://github.com/MokiMeow/fixture.git",
+              direction: "push",
+            },
+          ],
+          source: "git remote -v",
+          confidence: "HIGH",
+          capturedAt,
+        },
+        vercelUser: {
+          status: "RESOLVED",
+          value: "mokimeow",
+          source: "vercel whoami",
+          confidence: "HIGH",
+          capturedAt,
+        },
+        vercelProject: {
+          status: "UNAVAILABLE",
+          source: ".vercel/project.json",
+          reason: "not configured",
+          capturedAt,
+        },
+      };
+      writeFileSync(
+        join(workspace, "package.json"),
+        JSON.stringify({ scripts: { test: "node --test", build: "node --check index.js" } }),
+        "utf8",
+      );
+      const hookConfigOptions = {
+        cliEntryPath: join(workspace, "cli", "index.js"),
+        nodePath: process.execPath,
+      };
+      createMission(
+        workspace,
+        { objective: "Verify identity cwd" },
+        {
+          id: "msn_verify_identity",
+          hookConfigOptions,
+          resolveIdentity: () => identity,
+        },
+      );
+      const identityRunner: CommandRunner = (command, args, options) => {
+        expect(options?.cwd).toBe(workspace);
+        const stdout = command === "gh"
+          ? '{"login":"MokiMeow"}'
+          : command === "git"
+            ? "origin\thttps://github.com/MokiMeow/fixture.git (fetch)\norigin\thttps://github.com/MokiMeow/fixture.git (push)\n"
+            : "mokimeow\n";
+        return { command, args, status: "SUCCESS", exitCode: 0, stdout, stderr: "", durationMs: 1 };
+      };
+      const runner: CommandRunner = (command, args) => ({
+        command,
+        args,
+        status: "SUCCESS",
+        exitCode: 0,
+        stdout: command === "npx" ? '{"target":"fixture","scanner":"osv-api","count":0,"findings":[]}' : "",
+        stderr: "",
+        durationMs: 1,
+      });
+
+      expect(() =>
+        verifyMission(workspace, "msn_verify_identity", {
+          hookConfigOptions,
+          identityRunner,
+          runner,
+          currentCommit: () => "abc123",
+        }),
+      ).not.toThrow();
+    } finally {
+      rmSync(workspace, { recursive: true, force: true });
+    }
+  });
 });

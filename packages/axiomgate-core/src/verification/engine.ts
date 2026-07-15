@@ -81,6 +81,7 @@ export interface VerifyMissionOptions {
   readonly runId?: string;
   readonly hookConfigOptions?: HookConfigOptions;
   readonly resolveIdentity?: (projectPath: string) => IdentityReport;
+  readonly identityRunner?: CommandRunner;
   readonly runner?: CommandRunner;
   readonly currentCommit?: (projectPath: string) => string;
   readonly now?: () => Date;
@@ -291,7 +292,13 @@ export function verifyMission(
   if (enforcement.status === "REFUSED") {
     throw new Error(`Verification refused: ${enforcement.reason}`);
   }
-  const freshIdentity = (options.resolveIdentity ?? resolveCurrentIdentity)(workspace);
+  const freshIdentity = options.resolveIdentity?.(workspace) ??
+    resolveCurrentIdentity({
+      cwd: workspace,
+      ...(options.identityRunner === undefined
+        ? {}
+        : { runner: options.identityRunner }),
+    });
   if (!identityReportsMatch(enforcement.snapshot.identity, freshIdentity)) {
     throw new Error("Verification refused: identity differs from the mission snapshot; run mission update");
   }
