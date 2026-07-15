@@ -33,10 +33,10 @@ This board is authoritative. Where a phase file conflicts, this board wins. Dead
 
 ## Verification via PatchPilot (target: Jul 17–18)
 
-- [ ] V1 Mission-level verification API over `packages/core` (typed runs, events, findings) with plan derived from criteria + diff.
-- [ ] V2 Check execution: target repo's own test suite (validation runner) + OSV + Gitleaks + Semgrep (verify WSL on demo machine) + secret scan.
-- [ ] V3 Finding → Codex remediation → rerun; stale-evidence invalidation on new commits.
-- [ ] V4 Existing PatchPilot regression suite passes after integration.
+- [x] V1 Mission-level verification API (typed runs, events, findings) with plan derived from criteria + diff. Evidence: [`evidence/public/v1-v4-verification.md`](../evidence/public/v1-v4-verification.md).
+- [x] V2 Check execution: target repo test/build, published PatchPilot OSV scan, and gitleaks-preferred secret scan with labelled heuristic fallback. Semgrep is outside ADR-014's published-CLI boundary. Evidence: [`evidence/public/v1-v4-verification.md`](../evidence/public/v1-v4-verification.md).
+- [x] V3 Validated finding → governed Codex remediation → affected-check rerun; stale evidence excluded when its revision marker differs. Evidence: [`evidence/public/v1-v4-verification.md`](../evidence/public/v1-v4-verification.md).
+- [x] V4 Published PatchPilot CLI integration verified end to end against a real vulnerable fixture, per ADR-014's reframing (PatchPilot remains unmodified). Evidence: [`evidence/public/v1-v4-verification.md`](../evidence/public/v1-v4-verification.md).
 
 ## Evidence Gate + Product (target: Jul 18–19)
 
