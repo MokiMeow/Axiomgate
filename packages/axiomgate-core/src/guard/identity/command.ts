@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { delimiter, extname, isAbsolute, join } from "node:path";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 
 export const DEFAULT_COMMAND_TIMEOUT_MS = 15_000;
 
@@ -30,6 +30,17 @@ export type CommandRunner = (
   args: readonly string[],
   options?: RunCommandOptions,
 ) => CommandResult;
+
+export interface RunStreamingCommandOptions extends RunCommandOptions {
+  readonly input?: string;
+  readonly onStdoutLine?: (line: string) => void;
+}
+
+export type StreamingCommandRunner = (
+  command: string,
+  args: readonly string[],
+  options?: RunStreamingCommandOptions,
+) => Promise<CommandResult>;
 
 function resolveExecutable(command: string): string | undefined {
   if (isAbsolute(command) || command.includes("/") || command.includes("\\")) {
@@ -159,4 +170,101 @@ export function runCommand(
     stderr,
     durationMs,
   };
+}
+
+export function runStreamingCommand(
+  command: string,
+  args: readonly string[],
+  options: RunStreamingCommandOptions = {},
+): Promise<CommandResult> {
+  const startedAt = Date.now();
+  const executable = resolveExecutable(command);
+  if (executable === undefined) {
+    return Promise.resolve({
+      command,
+      args,
+      status: "UNAVAILABLE",
+      exitCode: 127,
+      stdout: "",
+      stderr: `Executable not found: ${command}`,
+      durationMs: Date.now() - startedAt,
+    });
+  }
+  const invocation = commandInvocation(executable, args);
+
+  return new Promise((resolveResult) => {
+    const child = spawn(invocation.executable, invocation.args, {
+      cwd: options.cwd,
+      env: invocation.env,
+      shell: false,
+      windowsHide: true,
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+    let stdout = "";
+    let stderr = "";
+    let lineBuffer = "";
+    let timedOut = false;
+    let settled = false;
+    const finish = (result: CommandResult) => {
+      if (!settled) {
+        settled = true;
+        resolveResult(result);
+      }
+    };
+    const emitLines = (chunk: string, final = false) => {
+      lineBuffer += chunk;
+      const lines = lineBuffer.split(/\n/u);
+      lineBuffer = lines.pop() ?? "";
+      for (const line of lines) {
+        options.onStdoutLine?.(line.replace(/\r$/u, ""));
+      }
+      if (final && lineBuffer.length > 0) {
+        options.onStdoutLine?.(lineBuffer.replace(/\r$/u, ""));
+        lineBuffer = "";
+      }
+    };
+    child.stdout.setEncoding("utf8");
+    child.stderr.setEncoding("utf8");
+    child.stdout.on("data", (chunk: string) => {
+      stdout += chunk;
+      emitLines(chunk);
+    });
+    child.stderr.on("data", (chunk: string) => {
+      stderr += chunk;
+    });
+    child.on("error", (error) => {
+      finish({
+        command,
+        args,
+        status: "UNAVAILABLE",
+        exitCode: 127,
+        stdout,
+        stderr: stderr || error.message,
+        durationMs: Date.now() - startedAt,
+      });
+    });
+
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      child.kill();
+    }, options.timeoutMs ?? DEFAULT_COMMAND_TIMEOUT_MS);
+    child.on("close", (exitCode) => {
+      clearTimeout(timeout);
+      emitLines("", true);
+      finish({
+        command,
+        args,
+        status: timedOut
+          ? "TIMED_OUT"
+          : exitCode === 0
+            ? "SUCCESS"
+            : "FAILED",
+        exitCode: timedOut ? 124 : (exitCode ?? 1),
+        stdout,
+        stderr,
+        durationMs: Date.now() - startedAt,
+      });
+    });
+    child.stdin.end(options.input ?? "");
+  });
 }

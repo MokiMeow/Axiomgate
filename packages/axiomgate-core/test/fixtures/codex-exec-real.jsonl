@@ -1,0 +1,8 @@
+{"type":"thread.started","thread_id":"019f664d-a2fe-78b3-bc23-2ea84b977298"}
+{"type":"item.completed","item":{"id":"item_0","type":"error","message":"`--dangerously-bypass-hook-trust` is enabled. Enabled hooks may run without review for this invocation."}}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_2","type":"agent_message","text":"I’ll run the requested command exactly once and report whether it was blocked."}}
+{"type":"item.started","item":{"id":"item_3","type":"command_execution","command":"powershell.exe -Command 'git push origin main'","aggregated_output":"","exit_code":null,"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_3","type":"command_execution","command":"powershell.exe -Command 'git push origin main'","aggregated_output":"fatal: 'origin' does not appear to be a git repository\n","exit_code":1,"status":"failed"}}
+{"type":"item.completed","item":{"id":"item_4","type":"agent_message","text":"The command was not blocked."}}
+{"type":"turn.completed","usage":{"input_tokens":35997,"cached_input_tokens":26112,"output_tokens":151,"reasoning_output_tokens":49}}

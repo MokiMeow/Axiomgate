@@ -1,0 +1,88 @@
+import { resolve } from "node:path";
+
+import { z } from "zod";
+
+import {
+  mapBoundaryToSandbox,
+  type MissionContract,
+} from "../mission/index.js";
+import {
+  generateHookConfig,
+  type HookConfigOptions,
+} from "../guard/index.js";
+
+const EffortSchema = z.enum(["low", "medium", "high"]);
+
+export interface BuildCodexRunPlanInput {
+  readonly contract: MissionContract;
+  readonly missionDir: string;
+  readonly projectPath: string;
+  readonly prompt: string;
+  readonly model?: string;
+  readonly effort?: z.infer<typeof EffortSchema>;
+  readonly isGitRepository: boolean;
+  readonly hookConfigOptions?: HookConfigOptions;
+}
+
+export interface CodexRunPlan {
+  readonly missionDir: string;
+  readonly projectPath: string;
+  readonly model: string;
+  readonly effort: z.infer<typeof EffortSchema>;
+  readonly sandbox: "read-only" | "workspace-write";
+  readonly networkAccess: boolean;
+  readonly configHash: string;
+  readonly args: readonly string[];
+  readonly stdin: string;
+}
+
+export function buildCodexRunPlan(
+  input: BuildCodexRunPlanInput,
+): CodexRunPlan {
+  const buildPhase = input.contract.modelPlan.find(
+    (entry) => entry.phase === "build",
+  );
+  if (buildPhase === undefined) {
+    throw new Error("mission model plan has no build phase");
+  }
+  const prompt = input.prompt.trim();
+  if (prompt.length === 0) {
+    throw new Error("run prompt must not be empty");
+  }
+  const mapping = mapBoundaryToSandbox(input.contract.intentBoundary);
+  if (mapping.status === "REFUSED") {
+    throw new Error(mapping.reason);
+  }
+  const model = input.model ?? buildPhase.model;
+  const effort = EffortSchema.parse(input.effort ?? buildPhase.effort);
+  const missionDir = resolve(input.missionDir);
+  const projectPath = resolve(input.projectPath);
+  const hook = generateHookConfig(missionDir, input.hookConfigOptions);
+  const args = [
+    "exec",
+    "--json",
+    "--model",
+    model,
+    "-c",
+    `model_reasoning_effort=${JSON.stringify(effort)}`,
+    ...mapping.codexArgs,
+    "--dangerously-bypass-hook-trust",
+    "--cd",
+    projectPath,
+    ...(input.isGitRepository ? [] : ["--skip-git-repo-check"]),
+    ...hook.codexArgs,
+    "-",
+  ];
+
+  return {
+    missionDir,
+    projectPath,
+    model,
+    effort,
+    sandbox: mapping.sandbox,
+    networkAccess: mapping.networkAccess,
+    configHash: hook.configHash,
+    args,
+    stdin: prompt,
+  };
+}

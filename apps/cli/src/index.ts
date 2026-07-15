@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { userInfo } from "node:os";
 import { resolve } from "node:path";
@@ -11,65 +10,43 @@ import {
   deny as denyRequest,
   IntentBoundarySchema,
   listPending,
+  loadMissionSnapshot,
+  missionDirectory,
   parseMissionCriteria,
+  resolveCodexLaunch,
+  resumeMission,
+  runCommand as runExternalCommand,
   runHookEntry,
+  runMission,
   updateMission,
 } from "@axiomgate/core";
 
-interface CommandResult {
-  readonly available: boolean;
-  readonly exitCode: number | null;
-  readonly output: string;
-}
-
-function runCommand(command: string, args: readonly string[]): CommandResult {
-  const result = spawnSync(command, args, {
-    encoding: "utf8",
-    shell: false,
-    windowsHide: true,
-  });
-
-  if (result.error) {
-    return { available: false, exitCode: null, output: "" };
-  }
-
-  return {
-    available: true,
-    exitCode: result.status,
-    output: `${result.stdout}${result.stderr}`.trim(),
-  };
-}
-
-function codexVersion(): CommandResult {
-  if (process.platform === "win32") {
-    return runCommand(process.env.ComSpec ?? "cmd.exe", [
-      "/d",
-      "/s",
-      "/c",
-      "codex.cmd --version",
-    ]);
-  }
-
-  return runCommand("codex", ["--version"]);
+function codexVersion() {
+  const launch = resolveCodexLaunch();
+  return runExternalCommand(launch.command, [...launch.argsPrefix, "--version"]);
 }
 
 export function runDoctor(): void {
   console.log(`node: ${process.version}`);
 
   const codex = codexVersion();
-  if (!codex.available || codex.exitCode !== 0) {
+  if (codex.status !== "SUCCESS") {
     console.log("codex CLI: unavailable");
   } else {
-    console.log(`codex CLI: ${codex.output}`);
+    console.log(`codex CLI: ${codex.stdout.trim()}`);
   }
 
-  const git = runCommand("git", ["status", "--porcelain=v1", "--branch"]);
-  if (!git.available) {
+  const git = runExternalCommand("git", [
+    "status",
+    "--porcelain=v1",
+    "--branch",
+  ]);
+  if (git.status === "UNAVAILABLE") {
     console.log("git repository: unavailable (git executable not found)");
-  } else if (git.exitCode !== 0) {
+  } else if (git.status !== "SUCCESS") {
     console.log("git repository: no");
   } else {
-    const lines = git.output.split(/\r?\n/u);
+    const lines = git.stdout.trim().split(/\r?\n/u);
     const branch = lines[0]?.replace(/^## /u, "") ?? "unknown branch";
     const state = lines.length > 1 ? "changes present" : "clean";
     console.log(`git repository: yes (${branch}; ${state})`);
@@ -78,7 +55,7 @@ export function runDoctor(): void {
 
 function printUsage(): void {
   console.log(
-    "Usage: axiomgate doctor | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
+    "Usage: axiomgate doctor | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
   );
 }
 
@@ -171,6 +148,78 @@ function runMissionUpdate(id: string | undefined): void {
   );
 }
 
+function positiveIntegerArgument(name: string): number | undefined {
+  const value = argumentValue(name);
+  if (value === undefined) {
+    return undefined;
+  }
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed <= 0) {
+    throw new Error(`${name} must be a positive integer`);
+  }
+  return parsed;
+}
+
+function missionObjective(id: string): string {
+  const loaded = loadMissionSnapshot(missionDirectory(projectPath(), id));
+  if (loaded.status === "INVALID") {
+    throw new Error(`mission snapshot invalid: ${loaded.reason}`);
+  }
+  return loaded.snapshot.contract.objective;
+}
+
+async function runGovernedMission(
+  id: string | undefined,
+  resume: boolean,
+): Promise<void> {
+  if (id === undefined) {
+    throw new Error("mission id is required");
+  }
+  const prompt =
+    argumentValue("--prompt") ??
+    (resume
+      ? "Continue from the recorded checkpoint within the mission contract."
+      : `Execute this mission objective: ${missionObjective(id)}`);
+  const model = argumentValue("--model");
+  const effortValue = argumentValue("--effort");
+  const effort =
+    effortValue === undefined
+      ? undefined
+      : zEffort(effortValue);
+  const timeoutMs = positiveIntegerArgument("--timeout-ms");
+  const options = {
+    prompt,
+    hookConfigOptions: hookConfigOptions(),
+    ...(model === undefined ? {} : { model }),
+    ...(effort === undefined ? {} : { effort }),
+    ...(timeoutMs === undefined ? {} : { timeoutMs }),
+    onReady: (plan: { configHash: string; sandbox: string }) => {
+      console.log(
+        `Enforcement: VERIFIED (${plan.configHash}; sandbox=${plan.sandbox})`,
+      );
+    },
+  } as const;
+  const result = resume
+    ? await resumeMission(projectPath(), id, options)
+    : await runMission(projectPath(), id, options);
+  console.log(`Run: ${result.record.id} ${result.record.status}`);
+  console.log(`Session: ${result.record.sessionId ?? "unavailable"}`);
+  console.log(`Usage records: ${result.record.rawUsageCount}`);
+  if (result.checkpoint !== undefined) {
+    console.log(`Checkpoint: ${result.checkpoint.reason}`);
+  }
+  if (result.record.status !== "SUCCESS") {
+    process.exitCode = 1;
+  }
+}
+
+function zEffort(value: string): "low" | "medium" | "high" {
+  if (value === "low" || value === "medium" || value === "high") {
+    return value;
+  }
+  throw new Error("--effort must be low, medium, or high");
+}
+
 if (command === "doctor") {
   runDoctor();
 } else if (command === "mission") {
@@ -180,8 +229,12 @@ if (command === "doctor") {
       runMissionCreate();
     } else if (missionCommand === "update") {
       runMissionUpdate(process.argv[4]);
+    } else if (missionCommand === "run") {
+      await runGovernedMission(process.argv[4], false);
+    } else if (missionCommand === "resume") {
+      await runGovernedMission(process.argv[4], true);
     } else {
-      throw new Error("expected mission create or mission update <id>");
+      throw new Error("expected mission create, update, run, or resume");
     }
   } catch (error) {
     console.error(

@@ -15,7 +15,7 @@ This board is authoritative. Where a phase file conflicts, this board wins. Dead
 - [x] F3 Scaffold `packages/axiomgate-core` (modules: `mission/`, `runway/`, `guard/`, `runtime/`, `evidence/`) inside the PatchPilot-style monorepo + PatchPilot `packages/core` reuse map. Evidence: [`evidence/public/f3-f4-verification.md`](../evidence/public/f3-f4-verification.md).
 - [x] F4 Canonical schemas from `docs/02` (contract, action request, approval, evidence, receipt) with validation and hashing. Evidence: [`evidence/public/f3-f4-verification.md`](../evidence/public/f3-f4-verification.md).
 - [ ] F5 Demo fixture repo (sanitized security-feature target app) + staged wrong-target GitHub/Vercel profile for the block scene.
-- [ ] F6 Mission contract creation: one-line objective → contract with 3–6 criteria, evidence types, intent boundary → sandbox mapping, GPT-5.6 model plan (Sol/Terra/Luna + effort) with recorded rationale; editable; versioned; hashed.
+- [x] F6 Mission contract creation: one-line objective → contract with 3–6 criteria, evidence types, intent boundary → sandbox mapping, GPT-5.6 model plan (Sol/Terra/Luna + effort) with recorded rationale; editable; versioned; hashed. Evidence: [`evidence/public/f6-r1-verification.md`](../evidence/public/f6-r1-verification.md).
 
 ## Environment Guard (target: Jul 15–17)
 
@@ -27,7 +27,7 @@ This board is authoritative. Where a phase file conflicts, this board wins. Dead
 
 ## Codex Runtime + Runway lite (target: Jul 16–17)
 
-- [ ] R1 Session adapter: official SDK / `codex exec --json`; sandbox flags from intent boundary; event + token capture; primary session ID preserved.
+- [x] R1 Session adapter: official SDK / `codex exec --json`; sandbox flags from intent boundary; event + token capture; primary session ID preserved. Evidence: [`evidence/public/f6-r1-verification.md`](../evidence/public/f6-r1-verification.md).
 - [ ] R2 Builder + independent Verifier role contracts (fresh session, no builder-context inheritance); canonical mission state with stop/resume.
 - [ ] R3 Runway lite: token-actuals ledger, verification reserve, loop-signature detector (pause recommendation), source/confidence-labelled capacity snapshot + expiring-reset reminder, post-limit checkpoint + `mission resume`.
 
