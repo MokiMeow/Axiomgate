@@ -121,6 +121,13 @@ describe("compileMission", () => {
         effort: "medium",
         rationale: "bounded fixes",
       },
+      {
+        phase: "verify",
+        model: "gpt-5.6-terra",
+        effort: "high",
+        rationale:
+          "independent challenge; different tier than builder reduces correlated blind spots",
+      },
     ]);
     expect(result.contract.hash).toBe(hashContract(result.contract));
   });
@@ -253,6 +260,9 @@ describe("mission files", () => {
         unknown
       >;
       edited.objective = "Add strict profile validation";
+      edited.modelPlan = (edited.modelPlan as Array<Record<string, unknown>>).filter(
+        (entry) => entry.phase !== "verify",
+      );
       writeFileSync(contractPath, `${JSON.stringify(edited, null, 2)}\n`, "utf8");
 
       const updated = updateMission(projectPath, "msn_update", {
@@ -267,6 +277,13 @@ describe("mission files", () => {
         updatedAt: "2026-07-15T17:00:00.000Z",
       });
       expect(updated.contract.hash).toBe(hashContract(updated.contract));
+      expect(updated.contract.modelPlan).toContainEqual({
+        phase: "verify",
+        model: "gpt-5.6-terra",
+        effort: "high",
+        rationale:
+          "independent challenge; different tier than builder reduces correlated blind spots",
+      });
       const snapshot = loadMissionSnapshot(directory);
       expect(snapshot.status).toBe("VALID");
       if (snapshot.status === "VALID") {

@@ -73,6 +73,14 @@ const DEFAULT_ACTION_POLICY: MissionContract["actionPolicy"] = [
   { action: "verification.run", decision: "ALLOW" },
 ];
 
+export const DEFAULT_VERIFY_MODEL_PLAN_ENTRY: MissionContract["modelPlan"][number] = {
+  phase: "verify",
+  model: "gpt-5.6-terra",
+  effort: "high",
+  rationale:
+    "independent challenge; different tier than builder reduces correlated blind spots",
+};
+
 const DEFAULT_MODEL_PLAN: MissionContract["modelPlan"] = [
   {
     phase: "scout",
@@ -92,6 +100,7 @@ const DEFAULT_MODEL_PLAN: MissionContract["modelPlan"] = [
     effort: "medium",
     rationale: "bounded fixes",
   },
+  DEFAULT_VERIFY_MODEL_PLAN_ENTRY,
 ];
 
 function defaultCriteria(

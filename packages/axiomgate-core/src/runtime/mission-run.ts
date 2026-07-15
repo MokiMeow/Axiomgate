@@ -35,6 +35,7 @@ import {
 import { parseCodexJsonl, type JsonRecord } from "./codex-jsonl.js";
 import { buildCodexRunPlan, type CodexRunPlan } from "./codex-plan.js";
 import { missionDirectory } from "./mission-files.js";
+import { appendMissionSession } from "./session-store.js";
 
 const DEFAULT_RUN_TIMEOUT_MS = 20 * 60 * 1_000;
 
@@ -109,21 +110,24 @@ function comparableIdentity(identity: IdentityReport): unknown {
   );
 }
 
-function identitiesMatch(left: IdentityReport, right: IdentityReport): boolean {
+export function identityReportsMatch(
+  left: IdentityReport,
+  right: IdentityReport,
+): boolean {
   return (
     stableStringify(comparableIdentity(left)) ===
     stableStringify(comparableIdentity(right))
   );
 }
 
-function isGitRepository(projectPath: string): boolean {
+export function isGitRepository(projectPath: string): boolean {
   const result = runCommand("git", ["rev-parse", "--is-inside-work-tree"], {
     cwd: projectPath,
   });
   return result.status === "SUCCESS" && result.stdout.trim() === "true";
 }
 
-function currentCommit(projectPath: string): string {
+export function currentCommit(projectPath: string): string {
   const head = runCommand("git", ["rev-parse", "HEAD"], { cwd: projectPath });
   if (head.status !== "SUCCESS") {
     return "WORKTREE";
@@ -167,27 +171,14 @@ export function resolveCodexLaunch(): CodexLaunch {
     : { command: process.execPath, argsPrefix: [entry] };
 }
 
-function appendSession(missionDir: string, sessionId: string | undefined): void {
-  if (sessionId === undefined) {
-    return;
-  }
-  const path = join(missionDir, "sessions.json");
-  const sessions = existsSync(path)
-    ? z.array(z.string().min(1)).parse(JSON.parse(readFileSync(path, "utf8")))
-    : [];
-  if (!sessions.includes(sessionId)) {
-    sessions.push(sessionId);
-  }
-  writeFileSync(path, `${JSON.stringify(sessions, null, 2)}\n`, "utf8");
-}
-
-function appendLedger(
+export function appendLedger(
   missionDir: string,
   runId: string,
   sessionId: string | undefined,
-  plan: CodexRunPlan,
+  plan: Pick<CodexRunPlan, "model" | "effort">,
   usages: readonly JsonRecord[],
   capturedAt: string,
+  role: "builder" | "verifier" = "builder",
 ): void {
   for (const usage of usages) {
     appendFileSync(
@@ -197,6 +188,7 @@ function appendLedger(
         sessionId: sessionId ?? null,
         model: plan.model,
         effort: plan.effort,
+        role,
         capturedAt,
         usage,
       })}\n`,
@@ -242,7 +234,7 @@ async function runMissionInternal(
   const freshIdentity =
     options.resolveIdentity?.(resolvedProject) ??
     resolveCurrentIdentity({ cwd: resolvedProject });
-  if (!identitiesMatch(enforcement.snapshot.identity, freshIdentity)) {
+  if (!identityReportsMatch(enforcement.snapshot.identity, freshIdentity)) {
     throw new Error(
       `Identity differs from the mission snapshot. Next step: axiomgate mission update ${id}`,
     );
@@ -336,7 +328,7 @@ async function runMissionInternal(
     `${JSON.stringify(record, null, 2)}\n`,
     "utf8",
   );
-  appendSession(missionDir, parsed.sessionId);
+  appendMissionSession(missionDir, parsed.sessionId, "builder");
   appendLedger(missionDir, runId, parsed.sessionId, plan, parsed.usages, endedAt);
 
   const checkpoint = checkpointFromRun({

@@ -8,6 +8,7 @@ import { basename, join, resolve } from "node:path";
 
 import {
   compileMission,
+  DEFAULT_VERIFY_MODEL_PLAN_ENTRY,
   bumpContractVersion,
   mapBoundaryToSandbox,
   MissionContractSchema,
@@ -122,9 +123,15 @@ export function updateMission(
   if (edited.id !== id || prior.snapshot.contract.id !== id) {
     throw new Error("mission id cannot be changed during update");
   }
+  const migratedModelPlan = edited.modelPlan.some(
+    (entry) => entry.phase === "verify",
+  )
+    ? edited.modelPlan
+    : [...edited.modelPlan, DEFAULT_VERIFY_MODEL_PLAN_ENTRY];
   const contract = bumpContractVersion(
     {
       ...edited,
+      modelPlan: migratedModelPlan,
       version: prior.snapshot.contract.version,
     },
     (options.now ?? (() => new Date()))().toISOString(),

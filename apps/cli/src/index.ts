@@ -14,6 +14,7 @@ import {
   missionDirectory,
   parseMissionCriteria,
   resolveCodexLaunch,
+  reviewMission,
   resumeMission,
   runCommand as runExternalCommand,
   runHookEntry,
@@ -55,7 +56,7 @@ export function runDoctor(): void {
 
 function printUsage(): void {
   console.log(
-    "Usage: axiomgate doctor | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
+    "Usage: axiomgate doctor | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
   );
 }
 
@@ -213,6 +214,38 @@ async function runGovernedMission(
   }
 }
 
+async function runMissionReview(id: string | undefined): Promise<void> {
+  if (id === undefined) {
+    throw new Error("mission id is required");
+  }
+  const model = argumentValue("--model");
+  const effortValue = argumentValue("--effort");
+  const effort = effortValue === undefined ? undefined : zEffort(effortValue);
+  const timeoutMs = positiveIntegerArgument("--timeout-ms");
+  const result = await reviewMission(projectPath(), id, {
+    hookConfigOptions: hookConfigOptions(),
+    ...(model === undefined ? {} : { model }),
+    ...(effort === undefined ? {} : { effort }),
+    ...(timeoutMs === undefined ? {} : { timeoutMs }),
+    onReady: (plan) => {
+      console.log(
+        `Verifier: FRESH (${plan.model}/${plan.effort}; sandbox=${plan.sandbox})`,
+      );
+    },
+  });
+  console.log(`Session: ${result.record.sessionId ?? "unavailable"} (verifier)`);
+  console.log(
+    `Findings: ${result.findings.findings.length} (${result.findings.status}; advisory)`,
+  );
+  if (result.findings.status === "INVALID") {
+    console.warn(`WARNING: ${result.findings.reason}`);
+    process.exitCode = 1;
+  }
+  if (result.commandStatus !== "SUCCESS") {
+    process.exitCode = 1;
+  }
+}
+
 function zEffort(value: string): "low" | "medium" | "high" {
   if (value === "low" || value === "medium" || value === "high") {
     return value;
@@ -233,8 +266,10 @@ if (command === "doctor") {
       await runGovernedMission(process.argv[4], false);
     } else if (missionCommand === "resume") {
       await runGovernedMission(process.argv[4], true);
+    } else if (missionCommand === "review") {
+      await runMissionReview(process.argv[4]);
     } else {
-      throw new Error("expected mission create, update, run, or resume");
+      throw new Error("expected mission create, update, run, resume, or review");
     }
   } catch (error) {
     console.error(

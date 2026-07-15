@@ -344,7 +344,12 @@ describe("runMission", () => {
       expect(result.record.hash).toBeDefined();
       expect(
         JSON.parse(readFileSync(join(directory, "sessions.json"), "utf8")),
-      ).toEqual(["019f664d-a2fe-78b3-bc23-2ea84b977298"]);
+      ).toEqual([
+        {
+          id: "019f664d-a2fe-78b3-bc23-2ea84b977298",
+          role: "builder",
+        },
+      ]);
       const ledger = JSON.parse(
         readFileSync(join(directory, "ledger.jsonl"), "utf8").trim(),
       ) as Record<string, unknown>;
