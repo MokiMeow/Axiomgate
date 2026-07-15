@@ -1,0 +1,84 @@
+{
+  "target": "C:\\Users\\Mohith S\\Desktop\\AxiomGate\\.local\\verifytest",
+  "scanner": "osv-api",
+  "count": 7,
+  "findings": [
+    {
+      "package": "lodash",
+      "ecosystem": "npm",
+      "currentVersion": "4.17.11",
+      "fixedVersion": "4.6.1",
+      "severity": "critical",
+      "advisory": "GHSA-jf85-cpcp-j695",
+      "dependencyType": "direct",
+      "reachability": "imported",
+      "reachabilityNote": "Imported in first-party source — treat as reachable."
+    },
+    {
+      "package": "lodash",
+      "ecosystem": "npm",
+      "currentVersion": "4.17.11",
+      "fixedVersion": "4.17.21",
+      "severity": "high",
+      "advisory": "GHSA-35jh-r3h4-6jhm",
+      "dependencyType": "direct",
+      "reachability": "imported",
+      "reachabilityNote": "Imported in first-party source — treat as reachable."
+    },
+    {
+      "package": "lodash",
+      "ecosystem": "npm",
+      "currentVersion": "4.17.11",
+      "fixedVersion": "4.17.19",
+      "severity": "high",
+      "advisory": "GHSA-p6mc-m468-83gw",
+      "dependencyType": "direct",
+      "reachability": "imported",
+      "reachabilityNote": "Imported in first-party source — treat as reachable."
+    },
+    {
+      "package": "lodash",
+      "ecosystem": "npm",
+      "currentVersion": "4.17.11",
+      "fixedVersion": "4.18.0",
+      "severity": "high",
+      "advisory": "GHSA-r5fr-rjxr-66jc",
+      "dependencyType": "direct",
+      "reachability": "imported",
+      "reachabilityNote": "Imported in first-party source — treat as reachable."
+    },
+    {
+      "package": "lodash",
+      "ecosystem": "npm",
+      "currentVersion": "4.17.11",
+      "fixedVersion": "4.17.21",
+      "severity": "medium",
+      "advisory": "GHSA-29mw-wpgm-hmr9",
+      "dependencyType": "direct",
+      "reachability": "imported",
+      "reachabilityNote": "Imported in first-party source — treat as reachable."
+    },
+    {
+      "package": "lodash",
+      "ecosystem": "npm",
+      "currentVersion": "4.17.11",
+      "fixedVersion": "4.18.0",
+      "severity": "medium",
+      "advisory": "GHSA-f23m-r3pf-42rh",
+      "dependencyType": "direct",
+      "reachability": "imported",
+      "reachabilityNote": "Imported in first-party source — treat as reachable."
+    },
+    {
+      "package": "lodash",
+      "ecosystem": "npm",
+      "currentVersion": "4.17.11",
+      "fixedVersion": "4.17.23",
+      "severity": "medium",
+      "advisory": "GHSA-xxjr-mmjv-4gpg",
+      "dependencyType": "direct",
+      "reachability": "imported",
+      "reachabilityNote": "Imported in first-party source — treat as reachable."
+    }
+  ]
+}

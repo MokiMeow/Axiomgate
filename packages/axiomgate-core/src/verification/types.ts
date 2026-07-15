@@ -19,6 +19,8 @@ export const VerificationCheckSchema = z.strictObject({
   required: z.boolean(),
   status: VerificationCheckStateSchema,
   reason: z.string().min(1).optional(),
+  evidenceIds: z.array(z.string().min(1)).optional(),
+  findingIds: z.array(z.string().min(1)).optional(),
 });
 
 export type VerificationCheck = z.infer<typeof VerificationCheckSchema>;
@@ -67,6 +69,8 @@ export const VerificationFindingSchema = z.strictObject({
   severity: z.enum(["critical", "high", "medium", "low", "unknown"]),
   status: z.enum(["candidate", "validated", "resolved"]),
   cve: z.string().min(1).optional(),
+  advisory: z.string().min(1).optional(),
+  ecosystem: z.string().min(1).optional(),
   package: z.string().min(1).optional(),
   version: z.string().min(1).optional(),
   fixedVersion: z.string().min(1).optional(),

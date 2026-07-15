@@ -24,6 +24,7 @@ import {
   setCapacitySnapshot,
   renderCapacitySnapshot,
   updateMission,
+  verifyMission,
   verifyEnforcementInstallation,
 } from "@axiomgate/core";
 
@@ -75,7 +76,7 @@ export function runDoctor(): void {
 
 function printUsage(): void {
   console.log(
-    "Usage: axiomgate doctor | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
+    "Usage: axiomgate doctor | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission verify <id> [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
   );
 }
 
@@ -342,6 +343,27 @@ async function runMissionReview(id: string | undefined): Promise<void> {
   }
 }
 
+function runMissionVerify(id: string | undefined): void {
+  if (id === undefined) {
+    throw new Error("mission id is required");
+  }
+  const result = verifyMission(projectPath(), id, {
+    hookConfigOptions: hookConfigOptions(),
+  });
+  console.log("Criterion | Check | State");
+  for (const check of result.run.checks) {
+    for (const criterionId of check.criterionIds) {
+      console.log(`${criterionId} | ${check.kind} | ${check.status}`);
+    }
+  }
+  console.log(`Overall: ${result.run.overall}`);
+  console.log(`Findings: ${result.run.findings.length}`);
+  console.log(`Evidence: ${result.evidence.length}`);
+  if (result.run.overall !== "PASS") {
+    process.exitCode = 1;
+  }
+}
+
 function zEffort(value: string): "low" | "medium" | "high" {
   if (value === "low" || value === "medium" || value === "high") {
     return value;
@@ -375,8 +397,10 @@ if (command === "doctor") {
       await runGovernedMission(process.argv[4], true);
     } else if (missionCommand === "review") {
       await runMissionReview(process.argv[4]);
+    } else if (missionCommand === "verify") {
+      runMissionVerify(process.argv[4]);
     } else {
-      throw new Error("expected mission create, update, run, resume, or review");
+      throw new Error("expected mission create, update, run, resume, review, or verify");
     }
   } catch (error) {
     console.error(
