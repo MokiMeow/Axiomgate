@@ -18,7 +18,11 @@ importers:
         specifier: 3.2.4
         version: 3.2.4(@types/node@24.12.4)
 
-  apps/cli: {}
+  apps/cli:
+    dependencies:
+      '@axiomgate/core':
+        specifier: workspace:*
+        version: link:../../packages/axiomgate-core
 
   packages/axiomgate-core:
     dependencies:

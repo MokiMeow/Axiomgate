@@ -34,7 +34,7 @@ export interface GitRemote {
 export interface VercelProjectIdentity {
   readonly projectId: string;
   readonly orgId: string;
-  readonly projectName?: string;
+  readonly projectName?: string | undefined;
 }
 
 export interface IdentityReport {

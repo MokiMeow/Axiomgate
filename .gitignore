@@ -2,6 +2,7 @@
 .local/*
 !.local/README.md
 !.local/.gitkeep
+.axiomgate/
 
 # Machine-specific agent settings (never commit)
 .claude/settings.local.json

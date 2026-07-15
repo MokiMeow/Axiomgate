@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+
+import { runHookEntry } from "@axiomgate/core";
 
 interface CommandResult {
   readonly available: boolean;
@@ -63,13 +66,39 @@ export function runDoctor(): void {
 }
 
 function printUsage(): void {
-  console.log("Usage: axiomgate doctor");
+  console.log("Usage: axiomgate doctor | axiomgate hook --mission <directory>");
+}
+
+function argumentValue(name: string): string | undefined {
+  const index = process.argv.indexOf(name);
+  return index === -1 ? undefined : process.argv[index + 1];
 }
 
 const command = process.argv[2];
 
 if (command === "doctor") {
   runDoctor();
+} else if (command === "hook") {
+  const missionDir = argumentValue("--mission");
+  if (missionDir === undefined) {
+    console.log(
+      JSON.stringify({
+        hookSpecificOutput: {
+          permissionDecision: "deny",
+          permissionDecisionReason:
+            "fail-closed: hook mission directory is required",
+        },
+      }),
+    );
+  } else {
+    const rawInput = readFileSync(0, "utf8");
+    console.log(
+      runHookEntry(rawInput, missionDir, {
+        cliEntryPath: process.argv[1]!,
+        nodePath: process.execPath,
+      }),
+    );
+  }
 } else {
   printUsage();
   process.exitCode = command === undefined ? 0 : 1;
