@@ -37,7 +37,7 @@ PatchPilot's CVE Watch Commander identity (inventory, watch mode, CVE enrichment
 
 ## Integration boundary
 
-Typed internal API over `packages/core` functions (in-process within one monorepo). No UI scraping, no shell parsing where a structured interface exists, no cross-module database access.
+**Superseded by ADR-014.** PatchPilot is a separate repo; judges clone only AxiomGate. Integration is via the **published `patchpilot-cli`** (npm, invoked through the timeout runner, JSON output parsed into typed findings) plus the target repo's own test/build commands. No co-located `packages/core`, no submodule, no database access. The operations below are realized as CLI invocations, not in-process calls.
 
 Operations:
 

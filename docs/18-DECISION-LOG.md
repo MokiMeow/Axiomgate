@@ -107,6 +107,14 @@ Add `axiomgate receipt verify <file>`: verifies the Build Receipt evidence hash 
 
 (a) Deploy-target existence/ownership proof before any publish/deploy action (replaces deferred static-analysis ambitions in capability trust checks). (b) Post-limit resume plan: checkpoint + reset visibility + one-command resume (replaces multi-provider capacity normalization). Both fit existing layers and the single demo mission.
 
+### ADR-014 — Verification integrates via the published PatchPilot CLI
+
+**Date:** 2026-07-15 · **Status:** Accepted
+
+PatchPilot is a separate repository (`C:/Users/Mohith S/Desktop/patchpilot`) with heavy deps (pg, bullmq, openai). Judges clone only AxiomGate, so the Verification Engine integrates by invoking the **published `patchpilot-cli`** (npm, v0.1.3, bin `patchpilot`) via the timeout runner — plus running the target repo's own test/build commands directly. This supersedes the `docs/09` assumption of an in-process typed API over a co-located `packages/core`.
+
+**Consequences:** self-contained for judges (npm resolves the dependency); honest reuse of pre-existing published work (no copy, rewrite, or submodule); clean pre-existing/Build-Week separation for `HACKATHON_DELTA.md`. AxiomGate parses the CLI's JSON output into typed findings; if a needed capability is CLI-only-partial, the target repo's native commands cover the gap. Board task V4 ("PatchPilot regression suite passes") is reinterpreted: PatchPilot is unmodified, so its suite is unaffected; V4 becomes "the published-CLI integration is verified against a real fixture."
+
 ### ADR-013 — Ship-during-week distribution
 
 **Date:** 2026-07-14 · **Status:** Accepted
