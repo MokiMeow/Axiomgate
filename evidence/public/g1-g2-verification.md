@@ -12,4 +12,11 @@ Platform: Windows, Node `v24.11.1`, pnpm `10.33.0`, GitHub CLI `2.96.0`, Vercel 
 - Fixture coverage includes valid, malformed, empty, not-found, wrong-owner, and tool-unavailable results. Unit tests make no live GitHub or Vercel API calls.
 - Scoped credential-pattern and TODO/debug scans over the G1 source, fixtures, and tests found no matches.
 
-G2 results are appended by the G2 commit.
+## G2 — Mission capability policy
+
+- `pnpm.cmd typecheck` — succeeded for `@axiomgate/cli` and `@axiomgate/core`.
+- `pnpm.cmd test` — three files passed; 53 tests passed; one optional live identity smoke test skipped because `AXIOM_LIVE_SMOKE` was not set.
+- `pnpm.cmd build` — succeeded for `@axiomgate/cli` and `@axiomgate/core`.
+- Policy matrix — 20 cases passed, covering unsupported and unlisted-action default deny, boundary escalation, deny-wins precedence, branch/repository/project restrictions, resolved and request identity mismatches, unavailable identity, approval passthrough, allow, unknown restrictions, and non-actionable policy states.
+- Every evaluated result contains at least one human-readable reason; the implementation is synchronous, deterministic, and has no command or filesystem dependency.
+- Final scoped credential-pattern and TODO/debug scans over G1/G2 source, fixtures, and tests found no matches.

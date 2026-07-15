@@ -20,7 +20,7 @@ This board is authoritative. Where a phase file conflicts, this board wins. Dead
 ## Environment Guard (target: Jul 15–17)
 
 - [x] G1 Identity resolution (gh identity, git remote, Vercel project/team) + deploy-target existence/ownership proof with evidence capture. Evidence: [`evidence/public/g1-g2-verification.md`](../evidence/public/g1-g2-verification.md).
-- [ ] G2 Semantic-action policy engine: ALLOW/DENY/REQUIRE_APPROVAL over the demo action set, target/identity restrictions.
+- [x] G2 Semantic-action policy engine: ALLOW/DENY/REQUIRE_APPROVAL over the demo action set, target/identity restrictions. Evidence: [`evidence/public/g1-g2-verification.md`](../evidence/public/g1-g2-verification.md).
 - [ ] G3 Hook integration: `PreToolUse`/`PermissionRequest` → policy engine; deny-wins; fail-closed config-hash check at mission start; every decision persisted as evidence.
 - [ ] G4 Approval flow: binding to exact command hash, expiry, single-use; dashboard + CLI surfaces; Telegram extended from PatchPilot `telegram`/`approval` modules.
 - [ ] G5 Negative test suite: wrong GitHub identity, wrong Vercel target, action substitution after approval, stale approval, boundary escalation, denied production action, secret-output redaction.

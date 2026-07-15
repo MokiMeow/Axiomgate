@@ -17,9 +17,12 @@ export const ActionRequestSchema = z.strictObject({
     owner: z.string().min(1),
     repo: z.string().min(1),
     verifiedOwnership: z.boolean(),
+    branch: z.string().min(1).optional(),
+    project: z.string().min(1).optional(),
   }),
   identity: z.strictObject({
     githubLogin: z.string().min(1),
+    vercelUser: z.string().min(1).optional(),
     source: z.string().min(1),
   }),
   rawCommandHash: Sha256Schema,
