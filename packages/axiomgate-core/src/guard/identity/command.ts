@@ -42,6 +42,22 @@ export type StreamingCommandRunner = (
   options?: RunStreamingCommandOptions,
 ) => Promise<CommandResult>;
 
+export interface StagedCommandWrite {
+  readonly data: string;
+  readonly delayMs: number;
+}
+
+export interface RunStagedCommandOptions extends RunCommandOptions {
+  readonly writes: readonly StagedCommandWrite[];
+  readonly completeWhenStdoutLine: (line: string) => boolean;
+}
+
+export type StagedCommandRunner = (
+  command: string,
+  args: readonly string[],
+  options?: RunStagedCommandOptions,
+) => Promise<CommandResult>;
+
 function resolveExecutable(command: string): string | undefined {
   if (isAbsolute(command) || command.includes("/") || command.includes("\\")) {
     return existsSync(command) ? command : undefined;
@@ -266,5 +282,110 @@ export function runStreamingCommand(
       });
     });
     child.stdin.end(options.input ?? "");
+  });
+}
+
+export function runStagedCommand(
+  command: string,
+  args: readonly string[],
+  options: RunStagedCommandOptions,
+): Promise<CommandResult> {
+  const startedAt = Date.now();
+  const executable = resolveExecutable(command);
+  if (executable === undefined) {
+    return Promise.resolve({
+      command,
+      args,
+      status: "UNAVAILABLE",
+      exitCode: 127,
+      stdout: "",
+      stderr: `Executable not found: ${command}`,
+      durationMs: Date.now() - startedAt,
+    });
+  }
+  const invocation = commandInvocation(executable, args);
+  return new Promise((resolveResult) => {
+    const child = spawn(invocation.executable, invocation.args, {
+      cwd: options.cwd,
+      env: invocation.env,
+      shell: false,
+      windowsHide: true,
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+    let stdout = "";
+    let stderr = "";
+    let lineBuffer = "";
+    let completed = false;
+    let timedOut = false;
+    let settled = false;
+    const writeTimers: Array<ReturnType<typeof setTimeout>> = [];
+    const finish = (result: CommandResult) => {
+      if (settled) return;
+      settled = true;
+      for (const timer of writeTimers) clearTimeout(timer);
+      resolveResult(result);
+    };
+    const inspectLines = (chunk: string) => {
+      lineBuffer += chunk;
+      const lines = lineBuffer.split(/\n/u);
+      lineBuffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (options.completeWhenStdoutLine(line.replace(/\r$/u, ""))) {
+          completed = true;
+          child.kill();
+          return;
+        }
+      }
+    };
+    child.stdout.setEncoding("utf8");
+    child.stderr.setEncoding("utf8");
+    child.stdout.on("data", (chunk: string) => {
+      stdout += chunk;
+      inspectLines(chunk);
+    });
+    child.stderr.on("data", (chunk: string) => {
+      stderr += chunk;
+    });
+    child.on("error", (error) => {
+      clearTimeout(timeout);
+      finish({
+        command,
+        args,
+        status: "UNAVAILABLE",
+        exitCode: 127,
+        stdout,
+        stderr: stderr || error.message,
+        durationMs: Date.now() - startedAt,
+      });
+    });
+    for (const write of options.writes) {
+      writeTimers.push(
+        setTimeout(() => {
+          if (!child.killed && child.stdin.writable) child.stdin.write(write.data);
+        }, write.delayMs),
+      );
+    }
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      child.kill();
+    }, options.timeoutMs ?? DEFAULT_COMMAND_TIMEOUT_MS);
+    child.on("close", (exitCode) => {
+      clearTimeout(timeout);
+      finish({
+        command,
+        args,
+        status: completed
+          ? "SUCCESS"
+          : timedOut
+            ? "TIMED_OUT"
+            : exitCode === 0
+              ? "SUCCESS"
+              : "FAILED",
+        exitCode: completed ? 0 : timedOut ? 124 : (exitCode ?? 1),
+        stdout,
+        stderr,
+        durationMs: Date.now() - startedAt,
+      });
+    });
   });
 }
