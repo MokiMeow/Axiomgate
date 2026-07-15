@@ -7,14 +7,17 @@ import { resolve } from "node:path";
 import {
   approve as approveRequest,
   createMission,
+  currentCommit,
   deny as denyRequest,
   enforcementDriftWarning,
   IntentBoundarySchema,
   listPending,
+  loadMissionStatus,
   loadMissionSnapshot,
   missionDirectory,
   parseMissionCriteria,
   readEnforcementVerification,
+  recordWaiver,
   remediateMission,
   resolveCodexLaunch,
   reviewMission,
@@ -77,7 +80,7 @@ export function runDoctor(): void {
 
 function printUsage(): void {
   console.log(
-    "Usage: axiomgate doctor | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission verify <id> [--project <path>] | axiomgate mission remediate <id> --finding <id> [--timeout-ms <ms>] [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
+    "Usage: axiomgate doctor | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission verify <id> [--project <path>] | axiomgate mission remediate <id> --finding <id> [--timeout-ms <ms>] [--project <path>] | axiomgate mission status <id> [--project <path>] | axiomgate mission waive <id> --criterion <id> --reason <text> --risk <text> [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
   );
 }
 
@@ -395,6 +398,50 @@ async function runMissionRemediate(id: string | undefined): Promise<void> {
   }
 }
 
+function runMissionStatus(id: string | undefined): void {
+  if (id === undefined) throw new Error("mission id is required");
+  const project = projectPath();
+  const status = loadMissionStatus(project, id, {
+    currentRevision: currentCommit(project),
+  });
+  console.log("Criterion | Verdict | Evidence");
+  for (const criterion of status.gate.criteria) {
+    console.log(
+      `${criterion.criterionId} | ${criterion.verdict} | ${criterion.evidenceIds.join(", ") || "-"}`,
+    );
+    if (criterion.waiver !== undefined) {
+      console.log(
+        `  WAIVER ${criterion.waiver.approver}: ${criterion.waiver.reason} (risk: ${criterion.waiver.riskAccepted})`,
+      );
+    }
+  }
+  console.log(`Gate: ${status.gate.outcome}`);
+  for (const reason of [
+    ...status.gate.blockingReasons,
+    ...status.gate.permissionMismatches,
+  ]) {
+    console.log(`BLOCKING: ${reason}`);
+  }
+  if (status.gate.outcome !== "COMPLETE") process.exitCode = 1;
+}
+
+function runMissionWaive(id: string | undefined): void {
+  if (id === undefined) throw new Error("mission id is required");
+  const criterionId = argumentValue("--criterion");
+  const reason = argumentValue("--reason");
+  const riskAccepted = argumentValue("--risk");
+  if (criterionId === undefined || reason === undefined || riskAccepted === undefined) {
+    throw new Error("--criterion, --reason, and --risk are required");
+  }
+  const waiver = recordWaiver(projectPath(), id, {
+    criterionId,
+    reason,
+    riskAccepted,
+    approver: approvalActor(),
+  });
+  console.log(`Waived ${waiver.criterionId} by ${waiver.approver}: ${waiver.reason}`);
+}
+
 function zEffort(value: string): "low" | "medium" | "high" {
   if (value === "low" || value === "medium" || value === "high") {
     return value;
@@ -432,8 +479,12 @@ if (command === "doctor") {
       runMissionVerify(process.argv[4]);
     } else if (missionCommand === "remediate") {
       await runMissionRemediate(process.argv[4]);
+    } else if (missionCommand === "status") {
+      runMissionStatus(process.argv[4]);
+    } else if (missionCommand === "waive") {
+      runMissionWaive(process.argv[4]);
     } else {
-      throw new Error("expected mission create, update, run, resume, review, verify, or remediate");
+      throw new Error("expected mission create, update, run, resume, review, verify, remediate, status, or waive");
     }
   } catch (error) {
     console.error(
