@@ -1,19 +1,40 @@
 import { z } from "zod";
 
-import { ActionRequestSchema } from "../guard/index.js";
+import {
+  ApprovalSchema,
+  ActionRequestSchema,
+} from "../guard/index.js";
 import {
   AcceptanceVerdictSchema,
   IsoDateTimeSchema,
+  MissionContractSchema,
   Sha256Schema,
 } from "../mission/index.js";
+import { VerificationFindingSchema } from "../verification/types.js";
+import { EvidenceSchema } from "./evidence.js";
+import { PermissionQuadSchema, WaiverSchema } from "./verdict.js";
 
-const TokenUsageSchema = z.strictObject({
+export const TokenUsageSchema = z.strictObject({
   input: z.number().int().nonnegative(),
   output: z.number().int().nonnegative(),
   reasoning: z.number().int().nonnegative(),
 });
 
-const PermissionQuadSchema = z.strictObject({
+export const ChainedEvidenceSchema = z.strictObject({
+  record: EvidenceSchema,
+  previousHash: Sha256Schema,
+  hash: Sha256Schema,
+});
+
+export type ChainedEvidence = z.infer<typeof ChainedEvidenceSchema>;
+
+export const ReceiptActionSchema = z.strictObject({
+  request: ActionRequestSchema.nullable(),
+  approval: ApprovalSchema.nullable(),
+  permissionQuad: PermissionQuadSchema,
+});
+
+const AggregatePermissionQuadSchema = z.strictObject({
   requested: z.string(),
   approved: z.string(),
   applied: z.string(),
@@ -21,7 +42,9 @@ const PermissionQuadSchema = z.strictObject({
 });
 
 export const BuildReceiptSchema = z.strictObject({
+  schemaVersion: z.literal(1),
   missionId: z.string().min(1),
+  contract: MissionContractSchema,
   contractHash: Sha256Schema,
   repo: z.strictObject({
     remote: z.string().min(1),
@@ -45,18 +68,20 @@ export const BuildReceiptSchema = z.strictObject({
     actual: z.record(z.string(), z.unknown()),
     sourceLabels: z.record(z.string(), z.unknown()),
   }),
-  actions: z.array(ActionRequestSchema),
-  permissionQuad: PermissionQuadSchema,
+  actions: z.array(ReceiptActionSchema),
+  permissionQuad: AggregatePermissionQuadSchema,
   criteria: z.array(
     z.strictObject({
       id: z.string().min(1),
       verdict: AcceptanceVerdictSchema,
       evidenceIds: z.array(z.string().min(1)),
+      evidenceHashes: z.array(Sha256Schema),
     }),
   ),
-  findings: z.array(z.unknown()),
-  waivers: z.array(z.unknown()),
+  findings: z.array(VerificationFindingSchema),
+  waivers: z.array(WaiverSchema),
   outcome: z.enum(["COMPLETE", "INCOMPLETE", "ABORTED"]),
+  evidenceRecords: z.array(ChainedEvidenceSchema),
   evidenceChainHead: Sha256Schema,
   limitations: z.array(z.string()),
   generatedAt: IsoDateTimeSchema,

@@ -30,6 +30,8 @@ import {
   updateMission,
   verifyMission,
   verifyEnforcementInstallation,
+  verifyReceiptFile,
+  writeMissionReceipt,
 } from "@axiomgate/core";
 
 function codexVersion() {
@@ -80,7 +82,7 @@ export function runDoctor(): void {
 
 function printUsage(): void {
   console.log(
-    "Usage: axiomgate doctor | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission verify <id> [--project <path>] | axiomgate mission remediate <id> --finding <id> [--timeout-ms <ms>] [--project <path>] | axiomgate mission status <id> [--project <path>] | axiomgate mission waive <id> --criterion <id> --reason <text> --risk <text> [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
+    "Usage: axiomgate doctor | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission verify <id> [--project <path>] | axiomgate mission remediate <id> --finding <id> [--timeout-ms <ms>] [--project <path>] | axiomgate mission status <id> [--project <path>] | axiomgate mission waive <id> --criterion <id> --reason <text> --risk <text> [--project <path>] | axiomgate mission receipt <id> [--format json|md] [--project <path>] | axiomgate receipt verify <file> | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
   );
 }
 
@@ -442,6 +444,34 @@ function runMissionWaive(id: string | undefined): void {
   console.log(`Waived ${waiver.criterionId} by ${waiver.approver}: ${waiver.reason}`);
 }
 
+function runMissionReceipt(id: string | undefined): void {
+  if (id === undefined) throw new Error("mission id is required");
+  const formatValue = argumentValue("--format") ?? "json";
+  if (formatValue !== "json" && formatValue !== "md") {
+    throw new Error("--format must be json or md");
+  }
+  const project = projectPath();
+  const result = writeMissionReceipt(project, id, formatValue, {
+    currentRevision: currentCommit(project),
+  });
+  console.log(`Receipt: ${result.path}`);
+  console.log(`Outcome: ${result.receipt.outcome}`);
+  console.log(`Evidence chain: ${result.receipt.evidenceChainHead}`);
+}
+
+function runReceiptVerify(path: string | undefined): void {
+  if (path === undefined) throw new Error("receipt file is required");
+  const result = verifyReceiptFile(path);
+  if (result.valid) {
+    console.log("PASS receipt integrity");
+    for (const check of result.checks) console.log(`CHECKED: ${check}`);
+  } else {
+    console.error("FAIL receipt integrity");
+    for (const error of result.errors) console.error(`ERROR: ${error}`);
+    process.exitCode = 1;
+  }
+}
+
 function zEffort(value: string): "low" | "medium" | "high" {
   if (value === "low" || value === "medium" || value === "high") {
     return value;
@@ -483,12 +513,23 @@ if (command === "doctor") {
       runMissionStatus(process.argv[4]);
     } else if (missionCommand === "waive") {
       runMissionWaive(process.argv[4]);
+    } else if (missionCommand === "receipt") {
+      runMissionReceipt(process.argv[4]);
     } else {
-      throw new Error("expected mission create, update, run, resume, review, verify, remediate, status, or waive");
+      throw new Error("expected mission create, update, run, resume, review, verify, remediate, status, waive, or receipt");
     }
   } catch (error) {
     console.error(
       `Mission command failed: ${error instanceof Error ? error.message : "unknown error"}`,
+    );
+    process.exitCode = 1;
+  }
+} else if (command === "receipt" && process.argv[3] === "verify") {
+  try {
+    runReceiptVerify(process.argv[4]);
+  } catch (error) {
+    console.error(
+      `Receipt verification failed: ${error instanceof Error ? error.message : "unknown error"}`,
     );
     process.exitCode = 1;
   }

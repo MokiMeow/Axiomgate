@@ -106,7 +106,9 @@ const evidence = {
 } as const;
 
 const buildReceipt = {
+  schemaVersion: 1,
   missionId: "msn_01H",
+  contract: missionContract,
   contractHash: HASH_A,
   repo: {
     remote: "https://github.com/example/demo.git",
@@ -127,17 +129,47 @@ const buildReceipt = {
     actual: {},
     sourceLabels: {},
   },
-  actions: [actionRequest],
+  actions: [
+    {
+      request: actionRequest,
+      approval,
+      permissionQuad: {
+        actionRequestId: actionRequest.id,
+        semanticAction: actionRequest.semanticAction,
+        commandHash: actionRequest.rawCommandHash,
+        requested: true,
+        approved: true,
+        applied: true,
+        observed: true,
+        mismatch: false,
+        reasons: [],
+      },
+    },
+  ],
   permissionQuad: {
     requested: "PUBLISH",
     approved: "PUBLISH",
     applied: "PUBLISH",
     observed: "PUBLISH",
   },
-  criteria: [{ id: "ac1", verdict: "PASS", evidenceIds: ["ev_01H"] }],
+  criteria: [
+    {
+      id: "ac1",
+      verdict: "PASS",
+      evidenceIds: ["ev_01H"],
+      evidenceHashes: [HASH_B],
+    },
+  ],
   findings: [],
   waivers: [],
   outcome: "COMPLETE",
+  evidenceRecords: [
+    {
+      record: evidence,
+      previousHash: `sha256:${"0".repeat(64)}`,
+      hash: HASH_B,
+    },
+  ],
   evidenceChainHead: HASH_B,
   limitations: [],
   generatedAt: "2026-07-15T10:04:00.000Z",
