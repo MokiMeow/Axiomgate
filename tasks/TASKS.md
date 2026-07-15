@@ -40,8 +40,8 @@ This board is authoritative. Where a phase file conflicts, this board wins. Dead
 
 ## Evidence Gate + Product (target: Jul 18–19)
 
-- [ ] E1 Criterion→evidence verdict engine; completion gate (UNKNOWN/BLOCKED block); visible waivers; permission quad (requested/approved/applied/observed).
-- [ ] E2 Build Receipt JSON/Markdown from stored events on the audit hash chain + `axiomgate receipt verify <file>` (offline judge verification).
+- [x] E1 Criterion→evidence verdict engine; completion gate (UNKNOWN/BLOCKED/FAIL/UNVERIFIED block); visible attributed waivers; permission quad mismatches flagged. Evidence: [`evidence/public/e1-e2-verification.md`](../evidence/public/e1-e2-verification.md).
+- [x] E2 Build Receipt JSON/Markdown projected from stored records with a 25-record evidence hash chain + offline `axiomgate receipt verify <file>` and live tamper rejection. Evidence: [`evidence/public/e1-e2-verification.md`](../evidence/public/e1-e2-verification.md).
 - [ ] E3 Mission timeline dashboard (Plan → Guard → Run → Verify → Prove), blocked-action recovery UX (every block shows a next step), risk-ranked review list, first-run defaults (≤3 approval prompts).
 - [ ] E4 CLI (`doctor`, `mission create/run/resume/verify/receipt`, `receipt verify`, `replay`) + **npm publish by Jul 18 EOD** (`npx axiomgate` = doctor + replay, zero config) + protected polish pass (all states, microcopy, the block scene camera-ready).
 
