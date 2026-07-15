@@ -1,2 +1,3 @@
 export * from "./action-request.js";
 export * from "./approval.js";
+export * from "./identity/index.js";
