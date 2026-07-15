@@ -15,6 +15,7 @@ import {
   missionDirectory,
   parseMissionCriteria,
   readEnforcementVerification,
+  remediateMission,
   resolveCodexLaunch,
   reviewMission,
   resumeMission,
@@ -76,7 +77,7 @@ export function runDoctor(): void {
 
 function printUsage(): void {
   console.log(
-    "Usage: axiomgate doctor | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission verify <id> [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
+    "Usage: axiomgate doctor | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission verify <id> [--project <path>] | axiomgate mission remediate <id> --finding <id> [--timeout-ms <ms>] [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
   );
 }
 
@@ -364,6 +365,36 @@ function runMissionVerify(id: string | undefined): void {
   }
 }
 
+async function runMissionRemediate(id: string | undefined): Promise<void> {
+  if (id === undefined) {
+    throw new Error("mission id is required");
+  }
+  const findingId = argumentValue("--finding");
+  if (findingId === undefined) {
+    throw new Error("--finding is required");
+  }
+  const timeoutMs = positiveIntegerArgument("--timeout-ms");
+  const result = await remediateMission(projectPath(), id, findingId, {
+    hookConfigOptions: hookConfigOptions(),
+    ...(timeoutMs === undefined ? {} : { timeoutMs }),
+  });
+  console.log(
+    `Remediation: ${result.remediation.record.status} (${result.plan.model}/${result.plan.effort})`,
+  );
+  if (result.verification === undefined) {
+    console.log("Targeted verification: NOT RUN");
+    process.exitCode = 1;
+    return;
+  }
+  for (const check of result.verification.run.checks) {
+    console.log(`${check.kind}: ${check.status}`);
+  }
+  console.log(`Targeted verification: ${result.verification.run.overall}`);
+  if (result.verification.run.overall !== "PASS") {
+    process.exitCode = 1;
+  }
+}
+
 function zEffort(value: string): "low" | "medium" | "high" {
   if (value === "low" || value === "medium" || value === "high") {
     return value;
@@ -399,8 +430,10 @@ if (command === "doctor") {
       await runMissionReview(process.argv[4]);
     } else if (missionCommand === "verify") {
       runMissionVerify(process.argv[4]);
+    } else if (missionCommand === "remediate") {
+      await runMissionRemediate(process.argv[4]);
     } else {
-      throw new Error("expected mission create, update, run, resume, review, or verify");
+      throw new Error("expected mission create, update, run, resume, review, verify, or remediate");
     }
   } catch (error) {
     console.error(
