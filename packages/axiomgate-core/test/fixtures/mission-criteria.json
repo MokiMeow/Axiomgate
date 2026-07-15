@@ -1,0 +1,16 @@
+[
+  {
+    "statement": "Invalid profile input is rejected",
+    "evidenceTypes": ["integration_test"],
+    "risk": "high"
+  },
+  {
+    "statement": "Valid profile input remains accepted",
+    "evidenceTypes": ["regression_test"]
+  },
+  {
+    "id": "criterion_audit",
+    "statement": "Validation failures are observable",
+    "evidenceTypes": ["command"]
+  }
+]

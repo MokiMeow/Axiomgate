@@ -7,9 +7,13 @@ import { resolve } from "node:path";
 
 import {
   approve as approveRequest,
+  createMission,
   deny as denyRequest,
+  IntentBoundarySchema,
   listPending,
+  parseMissionCriteria,
   runHookEntry,
+  updateMission,
 } from "@axiomgate/core";
 
 interface CommandResult {
@@ -74,7 +78,7 @@ export function runDoctor(): void {
 
 function printUsage(): void {
   console.log(
-    "Usage: axiomgate doctor | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
+    "Usage: axiomgate doctor | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
   );
 }
 
@@ -108,8 +112,83 @@ function inputHookEventName(rawInput: string): string {
   return "PreToolUse";
 }
 
+function projectPath(): string {
+  return resolve(argumentValue("--project") ?? process.cwd());
+}
+
+function hookConfigOptions() {
+  return {
+    cliEntryPath: process.argv[1]!,
+    nodePath: process.execPath,
+  };
+}
+
+function runMissionCreate(): void {
+  const objective = argumentValue("--objective");
+  if (objective === undefined) {
+    throw new Error("--objective is required");
+  }
+  const boundaryValue = argumentValue("--boundary");
+  const criteriaPath = argumentValue("--criteria");
+  const boundary =
+    boundaryValue === undefined
+      ? undefined
+      : IntentBoundarySchema.parse(boundaryValue);
+  const criteria =
+    criteriaPath === undefined
+      ? undefined
+      : parseMissionCriteria(
+          JSON.parse(readFileSync(resolve(criteriaPath), "utf8")),
+        );
+  const created = createMission(
+    projectPath(),
+    {
+      objective,
+      ...(boundary === undefined ? {} : { boundary }),
+      ...(criteria === undefined ? {} : { criteria }),
+    },
+    { hookConfigOptions: hookConfigOptions() },
+  );
+  console.log(`Created mission ${created.contract.id}`);
+  console.log(`Contract: ${resolve(created.missionDir, "contract.json")}`);
+  console.log(`Boundary: ${created.contract.intentBoundary}`);
+  for (const conflict of created.conflicts) {
+    console.warn(
+      `CONFLICT ${conflict.action}: ${conflict.reason}; edit the contract and run axiomgate mission update ${created.contract.id}`,
+    );
+  }
+}
+
+function runMissionUpdate(id: string | undefined): void {
+  if (id === undefined) {
+    throw new Error("mission id is required");
+  }
+  const updated = updateMission(projectPath(), id, {
+    hookConfigOptions: hookConfigOptions(),
+  });
+  console.log(
+    `Updated mission ${id} to version ${updated.contract.version} (${updated.contract.hash})`,
+  );
+}
+
 if (command === "doctor") {
   runDoctor();
+} else if (command === "mission") {
+  try {
+    const missionCommand = process.argv[3];
+    if (missionCommand === "create") {
+      runMissionCreate();
+    } else if (missionCommand === "update") {
+      runMissionUpdate(process.argv[4]);
+    } else {
+      throw new Error("expected mission create or mission update <id>");
+    }
+  } catch (error) {
+    console.error(
+      `Mission command failed: ${error instanceof Error ? error.message : "unknown error"}`,
+    );
+    process.exitCode = 1;
+  }
 } else if (command === "hook") {
   const rawInput = readFileSync(0, "utf8");
   const missionDir = argumentValue("--mission");
