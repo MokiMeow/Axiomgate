@@ -107,6 +107,18 @@ Add `axiomgate receipt verify <file>`: verifies the Build Receipt evidence hash 
 
 (a) Deploy-target existence/ownership proof before any publish/deploy action (replaces deferred static-analysis ambitions in capability trust checks). (b) Post-limit resume plan: checkpoint + reset visibility + one-command resume (replaces multi-provider capacity normalization). Both fit existing layers and the single demo mission.
 
+### ADR-015 — Runway sources real quota from the Codex app-server
+
+**Date:** 2026-07-16 · **Status:** Accepted
+
+`account/rateLimits/read` (Codex app-server JSON-RPC) is verified live on 0.144.4 and returns real `usedPercent`, window duration, `resetsAt`, `planType`, and banked `rateLimitResetCredits`. Runway's capacity snapshot is upgraded from advisory/manual to this first-party source (labelled `source: "codex-app-server"`, confidence high), feeding the verification reserve and expiring-reset reminder. Un-defers the quota-snapshot core the independent review had parked for "no reliable source." Honest bounds preserved: we surface used-percent/window/reset/credits, never invented message counts; app-server is experimental so the version is recorded and failures degrade to UNKNOWN. Evidence: `docs/28`, `.local/ratelimit-probe.mjs` output.
+
+### ADR-016 — Codex-native depth: max tier, skill, subagent, approval reviewer
+
+**Date:** 2026-07-16 · **Status:** Accepted
+
+Deepen genuine Codex usage across official surfaces: (a) Model Director offers GPT-5.6 `max` reasoning for the highest-risk single-chain build phase; (b) AxiomGate ships as a Codex **skill** (`.agents/skills/`) so governance is a workflow Codex loads natively; (c) the independent Verifier is a native Codex **custom subagent** (`~/.codex/agents/`, read-only sandbox, different tier); (d) complete the live **PermissionRequest** proof with AxiomGate acting as the external approval reviewer Codex defers to. No off-thesis surface added; Ultra-Mode orchestration remains roadmap-only. Evidence: `docs/28`.
+
 ### ADR-014 — Verification integrates via the published PatchPilot CLI
 
 **Date:** 2026-07-15 · **Status:** Accepted

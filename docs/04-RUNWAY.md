@@ -4,19 +4,19 @@
 
 Help the user spend AI capacity intentionally while preserving quality and verification. Runway is advisory by default and guarded when the user opts in.
 
-## Build Week scope (ADR-008)
+## Build Week scope (ADR-008, ADR-015, ADR-016)
 
 - token/reasoning actuals per mission from `codex exec --json` (the ledger);
-- verification reserve;
-- one source/confidence-labelled capacity snapshot (manual + observed input);
-- expiring banked-reset reminder;
+- **real capacity snapshot from the Codex app-server `account/rateLimits/read`** (usedPercent, window duration, resetsAt, planType, banked `rateLimitResetCredits`), labelled `source: "codex-app-server"`, confidence high; degrades to UNKNOWN if the method is unavailable — never invents message counts (ADR-015);
+- verification reserve computed against the real remaining window;
+- expiring banked-reset reminder from real credit expiry;
 - simple loop detection;
 - post-limit checkpoint and resume;
-- phase-specific GPT-5.6 tier/effort recommendations.
+- phase-specific GPT-5.6 tier/effort recommendations, including `max` reasoning for the highest-risk single-chain phase (ADR-016).
 
 ## Future coverage (not Build Week; do not implement)
 
-Five-hour plus weekly normalization, weekly-only, disappearing/returning limits, promotional and purchased credits, API budgets, OpenRouter/multi-model balances, unlimited plans, team pools, multiple providers, and mid-mission limit changes as first-class normalized scenarios.
+OpenRouter/multi-model balances, API-budget billing, team pools, multiple providers, and mid-mission provider switching as first-class normalized scenarios. (The Codex 5-hour + weekly window, plan type, and banked resets ARE now in Build Week scope via ADR-015's real app-server source.)
 
 ## Normalized capacity source
 
