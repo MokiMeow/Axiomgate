@@ -80,6 +80,7 @@ describe("compileMission", () => {
       createdAt: "2026-07-15T16:00:00.000Z",
       updatedAt: "2026-07-15T16:00:00.000Z",
     });
+    expect(result.contract.budgetPolicy).toEqual({ reservePercent: 20 });
     expect(result.contract.acceptanceCriteria).toHaveLength(4);
     expect(
       result.contract.acceptanceCriteria.map((criterion) => criterion.evidenceTypes),
@@ -260,6 +261,7 @@ describe("mission files", () => {
         unknown
       >;
       edited.objective = "Add strict profile validation";
+      delete edited.budgetPolicy;
       edited.modelPlan = (edited.modelPlan as Array<Record<string, unknown>>).filter(
         (entry) => entry.phase !== "verify",
       );
@@ -277,6 +279,7 @@ describe("mission files", () => {
         updatedAt: "2026-07-15T17:00:00.000Z",
       });
       expect(updated.contract.hash).toBe(hashContract(updated.contract));
+      expect(updated.contract.budgetPolicy).toEqual({ reservePercent: 20 });
       expect(updated.contract.modelPlan).toContainEqual({
         phase: "verify",
         model: "gpt-5.6-terra",

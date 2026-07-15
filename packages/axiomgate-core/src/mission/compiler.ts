@@ -204,6 +204,7 @@ export function compileMission(
     nonGoals: ["Production deployment"],
     actionPolicy: DEFAULT_ACTION_POLICY,
     modelPlan: DEFAULT_MODEL_PLAN,
+    budgetPolicy: { reservePercent: 20 },
     status: "DRAFT",
     createdAt: timestamp,
     updatedAt: timestamp,

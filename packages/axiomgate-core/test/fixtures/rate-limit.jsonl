@@ -1,0 +1,2 @@
+{"type":"thread.started","thread_id":"rate-limited-session"}
+{"type":"item.completed","item":{"type":"error","message":"You've hit your usage limit. Your usage limit resets at 2026-07-16T03:30:00Z."}}

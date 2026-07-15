@@ -19,6 +19,8 @@ import {
   runCommand as runExternalCommand,
   runHookEntry,
   runMission,
+  setCapacitySnapshot,
+  renderCapacitySnapshot,
   updateMission,
 } from "@axiomgate/core";
 
@@ -56,7 +58,7 @@ export function runDoctor(): void {
 
 function printUsage(): void {
   console.log(
-    "Usage: axiomgate doctor | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
+    "Usage: axiomgate doctor | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
   );
 }
 
@@ -161,6 +163,18 @@ function positiveIntegerArgument(name: string): number | undefined {
   return parsed;
 }
 
+function nonnegativeIntegerArgument(name: string): number | undefined {
+  const value = argumentValue(name);
+  if (value === undefined) {
+    return undefined;
+  }
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed < 0) {
+    throw new Error(`${name} must be a nonnegative integer`);
+  }
+  return parsed;
+}
+
 function missionObjective(id: string): string {
   const loaded = loadMissionSnapshot(missionDirectory(projectPath(), id));
   if (loaded.status === "INVALID") {
@@ -199,6 +213,19 @@ async function runGovernedMission(
         `Enforcement: VERIFIED (${plan.configHash}; sandbox=${plan.sandbox})`,
       );
     },
+    onRunwayStatus: (status: {
+      capacityLine: string;
+      reminder: string | undefined;
+      reserve: { warning?: string };
+    }) => {
+      console.log(status.capacityLine);
+      if (status.reminder !== undefined) {
+        console.log(status.reminder);
+      }
+      if (status.reserve.warning !== undefined) {
+        console.warn(status.reserve.warning);
+      }
+    },
   } as const;
   const result = resume
     ? await resumeMission(projectPath(), id, options)
@@ -208,10 +235,39 @@ async function runGovernedMission(
   console.log(`Usage records: ${result.record.rawUsageCount}`);
   if (result.checkpoint !== undefined) {
     console.log(`Checkpoint: ${result.checkpoint.reason}`);
+    if (result.checkpoint.reason === "rate_limit") {
+      console.log(`Reset: ${result.checkpoint.resetAt ?? "UNKNOWN"}`);
+      const resets = result.runway.capacity.resetsAvailable;
+      if (resets !== undefined && resets.value > 0) {
+        console.log(
+          `Banked reset: ${resets.value} available [${resets.source}/${resets.confidence}]; activation is not automatic.`,
+        );
+      }
+      console.log(
+        `Resume: axiomgate mission resume ${id} --project ${JSON.stringify(projectPath())}`,
+      );
+    }
+  }
+  if (result.runway.loopRecommendation !== undefined) {
+    console.warn(
+      `Recommendation: ${result.runway.loopRecommendation.recommendation} (${result.runway.loopRecommendation.signal})`,
+    );
   }
   if (result.record.status !== "SUCCESS") {
     process.exitCode = 1;
   }
+}
+
+function runRunwaySet(): void {
+  const plan = argumentValue("--plan");
+  const resetsAvailable = nonnegativeIntegerArgument("--resets-available");
+  const resetExpires = argumentValue("--reset-expires");
+  const snapshot = setCapacitySnapshot(projectPath(), {
+    ...(plan === undefined ? {} : { plan }),
+    ...(resetsAvailable === undefined ? {} : { resetsAvailable }),
+    ...(resetExpires === undefined ? {} : { resetExpires }),
+  });
+  console.log(renderCapacitySnapshot(snapshot));
 }
 
 async function runMissionReview(id: string | undefined): Promise<void> {
@@ -255,6 +311,15 @@ function zEffort(value: string): "low" | "medium" | "high" {
 
 if (command === "doctor") {
   runDoctor();
+} else if (command === "runway" && process.argv[3] === "set") {
+  try {
+    runRunwaySet();
+  } catch (error) {
+    console.error(
+      `Runway command failed: ${error instanceof Error ? error.message : "unknown error"}`,
+    );
+    process.exitCode = 1;
+  }
 } else if (command === "mission") {
   try {
     const missionCommand = process.argv[3];

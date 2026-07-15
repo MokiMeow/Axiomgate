@@ -1,4 +1,5 @@
 import {
+  appendFileSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -21,6 +22,7 @@ import {
   resumeMission,
   runMission,
   runStreamingCommand,
+  setCapacitySnapshot,
   type IdentityReport,
 } from "../src/index.js";
 
@@ -196,7 +198,8 @@ describe("parseCodexJsonl", () => {
     ).toEqual({
       missionId: "msn_partial",
       sessionId: "session_partial",
-      reason: "TRUNCATED_STREAM",
+      reason: "truncated_stream",
+      resetAt: null,
       lastEvent: {
         type: "thread.started",
         thread_id: "session_partial",
@@ -230,7 +233,8 @@ describe("buildCodexResumePlan", () => {
       checkpoint: {
         missionId: "msn_resume",
         sessionId: "019f-resume-session",
-        reason: "TIMEOUT",
+        reason: "timeout",
+        resetAt: null,
         lastEvent: { type: "turn.started" },
         model: "gpt-5.6-sol",
         effort: "high",
@@ -275,6 +279,103 @@ describe("runStreamingCommand", () => {
 });
 
 describe("runMission", () => {
+  it("shows Runway state and persists a no-progress recommendation", async () => {
+    const projectPath = mkdtempSync(join(tmpdir(), "axiomgate-runway-runtime-"));
+    try {
+      const hookConfigOptions = {
+        cliEntryPath: join(projectPath, "cli", "index.js"),
+        nodePath: process.execPath,
+      };
+      createMission(
+        projectPath,
+        { objective: "Add hello.txt" },
+        {
+          id: "msn_runway_runtime",
+          hookConfigOptions,
+          resolveIdentity: () =>
+            runtimeIdentity("2026-07-15T18:00:00.000Z"),
+        },
+      );
+      const directory = missionDirectory(projectPath, "msn_runway_runtime");
+      appendFileSync(
+        join(directory, "ledger.jsonl"),
+        `${JSON.stringify({ role: "builder", usage: { input_tokens: 90, output_tokens: 10 } })}\n`,
+        "utf8",
+      );
+      for (const runId of ["run_prior_1", "run_prior_2"]) {
+        appendFileSync(
+          join(directory, "events.jsonl"),
+          `${JSON.stringify({
+            type: "run.progress",
+            progress: {
+              runId,
+              commandFailures: [],
+              fileChanges: 0,
+              newEvidence: 0,
+            },
+          })}\n`,
+          "utf8",
+        );
+      }
+      setCapacitySnapshot(
+        projectPath,
+        {
+          plan: "plus",
+          resetsAvailable: 1,
+          resetExpires: "2026-07-18T17:00:00.000Z",
+        },
+        () => new Date("2026-07-15T18:00:00.000Z"),
+      );
+      let header = "";
+      const result = await runMission(projectPath, "msn_runway_runtime", {
+        prompt: "Inspect current state",
+        runId: "run_no_progress",
+        hookConfigOptions,
+        resolveIdentity: () =>
+          runtimeIdentity("2026-07-15T18:01:00.000Z"),
+        isGitRepository: true,
+        runner: async (command, args) => ({
+          command,
+          args,
+          status: "SUCCESS",
+          exitCode: 0,
+          stdout: [
+            '{"type":"thread.started","thread_id":"runway-session"}',
+            '{"type":"item.completed","item":{"type":"agent_message","text":"No changes needed."}}',
+            '{"type":"turn.completed","usage":{"input_tokens":5,"output_tokens":2}}',
+          ].join("\n"),
+          stderr: "",
+          durationMs: 5,
+        }),
+        now: () => new Date("2026-07-15T18:00:00.000Z"),
+        currentCommit: () => "abc123",
+        onRunwayStatus: (status) => {
+          header = [
+            status.capacityLine,
+            status.reminder,
+            status.reserve.warning,
+          ]
+            .filter(Boolean)
+            .join("\n");
+        },
+      });
+
+      expect(header).toContain("plan=plus [manual/HIGH]");
+      expect(header).toContain("banked reset(s) expire");
+      expect(header).toContain("builder used 100/100 observed tokens");
+      expect(result.runway.loopRecommendation).toEqual({
+        signal: "no_progress",
+        evidence: ["consecutiveRuns=3", "fileChanges=0", "newEvidence=0"],
+        recommendation: "split task",
+      });
+      expect(readFileSync(join(directory, "events.jsonl"), "utf8")).toContain(
+        '"type":"runway.recommendation"',
+      );
+    } finally {
+      rmSync(projectPath, { recursive: true, force: true });
+    }
+  });
+
   it("persists the primary session, token actuals, run hash, and command evidence", async () => {
     const projectPath = mkdtempSync(join(tmpdir(), "axiomgate-runtime-"));
     try {
@@ -362,9 +463,11 @@ describe("runMission", () => {
       expect(
         readFileSync(join(directory, "runs", "run_fixture.jsonl"), "utf8"),
       ).toBe(stream);
-      const evidence = JSON.parse(
-        readFileSync(join(directory, "events.jsonl"), "utf8").trim(),
-      ) as Record<string, unknown>;
+      const evidence = readFileSync(join(directory, "events.jsonl"), "utf8")
+        .trim()
+        .split(/\r?\n/u)
+        .map((line) => JSON.parse(line) as Record<string, unknown>)
+        .find((event) => event.source === "command")!;
       expect(evidence).toMatchObject({
         missionId: "msn_run",
         source: "command",
@@ -402,7 +505,8 @@ describe("runMission", () => {
         JSON.stringify({
           missionId: "msn_resume_runtime",
           sessionId: "019f-resume-live",
-          reason: "TIMEOUT",
+          reason: "timeout",
+          resetAt: null,
           lastEvent: { type: "turn.started" },
           model: "gpt-5.6-sol",
           effort: "high",

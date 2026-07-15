@@ -132,6 +132,7 @@ export function updateMission(
     {
       ...edited,
       modelPlan: migratedModelPlan,
+      budgetPolicy: edited.budgetPolicy ?? { reservePercent: 20 },
       version: prior.snapshot.contract.version,
     },
     (options.now ?? (() => new Date()))().toISOString(),

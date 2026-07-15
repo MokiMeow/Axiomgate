@@ -27,6 +27,19 @@ import {
   type StreamingCommandRunner,
 } from "../guard/index.js";
 import {
+  detectLoopRecommendation,
+  evaluateVerificationReserve,
+  expiringResetReminder,
+  readCapacitySnapshot,
+  readLedgerTotals,
+  renderCapacitySnapshot,
+  RunProgressEventSchema,
+  type CapacitySnapshot,
+  type LoopRecommendation,
+  type RunProgressEvent,
+  type VerificationReserveResult,
+} from "../runway/index.js";
+import {
   checkpointFromRun,
   buildCodexResumePlan,
   MissionCheckpointSchema,
@@ -86,6 +99,15 @@ export interface RunMissionOptions {
   readonly currentCommit?: (projectPath: string) => string;
   readonly onEvent?: (event: JsonRecord) => void;
   readonly onReady?: (plan: CodexRunPlan) => void;
+  readonly onRunwayStatus?: (status: RunwayRuntimeStatus) => void;
+}
+
+export interface RunwayRuntimeStatus {
+  readonly capacity: CapacitySnapshot;
+  readonly capacityLine: string;
+  readonly reminder: string | undefined;
+  readonly reserve: VerificationReserveResult;
+  readonly loopRecommendation: LoopRecommendation | undefined;
 }
 
 export interface MissionRunResult {
@@ -93,6 +115,7 @@ export interface MissionRunResult {
   readonly evidence: Evidence;
   readonly checkpoint: MissionCheckpoint | undefined;
   readonly plan: CodexRunPlan;
+  readonly runway: RunwayRuntimeStatus;
 }
 
 function sha256(value: string): `sha256:${string}` {
@@ -213,6 +236,70 @@ function writeCheckpoint(
   );
 }
 
+function runProgressFromParsed(
+  runId: string,
+  parsed: ReturnType<typeof parseCodexJsonl>,
+): RunProgressEvent {
+  const completedFileChanges = parsed.items.filter(
+    (item) => item.type === "file_change" && item.status === "completed",
+  );
+  const fileChanges = completedFileChanges.reduce((total, item) => {
+    return total + (Array.isArray(item.changes) ? item.changes.length : 1);
+  }, 0);
+  const commandFailures = parsed.commandExecutions
+    .filter(
+      (item) =>
+        item.status === "failed" ||
+        (typeof item.exit_code === "number" && item.exit_code !== 0),
+    )
+    .flatMap((item) =>
+      typeof item.command === "string"
+        ? [
+            {
+              command: item.command,
+              error:
+                typeof item.aggregated_output === "string" &&
+                item.aggregated_output.trim().length > 0
+                  ? item.aggregated_output.trim()
+                  : `exit ${typeof item.exit_code === "number" ? item.exit_code : "unknown"}`,
+            },
+          ]
+        : [],
+    );
+  const successfulCommands = parsed.commandExecutions.filter(
+    (item) =>
+      item.status === "completed" &&
+      (item.exit_code === 0 || item.exit_code === undefined),
+  ).length;
+  return RunProgressEventSchema.parse({
+    runId,
+    commandFailures,
+    fileChanges,
+    newEvidence: fileChanges + successfulCommands,
+  });
+}
+
+function priorRunProgress(missionDir: string): RunProgressEvent[] {
+  const path = join(missionDir, "events.jsonl");
+  if (!existsSync(path)) {
+    return [];
+  }
+  return readFileSync(path, "utf8")
+    .split(/\r?\n/u)
+    .filter((line) => line.trim().length > 0)
+    .flatMap((line) => {
+      try {
+        const value = JSON.parse(line) as Record<string, unknown>;
+        if (value.type !== "run.progress") {
+          return [];
+        }
+        return [RunProgressEventSchema.parse(value.progress)];
+      } catch {
+        return [];
+      }
+    });
+}
+
 async function runMissionInternal(
   projectPath: string,
   id: string,
@@ -222,6 +309,7 @@ async function runMissionInternal(
 ): Promise<MissionRunResult> {
   const resolvedProject = resolve(projectPath);
   const missionDir = missionDirectory(resolvedProject, id);
+  const now = options.now ?? (() => new Date());
   const enforcement = verifyEnforcement(
     missionDir,
     options.hookConfigOptions,
@@ -239,6 +327,24 @@ async function runMissionInternal(
       `Identity differs from the mission snapshot. Next step: axiomgate mission update ${id}`,
     );
   }
+
+  const capacity = readCapacitySnapshot(resolvedProject);
+  const totals = readLedgerTotals(missionDir);
+  const reserve = evaluateVerificationReserve({
+    builderTokens: totals.builderTokens,
+    totalTokens: totals.totalTokens,
+    reservePercent:
+      enforcement.snapshot.contract.budgetPolicy?.reservePercent ?? 20,
+    hasVerificationRun: totals.hasVerificationRun,
+  });
+  const initialRunway: RunwayRuntimeStatus = {
+    capacity,
+    capacityLine: renderCapacitySnapshot(capacity),
+    reminder: expiringResetReminder(capacity, now()),
+    reserve,
+    loopRecommendation: undefined,
+  };
+  options.onRunwayStatus?.(initialRunway);
 
   const basePlan = buildCodexRunPlan({
     contract: enforcement.snapshot.contract,
@@ -264,7 +370,6 @@ async function runMissionInternal(
   const launch = options.codexLaunch ?? resolveCodexLaunch();
   const runner = options.runner ?? runStreamingCommand;
   options.onReady?.(plan);
-  const now = options.now ?? (() => new Date());
   const startedAt = now().toISOString();
   const commandResult = await runner(
     launch.command,
@@ -341,6 +446,34 @@ async function runMissionInternal(
     now: () => new Date(endedAt),
   });
   writeCheckpoint(missionDir, checkpoint);
+  const progress = runProgressFromParsed(runId, parsed);
+  const loopRecommendation = detectLoopRecommendation([
+    ...priorRunProgress(missionDir),
+    progress,
+  ]);
+  appendFileSync(
+    join(missionDir, "events.jsonl"),
+    `${JSON.stringify({
+      type: "run.progress",
+      ts: endedAt,
+      missionId: id,
+      progress,
+    })}\n`,
+    "utf8",
+  );
+  if (loopRecommendation !== undefined) {
+    appendFileSync(
+      join(missionDir, "events.jsonl"),
+      `${JSON.stringify({
+        type: "runway.recommendation",
+        ts: endedAt,
+        missionId: id,
+        runId,
+        ...loopRecommendation,
+      })}\n`,
+      "utf8",
+    );
+  }
   const commit =
     options.currentCommit?.(resolvedProject) ?? currentCommit(resolvedProject);
   const evidence = EvidenceSchema.parse({
@@ -364,7 +497,13 @@ async function runMissionInternal(
     "utf8",
   );
 
-  return { record, evidence, checkpoint, plan };
+  return {
+    record,
+    evidence,
+    checkpoint,
+    plan,
+    runway: { ...initialRunway, loopRecommendation },
+  };
 }
 
 export function runMission(

@@ -44,6 +44,10 @@ export const ModelPlanEntrySchema = z.strictObject({
   rationale: z.string().min(1),
 });
 
+export const BudgetPolicySchema = z.strictObject({
+  reservePercent: z.number().int().min(0).max(100),
+});
+
 export const MissionContractSchema = z.strictObject({
   id: z.string().min(1),
   version: z.number().int().positive(),
@@ -56,6 +60,7 @@ export const MissionContractSchema = z.strictObject({
   nonGoals: z.array(z.string()),
   actionPolicy: z.array(ActionPolicyEntrySchema),
   modelPlan: z.array(ModelPlanEntrySchema),
+  budgetPolicy: BudgetPolicySchema.optional(),
   status: z.string().min(1),
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
