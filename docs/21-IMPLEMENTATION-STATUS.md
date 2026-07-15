@@ -11,14 +11,14 @@ Statuses:
 
 | Layer | Status | Evidence | Notes |
 |---|---|---|---|
-| Mission Compiler | NOT_STARTED | None | Blueprint only |
+| Mission Compiler | IN_PROGRESS | `packages/axiomgate-core/test/schemas.test.ts` | Canonical contract schema, intent-boundary ordering, and hashing verified; compiler flow remains F6 |
 | Runway | NOT_STARTED | None | Blueprint only |
-| Environment Guard | NOT_STARTED | None | Blueprint only |
+| Environment Guard | IN_PROGRESS | `packages/axiomgate-core/test/schemas.test.ts` | Canonical action-request and approval schemas verified; policy and hook enforcement remain G2–G4 |
 | Codex Runtime | NOT_STARTED | None | Blueprint only |
 | Verification Engine | NOT_STARTED | None | PatchPilot audit required |
-| Evidence Gate | NOT_STARTED | None | Blueprint only |
+| Evidence Gate | IN_PROGRESS | `packages/axiomgate-core/test/schemas.test.ts` | Canonical evidence and receipt schemas verified; verdict engine and receipt generation remain E1–E2 |
 | Local web dashboard | NOT_STARTED | None | Extends PatchPilot Next.js app (ADR-009) |
-| CLI | NOT_STARTED | None | Existing stack audit required |
+| CLI | IN_PROGRESS | `apps/cli/src/index.ts` | `doctor` reports Node, Codex presence, and Git repository state; remaining E4 commands are not implemented |
 | Evaluation Replay Lab | NOT_STARTED | None | Blueprint only |
 | Hackathon submission | NOT_STARTED | None | Deadline plan required |
 

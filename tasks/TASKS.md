@@ -12,8 +12,8 @@ This board is authoritative. Where a phase file conflicts, this board wins. Dead
 
 - [ ] F1 `git init`, baseline commit, `HACKATHON_DELTA.md` stub with baseline hash, credits form submitted, primary Codex thread designated, `CODEX_COLLABORATION.md` started.
 - [ ] F2 **Hook gate:** empirically verify on the installed Codex version — `PermissionRequest` payload, deny semantics, fail-open/closed on hook error, `exec --json` usage fields. Record versions in `docs/17`. Blocks all enforcement work.
-- [ ] F3 Scaffold `packages/axiomgate-core` (modules: `mission/`, `runway/`, `guard/`, `runtime/`, `evidence/`) inside the PatchPilot-style monorepo + PatchPilot `packages/core` reuse map.
-- [ ] F4 Canonical schemas from `docs/02` (contract, action request, approval, evidence, receipt) with validation and hashing.
+- [x] F3 Scaffold `packages/axiomgate-core` (modules: `mission/`, `runway/`, `guard/`, `runtime/`, `evidence/`) inside the PatchPilot-style monorepo + PatchPilot `packages/core` reuse map. Evidence: [`evidence/public/f3-f4-verification.md`](../evidence/public/f3-f4-verification.md).
+- [x] F4 Canonical schemas from `docs/02` (contract, action request, approval, evidence, receipt) with validation and hashing. Evidence: [`evidence/public/f3-f4-verification.md`](../evidence/public/f3-f4-verification.md).
 - [ ] F5 Demo fixture repo (sanitized security-feature target app) + staged wrong-target GitHub/Vercel profile for the block scene.
 - [ ] F6 Mission contract creation: one-line objective → contract with 3–6 criteria, evidence types, intent boundary → sandbox mapping, GPT-5.6 model plan (Sol/Terra/Luna + effort) with recorded rationale; editable; versioned; hashed.
 
