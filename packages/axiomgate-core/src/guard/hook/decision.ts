@@ -2,7 +2,12 @@ import { createHash } from "node:crypto";
 
 import { z } from "zod";
 
+import { stableStringify } from "../../mission/index.js";
 import { ActionRequestSchema, type ActionRequest } from "../action-request.js";
+import {
+  consumeApproval,
+  createApprovalRequest,
+} from "../approval-store.js";
 import { evaluatePolicy } from "../policy/index.js";
 import { classifyHookPayload } from "./classifier.js";
 import type { HookConfigOptions } from "./config.js";
@@ -25,11 +30,13 @@ const HookPayloadSchema = z.object({
 export type HookDecisionOutput =
   | {
       readonly hookSpecificOutput: {
+        readonly hookEventName: string;
         readonly permissionDecision: "allow";
       };
     }
   | {
       readonly hookSpecificOutput: {
+        readonly hookEventName: string;
         readonly permissionDecision: "deny";
         readonly permissionDecisionReason: string;
       };
@@ -99,9 +106,16 @@ function actionRequest(
   }
 
   const commandHash = sha256(classified.command);
+  const target = requestTarget(snapshot);
   const requestId = createHash("sha256")
     .update(
-      `${payload.session_id}\0${payload.tool_use_id}\0${classified.command}`,
+      stableStringify({
+        missionId: snapshot.contract.id,
+        semanticAction: classified.semanticAction,
+        mechanism: classified.mechanism,
+        commandHash,
+        target,
+      }),
       "utf8",
     )
     .digest("hex")
@@ -113,7 +127,7 @@ function actionRequest(
     missionId: snapshot.contract.id,
     semanticAction: classified.semanticAction,
     mechanism: classified.mechanism,
-    target: requestTarget(snapshot),
+    target,
     identity: {
       githubLogin: snapshot.identity.githubLogin.value,
       ...(snapshot.identity.vercelUser.status === "RESOLVED"
@@ -131,13 +145,19 @@ function actionRequest(
   });
 }
 
-function allowOutput(): HookDecisionOutput {
-  return { hookSpecificOutput: { permissionDecision: "allow" } };
+function allowOutput(hookEventName: string): HookDecisionOutput {
+  return {
+    hookSpecificOutput: { hookEventName, permissionDecision: "allow" },
+  };
 }
 
-function denyOutput(reasons: readonly string[]): HookDecisionOutput {
+function denyOutput(
+  reasons: readonly string[],
+  hookEventName: string,
+): HookDecisionOutput {
   return {
     hookSpecificOutput: {
+      hookEventName,
       permissionDecision: "deny",
       permissionDecisionReason: reasons.join("; "),
     },
@@ -219,10 +239,25 @@ export function processHookInvocation(
     if (evaluation.decision === "ALLOW") {
       decision = "ALLOW";
     } else if (evaluation.decision === "REQUIRE_APPROVAL") {
-      reasons = [
-        ...evaluation.reasons,
-        `approval required - run: axiomgate approve ${request.id}`,
-      ];
+      createApprovalRequest(missionDir, request, evaluation.reasons, {
+        now: () => now,
+      });
+      const approval = consumeApproval(
+        missionDir,
+        request.id,
+        request.rawCommandHash,
+        { now: () => now },
+      );
+      if (approval.status === "CONSUMED") {
+        decision = "ALLOW";
+        reasons = [...evaluation.reasons, "single-use CLI approval consumed"];
+      } else {
+        reasons = [
+          ...evaluation.reasons,
+          approval.reason,
+          `approval required - run: axiomgate approve ${request.id}`,
+        ];
+      }
     }
   } catch (error) {
     reasons = [
@@ -247,7 +282,10 @@ export function processHookInvocation(
     missionId,
     sessionId,
   });
-  let output = decision === "ALLOW" ? allowOutput() : denyOutput(reasons);
+  let output =
+    decision === "ALLOW"
+      ? allowOutput(hookEvent)
+      : denyOutput(reasons, hookEvent);
 
   try {
     appendHookEvent(missionDir, event);
@@ -259,7 +297,7 @@ export function processHookInvocation(
     ];
     decision = "DENY";
     event = { ...event, decision, reasons: [...reasons] };
-    output = denyOutput(reasons);
+    output = denyOutput(reasons, hookEvent);
   }
 
   return { output, event, ...(request === undefined ? {} : { request }) };

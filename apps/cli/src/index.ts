@@ -2,8 +2,15 @@
 
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { userInfo } from "node:os";
+import { resolve } from "node:path";
 
-import { runHookEntry } from "@axiomgate/core";
+import {
+  approve as approveRequest,
+  deny as denyRequest,
+  listPending,
+  runHookEntry,
+} from "@axiomgate/core";
 
 interface CommandResult {
   readonly available: boolean;
@@ -66,7 +73,9 @@ export function runDoctor(): void {
 }
 
 function printUsage(): void {
-  console.log("Usage: axiomgate doctor | axiomgate hook --mission <directory>");
+  console.log(
+    "Usage: axiomgate doctor | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
+  );
 }
 
 function argumentValue(name: string): string | undefined {
@@ -76,14 +85,39 @@ function argumentValue(name: string): string | undefined {
 
 const command = process.argv[2];
 
+function approvalMissionDir(): string {
+  return resolve(argumentValue("--mission") ?? ".axiomgate");
+}
+
+function approvalActor(): string {
+  return userInfo().username;
+}
+
+function inputHookEventName(rawInput: string): string {
+  try {
+    const value: unknown = JSON.parse(rawInput);
+    if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+      const hookEventName = (value as Record<string, unknown>).hook_event_name;
+      if (typeof hookEventName === "string" && hookEventName.length > 0) {
+        return hookEventName;
+      }
+    }
+  } catch {
+    // The core hook path will produce the detailed malformed-input denial.
+  }
+  return "PreToolUse";
+}
+
 if (command === "doctor") {
   runDoctor();
 } else if (command === "hook") {
+  const rawInput = readFileSync(0, "utf8");
   const missionDir = argumentValue("--mission");
   if (missionDir === undefined) {
     console.log(
       JSON.stringify({
         hookSpecificOutput: {
+          hookEventName: inputHookEventName(rawInput),
           permissionDecision: "deny",
           permissionDecisionReason:
             "fail-closed: hook mission directory is required",
@@ -91,13 +125,51 @@ if (command === "doctor") {
       }),
     );
   } else {
-    const rawInput = readFileSync(0, "utf8");
     console.log(
       runHookEntry(rawInput, missionDir, {
         cliEntryPath: process.argv[1]!,
         nodePath: process.execPath,
       }),
     );
+  }
+} else if (command === "approvals" && process.argv[3] === "list") {
+  try {
+    const records = listPending(approvalMissionDir());
+    if (records.length === 0) {
+      console.log("No pending approvals.");
+    } else {
+      for (const record of records) {
+        console.log(
+          `${record.request.id} ${record.request.semanticAction} - ${record.reasons.join("; ")}`,
+        );
+      }
+    }
+  } catch (error) {
+    console.error(
+      `Unable to list approvals: ${error instanceof Error ? error.message : "unknown error"}`,
+    );
+    process.exitCode = 1;
+  }
+} else if (command === "approve" || command === "deny") {
+  const requestId = process.argv[3];
+  if (requestId === undefined) {
+    console.error(`Usage: axiomgate ${command} <id> [--mission <directory>]`);
+    process.exitCode = 1;
+  } else {
+    const result =
+      command === "approve"
+        ? approveRequest(approvalMissionDir(), requestId, {
+            approver: approvalActor(),
+          })
+        : denyRequest(approvalMissionDir(), requestId, {
+            approver: approvalActor(),
+          });
+    if (result.status === "REJECTED") {
+      console.error(`${command} rejected: ${result.reason}`);
+      process.exitCode = 1;
+    } else {
+      console.log(`${requestId} ${result.status.toLowerCase()}.`);
+    }
   }
 } else {
   printUsage();

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { resolve } from "node:path";
+import { basename, resolve } from "node:path";
 
 import { stableStringify } from "../../mission/index.js";
 
@@ -16,8 +16,11 @@ export interface GeneratedHookConfig {
 }
 
 function commandArgument(value: string): string {
+  if (/^[A-Za-z0-9_.-]+$/u.test(value)) {
+    return value;
+  }
   if (process.platform === "win32") {
-    return `"${value.replaceAll('"', '""')}"`;
+    return `"${value.replaceAll("\\", "/").replaceAll('"', '""')}"`;
   }
 
   return `'${value.replaceAll("'", "'\\''")}'`;
@@ -27,7 +30,12 @@ export function generateHookConfig(
   missionDir: string,
   options: HookConfigOptions = {},
 ): GeneratedHookConfig {
-  const nodePath = resolve(options.nodePath ?? process.execPath);
+  const configuredNodePath = options.nodePath ?? process.execPath;
+  const nodePath =
+    process.platform === "win32" &&
+    basename(configuredNodePath).toLowerCase() === "node.exe"
+      ? "node"
+      : resolve(configuredNodePath);
   const cliEntryPath = resolve(options.cliEntryPath ?? process.argv[1]!);
   const resolvedMissionDir = resolve(missionDir);
   const command = [
@@ -37,9 +45,12 @@ export function generateHookConfig(
     "--mission",
     commandArgument(resolvedMissionDir),
   ].join(" ");
-  const hook = `[{matcher=".*",hooks=[{type="command",command=${JSON.stringify(
-    command,
-  )}}]}]`;
+  const hook = `[${["Bash", "apply_patch"]
+    .map(
+      (matcher) =>
+        `{matcher=${JSON.stringify(matcher)},hooks=[{type="command",command=${JSON.stringify(command)}}]}`,
+    )
+    .join(",")}]`;
   const overrides = [
     `hooks.PreToolUse=${hook}`,
     `hooks.PermissionRequest=${hook}`,

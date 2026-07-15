@@ -5,10 +5,12 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
+  approve,
   classifyHookPayload,
   createMissionSnapshot,
   generateHookConfig,
   hashContract,
+  listPending,
   processHookInvocation,
   verifyEnforcement,
   writeMissionSnapshot,
@@ -83,6 +85,7 @@ function contract(
     { action: "preview.deploy", decision: "REQUIRE_APPROVAL" },
     { action: "production.deploy", decision: "DENY" },
   ],
+  intentBoundary: MissionContract["intentBoundary"] = "MODIFY_LOCAL",
 ): MissionContract {
   const base = {
     id: "msn_hook",
@@ -90,7 +93,7 @@ function contract(
     hash: `sha256:${"0".repeat(64)}`,
     objective: "Prove denied publish enforcement",
     projectProfileId: "prj_axiomgate",
-    intentBoundary: "MODIFY_LOCAL",
+    intentBoundary,
     acceptanceCriteria: [],
     constraints: [],
     nonGoals: [],
@@ -104,13 +107,15 @@ function contract(
   return { ...base, hash: hashContract(base) };
 }
 
-function configureMission(missionDir: string) {
+function configureMission(
+  missionDir: string,
+  missionContract: MissionContract = contract(),
+) {
   const options = {
     cliEntryPath: join(missionDir, "cli", "index.js"),
     nodePath: process.execPath,
   };
   const config = generateHookConfig(missionDir, options);
-  const missionContract = contract();
   writeMissionSnapshot(
     missionDir,
     createMissionSnapshot({
@@ -169,9 +174,17 @@ describe("mission hook configuration", () => {
     expect(config.overrides).toHaveLength(2);
     expect(config.overrides[0]).toContain("hooks.PreToolUse=");
     expect(config.overrides[1]).toContain("hooks.PermissionRequest=");
-    expect(config.overrides.every((value) => value.includes('matcher=".*"'))).toBe(
-      true,
-    );
+    expect(
+      config.overrides.every(
+        (value) =>
+          value.includes('matcher="Bash"') &&
+          value.includes('matcher="apply_patch"'),
+      ),
+    ).toBe(true);
+    if (process.platform === "win32") {
+      expect(config.command).toMatch(/^node "[A-Z]:\//u);
+      expect(config.command).not.toContain("\\");
+    }
 
     writeMissionSnapshot(
       missionDir,
@@ -231,8 +244,30 @@ describe("processHookInvocation", () => {
     );
 
     expect(result.output).toEqual({
-      hookSpecificOutput: { permissionDecision: "allow" },
+      hookSpecificOutput: {
+        hookEventName: "PreToolUse",
+        permissionDecision: "allow",
+      },
     });
+  });
+
+  it("echoes PermissionRequest in its JSON decision contract", () => {
+    const missionDir = missionDirectory();
+    const configOptions = configureMission(missionDir);
+    const result = processHookInvocation(
+      JSON.stringify({
+        ...payload("npm test"),
+        hook_event_name: "PermissionRequest",
+      }),
+      missionDir,
+      { configOptions },
+    );
+
+    expect(result.output.hookSpecificOutput).toMatchObject({
+      hookEventName: "PermissionRequest",
+      permissionDecision: "allow",
+    });
+    expect(result.event.hookEvent).toBe("PermissionRequest");
   });
 
   it("denies a policy-prohibited action through JSON stdout", () => {
@@ -338,5 +373,46 @@ describe("processHookInvocation", () => {
       missionId: "msn_hook",
       sessionId: "session_fixture",
     });
+  });
+
+  it("allows an exact approved command once across hook retries", () => {
+    const missionDir = missionDirectory();
+    const configOptions = configureMission(
+      missionDir,
+      contract(undefined, "DEPLOY_PREVIEW"),
+    );
+    const first = processHookInvocation(
+      JSON.stringify(payload("vercel deploy")),
+      missionDir,
+      { configOptions, now: () => new Date("2026-07-15T14:10:00.000Z") },
+    );
+    expect(first.output.hookSpecificOutput.permissionDecision).toBe("deny");
+    expect(first.request).toBeDefined();
+    expect(
+      approve(missionDir, first.request!.id, {
+        approver: "fixture-user",
+        now: () => new Date("2026-07-15T14:11:00.000Z"),
+      }).status,
+    ).toBe("APPROVED");
+
+    const retriedPayload = { ...payload("vercel deploy"), tool_use_id: "retry" };
+    const allowed = processHookInvocation(
+      JSON.stringify(retriedPayload),
+      missionDir,
+      { configOptions, now: () => new Date("2026-07-15T14:12:00.000Z") },
+    );
+    expect(allowed.output.hookSpecificOutput.permissionDecision).toBe("allow");
+
+    const consumed = processHookInvocation(
+      JSON.stringify({ ...retriedPayload, tool_use_id: "third" }),
+      missionDir,
+      { configOptions, now: () => new Date("2026-07-15T14:13:00.000Z") },
+    );
+    expect(consumed.output.hookSpecificOutput.permissionDecision).toBe("deny");
+    expect(
+      listPending(missionDir, {
+        now: () => new Date("2026-07-15T14:13:00.000Z"),
+      }),
+    ).toHaveLength(1);
   });
 });
