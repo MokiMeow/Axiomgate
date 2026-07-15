@@ -20,6 +20,15 @@ Integration interfaces (all official): hooks (`PreToolUse`, `PermissionRequest`,
 - Ops rule: every `codex exec` invocation gets a hard timeout; one transient ~6-min stall observed before any tool call.
 - Still to verify during G3/G4: `PermissionRequest` payload/behavior in `on-request` mode; `exec --json` usage fields (R1).
 
+### G3 live-enforcement results — codex-cli 0.144.4, 2026-07-15 (VERIFIED)
+
+- Live blocked-action proof: real `codex exec` denied `git push origin main` via the AxiomGate hook; no `command_execution` item emitted; DENY event persisted with command hash. Evidence: `evidence/public/g3-g4-verification.md`.
+- **Version drift 0.144.0 → 0.144.4 changed hook semantics:**
+  - Matchers are **exact tool names**; `".*"` and `"*"` silently never fire (**fail-open**). Config must enumerate `Bash`, `apply_patch`, and any MCP tool names explicitly.
+  - `hookSpecificOutput.hookEventName` is **required**; a deny without it is ignored (**fail-open**) even though the hook recorded it.
+- **Ops rule:** after ANY Codex version change, re-run the hook enforcement test suite + one live blocked-command proof before trusting enforcement; every evidence file records the exact codex-cli version. Avoid `codex update` between final verification and the submission demo.
+- `PermissionRequest`: same code path, fixture-tested; live on-request proof still pending.
+
 ### Claude
 
 Independent review only (planning, adversarial testing, blueprint review); **no Build Week runtime implementation**. Core building happens through Codex in the primary `/feedback` thread. Do not make shared-skill installation, mission handoff, or runtime parity a requirement.
