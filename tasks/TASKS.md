@@ -10,8 +10,8 @@ This board is authoritative. Where a phase file conflicts, this board wins. Dead
 
 ## Foundation (target: Jul 14–15)
 
-- [ ] F1 `git init`, baseline commit, `HACKATHON_DELTA.md` stub with baseline hash, credits form submitted, primary Codex thread designated, `CODEX_COLLABORATION.md` started.
-- [ ] F2 **Hook gate:** empirically verify on the installed Codex version — `PermissionRequest` payload, deny semantics, fail-open/closed on hook error, `exec --json` usage fields. Record versions in `docs/17`. Blocks all enforcement work.
+- [-] F1 `git init` ✓, baseline `58c1a0a` ✓, `HACKATHON_DELTA.md` ✓, primary thread designated ✓, `CODEX_COLLABORATION.md` ✓ — **remaining: credits form (user, before Jul 17 12:00 PT)**.
+- [x] F2 **Hook gate** passed on codex-cli 0.144.0: JSON `permissionDecision:"deny"` enforces (even under bypass); bare exit-2 fails open — never rely on it. Evidence: `docs/17` "F2 gate results". `PermissionRequest`/`exec --json` fields verified in G3/R1.
 - [x] F3 Scaffold `packages/axiomgate-core` (modules: `mission/`, `runway/`, `guard/`, `runtime/`, `evidence/`) inside the PatchPilot-style monorepo + PatchPilot `packages/core` reuse map. Evidence: [`evidence/public/f3-f4-verification.md`](../evidence/public/f3-f4-verification.md).
 - [x] F4 Canonical schemas from `docs/02` (contract, action request, approval, evidence, receipt) with validation and hashing. Evidence: [`evidence/public/f3-f4-verification.md`](../evidence/public/f3-f4-verification.md).
 - [ ] F5 Demo fixture repo (sanitized security-feature target app) + staged wrong-target GitHub/Vercel profile for the block scene.
