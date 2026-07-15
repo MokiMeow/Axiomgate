@@ -45,9 +45,49 @@ export const VerifierFindingSchema = z.strictObject({
 });
 
 export const VerifierFindingsSchema = z.array(VerifierFindingSchema);
-export const VERIFIER_OUTPUT_JSON_SCHEMA = z.toJSONSchema(
-  VerifierFindingsSchema,
+const VerifierWireFindingsSchema = z.array(
+  z.strictObject({
+    criterionId: z.string().min(1),
+    verdict: z.enum(["looks_correct", "concern", "cannot_assess"]),
+    concern: z.string().min(1).nullable().optional(),
+    riskySpots: z.array(z.string().min(1)).nullable().optional(),
+  }),
 );
+const VerifierWireOutputSchema = z.union([
+  VerifierWireFindingsSchema,
+  z.strictObject({ findings: VerifierWireFindingsSchema }),
+]);
+export const VERIFIER_OUTPUT_JSON_SCHEMA = {
+  type: "object",
+  properties: {
+    findings: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          criterionId: { type: "string", minLength: 1 },
+          verdict: {
+            type: "string",
+            enum: ["looks_correct", "concern", "cannot_assess"],
+          },
+          concern: {
+            anyOf: [{ type: "string", minLength: 1 }, { type: "null" }],
+          },
+          riskySpots: {
+            anyOf: [
+              { type: "array", items: { type: "string", minLength: 1 } },
+              { type: "null" },
+            ],
+          },
+        },
+        required: ["criterionId", "verdict", "concern", "riskySpots"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["findings"],
+  additionalProperties: false,
+} as const;
 
 export type VerifierFinding = z.infer<typeof VerifierFindingSchema>;
 
@@ -84,7 +124,25 @@ export function parseVerifierFindings(stream: string): ParsedVerifierFindings {
       reason: "verifier output is not valid JSON",
     };
   }
-  const findings = VerifierFindingsSchema.safeParse(value);
+  const wireOutput = VerifierWireOutputSchema.safeParse(value);
+  if (!wireOutput.success) {
+    return {
+      status: "INVALID",
+      findings: [],
+      reason: "verifier output does not match the findings schema",
+    };
+  }
+  const wireFindings = Array.isArray(wireOutput.data)
+    ? wireOutput.data
+    : wireOutput.data.findings;
+  const findings = VerifierFindingsSchema.safeParse(
+    wireFindings.map((finding) => ({
+      criterionId: finding.criterionId,
+      verdict: finding.verdict,
+      ...(finding.concern == null ? {} : { concern: finding.concern }),
+      ...(finding.riskySpots == null ? {} : { riskySpots: finding.riskySpots }),
+    })),
+  );
   if (!findings.success) {
     return {
       status: "INVALID",

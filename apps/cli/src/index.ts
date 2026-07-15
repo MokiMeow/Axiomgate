@@ -8,11 +8,13 @@ import {
   approve as approveRequest,
   createMission,
   deny as denyRequest,
+  enforcementDriftWarning,
   IntentBoundarySchema,
   listPending,
   loadMissionSnapshot,
   missionDirectory,
   parseMissionCriteria,
+  readEnforcementVerification,
   resolveCodexLaunch,
   reviewMission,
   resumeMission,
@@ -22,6 +24,7 @@ import {
   setCapacitySnapshot,
   renderCapacitySnapshot,
   updateMission,
+  verifyEnforcementInstallation,
 } from "@axiomgate/core";
 
 function codexVersion() {
@@ -36,7 +39,21 @@ export function runDoctor(): void {
   if (codex.status !== "SUCCESS") {
     console.log("codex CLI: unavailable");
   } else {
-    console.log(`codex CLI: ${codex.stdout.trim()}`);
+    const currentVersion = codex.stdout.trim();
+    console.log(`codex CLI: ${currentVersion}`);
+    try {
+      const warning = enforcementDriftWarning(
+        currentVersion,
+        readEnforcementVerification(),
+      );
+      if (warning !== undefined) {
+        console.warn(warning);
+      }
+    } catch {
+      console.warn(
+        "WARNING: enforcement verification record is invalid - run axiomgate verify-enforcement",
+      );
+    }
   }
 
   const git = runExternalCommand("git", [
@@ -58,7 +75,7 @@ export function runDoctor(): void {
 
 function printUsage(): void {
   console.log(
-    "Usage: axiomgate doctor | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
+    "Usage: axiomgate doctor | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
   );
 }
 
@@ -270,6 +287,29 @@ function runRunwaySet(): void {
   console.log(renderCapacitySnapshot(snapshot));
 }
 
+async function runVerifyEnforcement(): Promise<void> {
+  const result = await verifyEnforcementInstallation({
+    offline: process.argv.includes("--offline"),
+    hookConfigOptions: hookConfigOptions(),
+  });
+  if (result.status === "PASS") {
+    console.log(
+      `PASS ${result.mode}: ${result.version}${
+        result.mode === "OFFLINE" ? " (config generation only; live enforcement not verified)" : ""
+      }`,
+    );
+    if (result.sessionId !== undefined) {
+      console.log(`Session: ${result.sessionId}`);
+    }
+    if (result.verifiedAt !== null) {
+      console.log(`Verified at: ${result.verifiedAt}`);
+    }
+  } else {
+    console.error(`FAIL ${result.mode}: ${result.version} - ${result.reason}`);
+    process.exitCode = 1;
+  }
+}
+
 async function runMissionReview(id: string | undefined): Promise<void> {
   if (id === undefined) {
     throw new Error("mission id is required");
@@ -311,6 +351,8 @@ function zEffort(value: string): "low" | "medium" | "high" {
 
 if (command === "doctor") {
   runDoctor();
+} else if (command === "verify-enforcement") {
+  await runVerifyEnforcement();
 } else if (command === "runway" && process.argv[3] === "set") {
   try {
     runRunwaySet();

@@ -143,6 +143,22 @@ describe("parseVerifierFindings", () => {
       reason: "verifier output is not valid JSON",
     });
   });
+
+  it("normalizes the installed CLI object wrapper and nullable optional fields", () => {
+    const result = parseVerifierFindings(
+      '{"type":"item.completed","item":{"type":"agent_message","text":"{\\"findings\\":[{\\"criterionId\\":\\"criterion_security\\",\\"verdict\\":\\"looks_correct\\",\\"concern\\":null,\\"riskySpots\\":null}]}"}}',
+    );
+
+    expect(result).toEqual({
+      status: "VALID",
+      findings: [
+        {
+          criterionId: "criterion_security",
+          verdict: "looks_correct",
+        },
+      ],
+    });
+  });
 });
 
 describe("reviewMission", () => {

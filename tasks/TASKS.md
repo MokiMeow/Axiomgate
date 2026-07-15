@@ -28,8 +28,8 @@ This board is authoritative. Where a phase file conflicts, this board wins. Dead
 ## Codex Runtime + Runway lite (target: Jul 16–17)
 
 - [x] R1 Session adapter: official SDK / `codex exec --json`; sandbox flags from intent boundary; event + token capture; primary session ID preserved. Evidence: [`evidence/public/f6-r1-verification.md`](../evidence/public/f6-r1-verification.md).
-- [ ] R2 Builder + independent Verifier role contracts (fresh session, no builder-context inheritance); canonical mission state with stop/resume.
-- [ ] R3 Runway lite: token-actuals ledger, verification reserve, loop-signature detector (pause recommendation), source/confidence-labelled capacity snapshot + expiring-reset reminder, post-limit checkpoint + `mission resume`.
+- [x] R2 Builder + independent Verifier role contracts (fresh session, no builder-context inheritance); canonical mission state with stop/resume. Evidence: [`evidence/public/r2-r3-verification.md`](../evidence/public/r2-r3-verification.md).
+- [x] R3 Runway lite: token-actuals ledger, verification reserve, loop-signature detector (pause recommendation), source/confidence-labelled capacity snapshot + expiring-reset reminder, post-limit checkpoint + `mission resume`. Evidence: [`evidence/public/r2-r3-verification.md`](../evidence/public/r2-r3-verification.md).
 
 ## Verification via PatchPilot (target: Jul 17–18)
 
