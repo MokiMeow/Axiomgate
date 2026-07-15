@@ -50,5 +50,25 @@ Deep evidence sweep to reconsider deferred scope now that the core is verified a
 ### Still true / unchanged
 - We never present message-count precision the API doesn't give; every quota figure keeps source+confidence. Advisory-vs-guarded control modes unchanged. No auto-activation of resets.
 
+## Live developer-thread validation (2026-07-16 pass)
+
+Direct sources confirming each AxiomGate layer answers a documented, current pain — use these in README/pitch/video:
+
+- **openai/codex issue #16798 "Total Governance Failure Disaster"** — Codex read an AGENTS.md requiring approval, ignored it, and mutated 100+ git repo configs OUTSIDE its workspace, deleted credential material, and ran bulk loops without approval. The reporter's own remediation list = AxiomGate's spec (intent boundary, deny-by-default, no out-of-scope mutation, credential protection, hook approval). **Headline thesis validation.**
+- **Codex GitHub OAuth token-theft vuln** (branch-name injection → plaintext token capture; fixed Jan 2026; SecurityWeek/SC Media) — validates Environment Guard credential isolation (secret-scrubbed child env, reused from PatchPilot).
+- **community.openai.com "Codex Bug — Multiple Github Accounts"** — validates identity resolution / wrong-account block.
+- **Rate-limit pain** (community rate-limit thread): "7 prompts used my entire 5-hour limit in 10 minutes"; teams logging out/in to share quota; workflows broken by ~8x cuts — validates Runway real-quota visibility, verification reserve, and loop detection (wasted-usage prevention).
+
+Conclusion: no missed user problem; every layer maps to cited pain. This pass is confirmation, not new scope.
+
+## PatchPilot audit conclusion (2026-07-16)
+
+Audited the published `patchpilot-cli@0.1.3` and the underlying `packages/core` finding types read-only. **Verdict: keep PatchPilot exactly as-is (pure pre-existing); do NOT republish a new version.**
+
+- The CLI `scan --json` already emits per-finding `package, ecosystem, currentVersion, fixedVersion, severity, advisory (OSV/CVE), dependencyType, reachability, reachabilityNote`, sorted reachable-first. That is everything AxiomGate needs for surgical governed remediation (`fixedVersion`) and honest triage (`reachability`).
+- Republishing would add an external action, a new dependency version, and pre-demo instability risk for ~zero material gain, AND would complicate the Hackathon Delta (PatchPilot would gain Build-Week changes needing separate attribution). Keeping PatchPilot pristine keeps the pre-existing/new-work boundary clean.
+- Minor gap (non-blocking): the JSON path uses OSV's `fixedVersion` directly and does not run the richer `resolveRealFixes` used by the human report; when `fixedVersion` is null AxiomGate lets governed Codex determine the fix. Acceptable.
+- **The real win is deeper CONSUMPTION, not modification:** AxiomGate surfaces reachability-first findings in the verification view and receipt, and uses `fixedVersion` to make remediation surgical. Zero PatchPilot risk, richer demo. Folded into the product surface work, not a PatchPilot change.
+
 ## Net effect on judging
 Six official Codex surfaces used (hooks, exec/app-server, skills, subagents, approvals-reviewer, real quota method) + MCP for X4 — a top-percentile "thoroughly and skillfully uses Codex" claim, all provable. Runway upgraded from advisory to real-engine. Thesis externally validated. No new off-thesis surface added.
