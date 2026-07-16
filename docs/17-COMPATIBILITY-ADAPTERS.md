@@ -29,6 +29,13 @@ Integration interfaces (all official): hooks (`PreToolUse`, `PermissionRequest`,
 - **Ops rule:** after ANY Codex version change, re-run the hook enforcement test suite + one live blocked-command proof before trusting enforcement; every evidence file records the exact codex-cli version. Avoid `codex update` between final verification and the submission demo.
 - `PermissionRequest`: same code path, fixture-tested; live on-request proof still pending.
 
+### Native skill and custom-verifier results — codex-cli 0.144.4, 2026-07-16 (VERIFIED WITH FALLBACK)
+
+- Repo skills are discoverable under `.agents/skills/<folder>/SKILL.md`; AxiomGate ships `axiomgate-governance` there and can install it into `$CODEX_HOME/skills/axiomgate/`.
+- Loadable custom-agent TOML uses the current keys `name`, `description`, `developer_instructions`, `model`, `model_reasoning_effort`, and `sandbox_mode`. AxiomGate keeps its judge-visible source at `.agents/agents/axiomgate-verifier.toml` and installs it into `$CODEX_HOME/agents/`.
+- `multi_agent` is stable/enabled, but `codex exec --help` exposes no deterministic named-agent selector on 0.144.4. Custom-agent spawning is prompt/model driven. `mission review` therefore remains a fresh `gpt-5.6-terra/high`, `read-only` verifier session and reports the fallback explicitly; it does not fake delegation.
+- Live proof produced a valid advisory verifier record in fresh session `019f6af1-79f0-7860-b442-1d2791c933e9`; the target's tracked diff hash was unchanged before/after. Evidence: `evidence/public/skill-subagent-verification.md`.
+
 ### Claude
 
 Independent review only (planning, adversarial testing, blueprint review); **no Build Week runtime implementation**. Core building happens through Codex in the primary `/feedback` thread. Do not make shared-skill installation, mission handoff, or runtime parity a requirement.
