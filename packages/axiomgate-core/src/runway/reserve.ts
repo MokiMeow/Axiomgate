@@ -16,6 +16,53 @@ export interface VerificationReserveResult {
   readonly warning?: string;
 }
 
+const RealCapacityReserveInputSchema = z.strictObject({
+  usedPercent: z.number().min(0).max(100),
+  projectedBuildPercent: z.number().min(0).max(100).optional(),
+  reservePercent: z.number().int().min(0).max(100),
+  hasVerificationRun: z.boolean(),
+});
+
+export interface RealCapacityReserveResult {
+  readonly status: "OK" | "WARNING";
+  readonly usedPercent: number;
+  readonly projectedBuildPercent: number | null;
+  readonly projectedUsedPercent: number;
+  readonly thresholdPercent: number;
+  readonly remainingPercent: number;
+  readonly warning?: string;
+}
+
+export function evaluateRealCapacityReserve(
+  input: z.infer<typeof RealCapacityReserveInputSchema>,
+): RealCapacityReserveResult {
+  const parsed = RealCapacityReserveInputSchema.parse(input);
+  const thresholdPercent = 100 - parsed.reservePercent;
+  const projectedUsedPercent =
+    parsed.usedPercent + (parsed.projectedBuildPercent ?? 0);
+  const breached =
+    !parsed.hasVerificationRun && projectedUsedPercent > thresholdPercent;
+  return {
+    status: breached ? "WARNING" : "OK",
+    usedPercent: parsed.usedPercent,
+    projectedBuildPercent: parsed.projectedBuildPercent ?? null,
+    projectedUsedPercent,
+    thresholdPercent,
+    remainingPercent: Math.max(0, 100 - parsed.usedPercent),
+    ...(breached
+      ? {
+          warning:
+            `WARNING: real weekly capacity reserve would be breached: ${parsed.usedPercent}% used` +
+            (parsed.projectedBuildPercent === undefined
+              ? " (projected build spend UNKNOWN)"
+              : ` + ${parsed.projectedBuildPercent}% projected build spend = ${projectedUsedPercent}%`) +
+            ` ` +
+            `(maximum before ${parsed.reservePercent}% verification reserve: ${thresholdPercent}%; codex-app-server/high).`,
+        }
+      : {}),
+  };
+}
+
 export function evaluateVerificationReserve(
   input: z.infer<typeof ReserveInputSchema>,
 ): VerificationReserveResult {

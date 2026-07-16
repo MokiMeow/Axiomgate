@@ -8,6 +8,11 @@ import { join, resolve } from "node:path";
 
 import { z } from "zod";
 
+import {
+  readCodexRateLimits,
+  type CodexRateLimitsResult,
+} from "./quota-source.js";
+
 const SourceSchema = z.enum(["manual", "observed"]);
 const ConfidenceSchema = z.enum(["LOW", "MEDIUM", "HIGH"]);
 const captured = {
@@ -41,6 +46,22 @@ export interface SetCapacitySnapshotInput {
   readonly plan?: string;
   readonly resetsAvailable?: number;
   readonly resetExpires?: string;
+}
+
+export type RunwayCapacity =
+  | (Omit<
+      Extract<CodexRateLimitsResult, { readonly status: "AVAILABLE" }>,
+      "status"
+    > & { readonly status: "LIVE" })
+  | {
+      readonly status: "MANUAL";
+      readonly snapshot: CapacitySnapshot;
+      readonly liveUnavailableReason: string;
+    }
+  | { readonly status: "UNKNOWN"; readonly reason: string };
+
+export interface ResolveRunwayCapacityOptions {
+  readonly readLive?: () => Promise<CodexRateLimitsResult>;
 }
 
 function runwayPath(projectPath: string): string {
@@ -129,4 +150,90 @@ export function expiringResetReminder(
     `REMINDER: ${parsed.resetsAvailable?.value ?? 0} banked reset(s) expire at ` +
     `${parsed.resetExpires.value} (${parsed.resetExpires.source}); activation is never automatic.`
   );
+}
+
+export async function resolveRunwayCapacity(
+  projectPath: string,
+  options: ResolveRunwayCapacityOptions = {},
+): Promise<RunwayCapacity> {
+  const live = await (options.readLive ?? readCodexRateLimits)();
+  if (live.status === "AVAILABLE") {
+    return { ...live, status: "LIVE" };
+  }
+  const snapshot = readCapacitySnapshot(projectPath);
+  if (Object.keys(snapshot).length > 0) {
+    return {
+      status: "MANUAL",
+      snapshot,
+      liveUnavailableReason: live.reason,
+    };
+  }
+  return { status: "UNKNOWN", reason: live.reason };
+}
+
+export function renderRunwayCapacity(capacity: RunwayCapacity): string {
+  if (capacity.status === "UNKNOWN") {
+    return `Runway capacity: UNKNOWN (${capacity.reason})`;
+  }
+  if (capacity.status === "MANUAL") {
+    return (
+      `${renderCapacitySnapshot(capacity.snapshot)} ` +
+      `(manual fallback; live UNAVAILABLE: ${capacity.liveUnavailableReason})`
+    );
+  }
+  return [
+    "Runway capacity (real Codex app-server data)",
+    "Limit | Window | Used | Resets at | Plan | Source/confidence",
+    ...capacity.sources.map(
+      (source) =>
+        `${source.limitId} | ${source.windowLabel} | ${source.usedPercent}% | ` +
+        `${source.resetsAt} | ${source.planType} | ${source.source}/${source.confidence}`,
+    ),
+    `Banked resets | ${capacity.availableResetCount} | codex-app-server/high`,
+  ].join("\n");
+}
+
+export function expiringBankedResetReminder(
+  capacity: RunwayCapacity,
+  now: Date = new Date(),
+): string | undefined {
+  if (capacity.status !== "LIVE" || capacity.availableResetCount <= 0) {
+    return undefined;
+  }
+  const resets = new Map(
+    capacity.sources.flatMap((source) => source.bankedResets).map((reset) => [reset.id, reset]),
+  );
+  const expiring = [...resets.values()]
+    .filter((reset) => reset.status.toLowerCase() === "available")
+    .filter((reset) => {
+      const remainingMs = Date.parse(reset.expiresAt) - now.getTime();
+      return remainingMs >= 0 && remainingMs <= 72 * 60 * 60 * 1_000;
+    })
+    .sort((left, right) => Date.parse(left.expiresAt) - Date.parse(right.expiresAt))[0];
+  return expiring === undefined
+    ? undefined
+    : `REMINDER: banked reset ${expiring.id} expires at ${expiring.expiresAt} (codex-app-server/high); activation is never automatic.`;
+}
+
+export interface LiveLimitSummary {
+  readonly limited: boolean;
+  readonly resetsAt: string | null;
+  readonly availableResetCount: number;
+  readonly rateLimitReachedType: string | null;
+}
+
+export function liveLimitSummary(capacity: RunwayCapacity): LiveLimitSummary | undefined {
+  if (capacity.status !== "LIVE") return undefined;
+  const weekly =
+    capacity.sources.find(
+      (source) => source.limitId === "codex" && source.windowLabel === "weekly",
+    ) ?? capacity.sources.find((source) => source.windowLabel === "weekly");
+  return {
+    limited:
+      capacity.rateLimitReachedType !== null ||
+      capacity.sources.some((source) => source.usedPercent >= 100),
+    resetsAt: weekly?.resetsAt ?? null,
+    availableResetCount: capacity.availableResetCount,
+    rateLimitReachedType: capacity.rateLimitReachedType,
+  };
 }

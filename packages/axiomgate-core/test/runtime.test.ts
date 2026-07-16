@@ -26,6 +26,11 @@ import {
   type IdentityReport,
 } from "../src/index.js";
 
+const unavailableRateLimits = async () => ({
+  status: "UNAVAILABLE" as const,
+  reason: "fixture does not call the live app-server",
+});
+
 function runtimeIdentity(capturedAt: string): IdentityReport {
   return {
     githubLogin: {
@@ -328,6 +333,7 @@ describe("runMission", () => {
       );
       let header = "";
       const result = await runMission(projectPath, "msn_runway_runtime", {
+        readRateLimits: unavailableRateLimits,
         prompt: "Inspect current state",
         runId: "run_no_progress",
         hookConfigOptions,
@@ -399,6 +405,7 @@ describe("runMission", () => {
       );
       const seenLines: string[] = [];
       const result = await runMission(projectPath, "msn_run", {
+        readRateLimits: unavailableRateLimits,
         prompt: "Create hello.txt",
         runId: "run_fixture",
         timeoutMs: 5_000,
@@ -523,6 +530,7 @@ describe("runMission", () => {
       );
       let invokedArgs: readonly string[] = [];
       const result = await resumeMission(projectPath, "msn_resume_runtime", {
+        readRateLimits: unavailableRateLimits,
         prompt: "Continue safely",
         runId: "run_resumed",
         hookConfigOptions,

@@ -14,9 +14,11 @@ import {
   listPending,
   loadMissionStatus,
   loadMissionSnapshot,
+  liveLimitSummary,
   missionDirectory,
   parseMissionCriteria,
   readEnforcementVerification,
+  readCodexRateLimits,
   recordWaiver,
   remediateMission,
   resolveCodexLaunch,
@@ -25,8 +27,10 @@ import {
   runCommand as runExternalCommand,
   runHookEntry,
   runMission,
+  resolveRunwayCapacity,
   setCapacitySnapshot,
   renderCapacitySnapshot,
+  renderRunwayCapacity,
   updateMission,
   verifyMission,
   verifyEnforcementInstallation,
@@ -39,7 +43,7 @@ function codexVersion() {
   return runExternalCommand(launch.command, [...launch.argsPrefix, "--version"]);
 }
 
-export function runDoctor(): void {
+export async function runDoctor(): Promise<void> {
   console.log(`node: ${process.version}`);
 
   const codex = codexVersion();
@@ -78,9 +82,26 @@ export function runDoctor(): void {
     const state = lines.length > 1 ? "changes present" : "clean";
     console.log(`git repository: yes (${branch}; ${state})`);
   }
+
+  const capacity = await readCodexRateLimits();
+  if (capacity.status === "UNAVAILABLE") {
+    console.log(`Codex capacity: UNAVAILABLE (${capacity.reason})`);
+  } else {
+    const weekly =
+      capacity.sources.find(
+        (source) =>
+          source.limitId === "codex" && source.windowLabel === "weekly",
+      ) ?? capacity.sources.find((source) => source.windowLabel === "weekly");
+    console.log(
+      weekly === undefined
+        ? "Codex capacity: UNAVAILABLE (weekly window not reported)"
+        : `Codex capacity: plan=${weekly.planType}; weekly used=${weekly.usedPercent}%; resets=${weekly.resetsAt} [${weekly.source}/${weekly.confidence}]`,
+    );
+  }
 }
 
 function printUsage(): void {
+  console.log("Runway: axiomgate runway status [--project <path>]");
   console.log(
     "Usage: axiomgate doctor | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission verify <id> [--project <path>] | axiomgate mission remediate <id> --finding <id> [--timeout-ms <ms>] [--project <path>] | axiomgate mission status <id> [--project <path>] | axiomgate mission waive <id> --criterion <id> --reason <text> --risk <text> [--project <path>] | axiomgate mission receipt <id> [--format json|md] [--project <path>] | axiomgate receipt verify <file> | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
   );
@@ -260,11 +281,22 @@ async function runGovernedMission(
   if (result.checkpoint !== undefined) {
     console.log(`Checkpoint: ${result.checkpoint.reason}`);
     if (result.checkpoint.reason === "rate_limit") {
-      console.log(`Reset: ${result.checkpoint.resetAt ?? "UNKNOWN"}`);
-      const resets = result.runway.capacity.resetsAvailable;
-      if (resets !== undefined && resets.value > 0) {
+      const live = liveLimitSummary(result.runway.capacity);
+      console.log(
+        `Reset: ${live?.resetsAt ?? result.checkpoint.resetAt ?? "UNKNOWN"}`,
+      );
+      const manualResets =
+        result.runway.capacity.status === "MANUAL"
+          ? result.runway.capacity.snapshot.resetsAvailable
+          : undefined;
+      const resetCount = live?.availableResetCount ?? manualResets?.value ?? 0;
+      if (resetCount > 0) {
         console.log(
-          `Banked reset: ${resets.value} available [${resets.source}/${resets.confidence}]; activation is not automatic.`,
+          `Banked reset: ${resetCount} available [${
+            live === undefined
+              ? `${manualResets?.source}/${manualResets?.confidence}`
+              : "codex-app-server/high"
+          }]; activation is not automatic.`,
         );
       }
       console.log(
@@ -275,6 +307,13 @@ async function runGovernedMission(
   if (result.runway.loopRecommendation !== undefined) {
     console.warn(
       `Recommendation: ${result.runway.loopRecommendation.recommendation} (${result.runway.loopRecommendation.signal})`,
+    );
+  }
+  const liveLimit = liveLimitSummary(result.runway.capacity);
+  if (liveLimit?.limited === true && result.checkpoint?.reason !== "rate_limit") {
+    console.warn(
+      `LIMIT REACHED: reset=${liveLimit.resetsAt ?? "UNKNOWN"}; banked resets=${liveLimit.availableResetCount}; ` +
+        `resume with: axiomgate mission resume ${id} --project ${JSON.stringify(projectPath())}`,
     );
   }
   if (result.record.status !== "SUCCESS") {
@@ -292,6 +331,11 @@ function runRunwaySet(): void {
     ...(resetExpires === undefined ? {} : { resetExpires }),
   });
   console.log(renderCapacitySnapshot(snapshot));
+}
+
+async function runRunwayStatus(): Promise<void> {
+  const capacity = await resolveRunwayCapacity(projectPath());
+  console.log(renderRunwayCapacity(capacity));
 }
 
 async function runVerifyEnforcement(): Promise<void> {
@@ -480,12 +524,21 @@ function zEffort(value: string): "low" | "medium" | "high" {
 }
 
 if (command === "doctor") {
-  runDoctor();
+  await runDoctor();
 } else if (command === "verify-enforcement") {
   await runVerifyEnforcement();
 } else if (command === "runway" && process.argv[3] === "set") {
   try {
     runRunwaySet();
+  } catch (error) {
+    console.error(
+      `Runway command failed: ${error instanceof Error ? error.message : "unknown error"}`,
+    );
+    process.exitCode = 1;
+  }
+} else if (command === "runway" && process.argv[3] === "status") {
+  try {
+    await runRunwayStatus();
   } catch (error) {
     console.error(
       `Runway command failed: ${error instanceof Error ? error.message : "unknown error"}`,

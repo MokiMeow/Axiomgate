@@ -28,15 +28,19 @@ import {
 } from "../guard/index.js";
 import {
   detectLoopRecommendation,
+  evaluateRealCapacityReserve,
   evaluateVerificationReserve,
+  expiringBankedResetReminder,
   expiringResetReminder,
-  readCapacitySnapshot,
   readLedgerTotals,
-  renderCapacitySnapshot,
+  renderRunwayCapacity,
+  resolveRunwayCapacity,
   RunProgressEventSchema,
-  type CapacitySnapshot,
+  type CodexRateLimitsResult,
   type LoopRecommendation,
+  type RealCapacityReserveResult,
   type RunProgressEvent,
+  type RunwayCapacity,
   type VerificationReserveResult,
 } from "../runway/index.js";
 import {
@@ -95,6 +99,8 @@ export interface RunMissionOptions {
   readonly isGitRepository?: boolean;
   readonly codexLaunch?: CodexLaunch;
   readonly runner?: StreamingCommandRunner;
+  readonly readRateLimits?: () => Promise<CodexRateLimitsResult>;
+  readonly projectedBuildPercent?: number;
   readonly now?: () => Date;
   readonly currentCommit?: (projectPath: string) => string;
   readonly onEvent?: (event: JsonRecord) => void;
@@ -103,10 +109,10 @@ export interface RunMissionOptions {
 }
 
 export interface RunwayRuntimeStatus {
-  readonly capacity: CapacitySnapshot;
+  readonly capacity: RunwayCapacity;
   readonly capacityLine: string;
   readonly reminder: string | undefined;
-  readonly reserve: VerificationReserveResult;
+  readonly reserve: VerificationReserveResult | RealCapacityReserveResult;
   readonly loopRecommendation: LoopRecommendation | undefined;
 }
 
@@ -328,19 +334,46 @@ async function runMissionInternal(
     );
   }
 
-  const capacity = readCapacitySnapshot(resolvedProject);
-  const totals = readLedgerTotals(missionDir);
-  const reserve = evaluateVerificationReserve({
-    builderTokens: totals.builderTokens,
-    totalTokens: totals.totalTokens,
-    reservePercent:
-      enforcement.snapshot.contract.budgetPolicy?.reservePercent ?? 20,
-    hasVerificationRun: totals.hasVerificationRun,
+  const capacity = await resolveRunwayCapacity(resolvedProject, {
+    ...(options.readRateLimits === undefined
+      ? {}
+      : { readLive: options.readRateLimits }),
   });
+  const totals = readLedgerTotals(missionDir);
+  const reservePercent =
+    enforcement.snapshot.contract.budgetPolicy?.reservePercent ?? 20;
+  const weekly =
+    capacity.status === "LIVE"
+      ? capacity.sources.find(
+          (source) =>
+            source.limitId === "codex" && source.windowLabel === "weekly",
+        ) ?? capacity.sources.find((source) => source.windowLabel === "weekly")
+      : undefined;
+  const reserve =
+    weekly === undefined
+      ? evaluateVerificationReserve({
+          builderTokens: totals.builderTokens,
+          totalTokens: totals.totalTokens,
+          reservePercent,
+          hasVerificationRun: totals.hasVerificationRun,
+        })
+      : evaluateRealCapacityReserve({
+          usedPercent: weekly.usedPercent,
+          ...(options.projectedBuildPercent === undefined
+            ? {}
+            : { projectedBuildPercent: options.projectedBuildPercent }),
+          reservePercent,
+          hasVerificationRun: totals.hasVerificationRun,
+        });
   const initialRunway: RunwayRuntimeStatus = {
     capacity,
-    capacityLine: renderCapacitySnapshot(capacity),
-    reminder: expiringResetReminder(capacity, now()),
+    capacityLine: renderRunwayCapacity(capacity),
+    reminder:
+      capacity.status === "LIVE"
+        ? expiringBankedResetReminder(capacity, now())
+        : capacity.status === "MANUAL"
+          ? expiringResetReminder(capacity.snapshot, now())
+          : undefined,
     reserve,
     loopRecommendation: undefined,
   };
