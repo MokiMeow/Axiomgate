@@ -1,9 +1,9 @@
 import { resolve } from "node:path";
 
-import { z } from "zod";
-
 import {
   mapBoundaryToSandbox,
+  ReasoningEffortSchema,
+  type ReasoningEffort,
   type MissionContract,
 } from "../mission/index.js";
 import {
@@ -11,15 +11,13 @@ import {
   type HookConfigOptions,
 } from "../guard/index.js";
 
-const EffortSchema = z.enum(["low", "medium", "high"]);
-
 export interface BuildCodexRunPlanInput {
   readonly contract: MissionContract;
   readonly missionDir: string;
   readonly projectPath: string;
   readonly prompt: string;
   readonly model?: string;
-  readonly effort?: z.infer<typeof EffortSchema>;
+  readonly effort?: ReasoningEffort;
   readonly isGitRepository: boolean;
   readonly hookConfigOptions?: HookConfigOptions;
 }
@@ -28,7 +26,7 @@ export interface CodexRunPlan {
   readonly missionDir: string;
   readonly projectPath: string;
   readonly model: string;
-  readonly effort: z.infer<typeof EffortSchema>;
+  readonly effort: ReasoningEffort;
   readonly sandbox: "read-only" | "workspace-write";
   readonly networkAccess: boolean;
   readonly configHash: string;
@@ -54,7 +52,7 @@ export function buildCodexRunPlan(
     throw new Error(mapping.reason);
   }
   const model = input.model ?? buildPhase.model;
-  const effort = EffortSchema.parse(input.effort ?? buildPhase.effort);
+  const effort = ReasoningEffortSchema.parse(input.effort ?? buildPhase.effort);
   const missionDir = resolve(input.missionDir);
   const projectPath = resolve(input.projectPath);
   const hook = generateHookConfig(missionDir, input.hookConfigOptions);

@@ -81,18 +81,12 @@ export const DEFAULT_VERIFY_MODEL_PLAN_ENTRY: MissionContract["modelPlan"][numbe
     "independent challenge; different tier than builder reduces correlated blind spots",
 };
 
-const DEFAULT_MODEL_PLAN: MissionContract["modelPlan"] = [
+const BASE_MODEL_PLAN: MissionContract["modelPlan"] = [
   {
     phase: "scout",
     model: "gpt-5.6-luna",
     effort: "low",
     rationale: "structured mapping",
-  },
-  {
-    phase: "build",
-    model: "gpt-5.6-sol",
-    effort: "high",
-    rationale: "primary implementation",
   },
   {
     phase: "remediate",
@@ -102,6 +96,39 @@ const DEFAULT_MODEL_PLAN: MissionContract["modelPlan"] = [
   },
   DEFAULT_VERIFY_MODEL_PLAN_ENTRY,
 ];
+
+function securitySensitiveObjective(objective: string): boolean {
+  return /\b(?:auth(?:entication|orization)?|credential|crypto|encrypt|permission|security|secret|token|vulnerabilit(?:y|ies))\b/iu.test(
+    objective,
+  );
+}
+
+function modelPlanFor(
+  objective: string,
+  criteria: MissionContract["acceptanceCriteria"],
+  suppliedRiskProfile: boolean,
+): MissionContract["modelPlan"] {
+  const requiresMax =
+    (suppliedRiskProfile || securitySensitiveObjective(objective)) &&
+    criteria.some(
+      (criterion) => criterion.risk === "high" || criterion.risk === "critical",
+    );
+  const build = requiresMax
+    ? {
+        phase: "build",
+        model: "gpt-5.6-sol",
+        effort: "max" as const,
+        rationale:
+          "single unbroken reasoning chain; hardest security-sensitive step",
+      }
+    : {
+        phase: "build",
+        model: "gpt-5.6-sol",
+        effort: "high" as const,
+        rationale: "primary implementation",
+      };
+  return [BASE_MODEL_PLAN[0]!, build, ...BASE_MODEL_PLAN.slice(1)];
+}
 
 function defaultCriteria(
   objective: string,
@@ -203,7 +230,11 @@ export function compileMission(
     constraints: ["No production deployment during Build Week"],
     nonGoals: ["Production deployment"],
     actionPolicy: DEFAULT_ACTION_POLICY,
-    modelPlan: DEFAULT_MODEL_PLAN,
+    modelPlan: modelPlanFor(
+      parsed.objective,
+      acceptanceCriteria,
+      parsed.criteria !== undefined,
+    ),
     budgetPolicy: { reservePercent: 20 },
     status: "DRAFT",
     createdAt: timestamp,

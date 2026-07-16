@@ -203,6 +203,41 @@ describe("compileMission", () => {
       )?.decision,
     ).toBe("DENY");
   });
+
+  it.each([
+    ["high", "medium", "primary implementation"],
+    [
+      "max",
+      "high",
+      "single unbroken reasoning chain; hardest security-sensitive step",
+    ],
+    [
+      "max",
+      "critical",
+      "single unbroken reasoning chain; hardest security-sensitive step",
+    ],
+  ] as const)(
+    "selects sol/%s reasoning from %s mission risk",
+    (effort, risk, rationale) => {
+      const result = compileMission(
+        {
+          objective: "Harden authentication checks",
+          criteria: [
+            { statement: "Primary risk", risk, evidenceTypes: ["test"] },
+            { statement: "Regression safety", risk: "medium", evidenceTypes: ["test"] },
+            { statement: "Secret safety", risk: "medium", evidenceTypes: ["secret_scan"] },
+          ],
+        },
+        { id: `msn_risk_${risk}` },
+      );
+      expect(result.contract.modelPlan.find((entry) => entry.phase === "build")).toEqual({
+        phase: "build",
+        model: "gpt-5.6-sol",
+        effort,
+        rationale,
+      });
+    },
+  );
 });
 
 describe("mapBoundaryToSandbox", () => {

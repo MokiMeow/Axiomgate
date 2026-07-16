@@ -19,6 +19,7 @@ import {
   parseMissionCriteria,
   readEnforcementVerification,
   readCodexRateLimits,
+  ReasoningEffortSchema,
   recordWaiver,
   remediateMission,
   resolveCodexLaunch,
@@ -36,6 +37,7 @@ import {
   verifyEnforcementInstallation,
   verifyReceiptFile,
   writeMissionReceipt,
+  type ReasoningEffort,
 } from "@axiomgate/core";
 
 function codexVersion() {
@@ -516,11 +518,10 @@ function runReceiptVerify(path: string | undefined): void {
   }
 }
 
-function zEffort(value: string): "low" | "medium" | "high" {
-  if (value === "low" || value === "medium" || value === "high") {
-    return value;
-  }
-  throw new Error("--effort must be low, medium, or high");
+function zEffort(value: string): ReasoningEffort {
+  const parsed = ReasoningEffortSchema.safeParse(value);
+  if (parsed.success) return parsed.data;
+  throw new Error("--effort must be none, low, medium, high, xhigh, or max");
 }
 
 if (command === "doctor") {

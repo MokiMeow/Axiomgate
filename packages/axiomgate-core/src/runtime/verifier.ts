@@ -11,6 +11,8 @@ import { z } from "zod";
 import { EvidenceSchema, type Evidence } from "../evidence/index.js";
 import {
   hashContract,
+  ReasoningEffortSchema,
+  type ReasoningEffort,
   type MissionContract,
 } from "../mission/index.js";
 import {
@@ -34,8 +36,6 @@ import {
 } from "./mission-run.js";
 import { missionDirectory } from "./mission-files.js";
 import { appendMissionSession } from "./session-store.js";
-
-const EffortSchema = z.enum(["low", "medium", "high"]);
 
 export const VerifierFindingSchema = z.strictObject({
   criterionId: z.string().min(1),
@@ -160,7 +160,7 @@ export interface BuildVerifierPlanInput {
   readonly diff: string;
   readonly outputSchemaPath: string;
   readonly model?: string;
-  readonly effort?: z.infer<typeof EffortSchema>;
+  readonly effort?: ReasoningEffort;
   readonly isGitRepository: boolean;
   readonly hookConfigOptions?: HookConfigOptions;
 }
@@ -169,7 +169,7 @@ export interface VerifierPlan {
   readonly missionDir: string;
   readonly projectPath: string;
   readonly model: string;
-  readonly effort: z.infer<typeof EffortSchema>;
+  readonly effort: ReasoningEffort;
   readonly sandbox: "read-only";
   readonly networkAccess: false;
   readonly configHash: string;
@@ -201,7 +201,7 @@ export function buildVerifierPlan(
   const projectPath = resolve(input.projectPath);
   const outputSchemaPath = resolve(input.outputSchemaPath);
   const model = input.model ?? verifyPhase.model;
-  const effort = EffortSchema.parse(input.effort ?? verifyPhase.effort);
+  const effort = ReasoningEffortSchema.parse(input.effort ?? verifyPhase.effort);
   const hook = generateHookConfig(missionDir, input.hookConfigOptions);
   const args = [
     "exec",
@@ -243,7 +243,7 @@ export const VerifierFindingsRecordSchema = z.strictObject({
   status: z.enum(["VALID", "INVALID"]),
   advisory: z.literal(true),
   model: z.string().min(1),
-  effort: EffortSchema,
+  effort: ReasoningEffortSchema,
   capturedAt: z.iso.datetime({ offset: true }),
   findings: VerifierFindingsSchema,
   reason: z.string().min(1).optional(),
@@ -257,7 +257,7 @@ export type VerifierFindingsRecord = z.infer<
 export interface ReviewMissionOptions {
   readonly diff?: string;
   readonly model?: string;
-  readonly effort?: "low" | "medium" | "high";
+  readonly effort?: ReasoningEffort;
   readonly timeoutMs?: number;
   readonly reviewId?: string;
   readonly hookConfigOptions?: HookConfigOptions;

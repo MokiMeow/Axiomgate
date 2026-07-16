@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+import {
+  ReasoningEffortSchema,
+  type ReasoningEffort,
+} from "../mission/index.js";
 import type { ParsedCodexStream } from "./codex-jsonl.js";
 import type { CodexRunPlan } from "./codex-plan.js";
 
@@ -22,7 +26,7 @@ const MissionCheckpointValueSchema = z.strictObject({
   resetAt: z.iso.datetime({ offset: true }).nullable(),
   lastEvent: z.record(z.string(), z.unknown()).nullable(),
   model: z.string().min(1),
-  effort: z.enum(["low", "medium", "high"]),
+  effort: ReasoningEffortSchema,
   capturedAt: z.iso.datetime({ offset: true }),
 });
 
@@ -56,7 +60,7 @@ export interface CheckpointFromRunInput {
   readonly commandStatus: z.infer<typeof CommandStatusSchema>;
   readonly stderr: string;
   readonly model: string;
-  readonly effort: "low" | "medium" | "high";
+  readonly effort: ReasoningEffort;
   readonly now?: () => Date;
 }
 

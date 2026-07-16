@@ -147,6 +147,34 @@ describe("buildCodexRunPlan", () => {
     expect(plan.args).toContain("sandbox_workspace_write.network_access=true");
     expect(plan.args).not.toContain("--skip-git-repo-check");
   });
+
+  it("passes GPT-5.6 max reasoning through to codex exec", () => {
+    const contract = compileMission(
+      {
+        objective: "Harden authentication",
+        criteria: [
+          { statement: "Auth is safe", risk: "critical", evidenceTypes: ["test"] },
+          { statement: "Tests pass", risk: "medium", evidenceTypes: ["test"] },
+          { statement: "No secrets", risk: "medium", evidenceTypes: ["secret_scan"] },
+        ],
+      },
+      { id: "msn_max" },
+    ).contract;
+    const plan = buildCodexRunPlan({
+      contract,
+      missionDir: "C:/repo/.axiomgate/missions/msn_max",
+      projectPath: "C:/repo",
+      prompt: "Harden authentication",
+      isGitRepository: true,
+      hookConfigOptions: {
+        cliEntryPath: "C:/axiomgate/cli.js",
+        nodePath: process.execPath,
+      },
+    });
+
+    expect(plan.effort).toBe("max");
+    expect(plan.args).toContain('model_reasoning_effort="max"');
+  });
 });
 
 describe("parseCodexJsonl", () => {

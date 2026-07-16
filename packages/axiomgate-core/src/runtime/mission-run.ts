@@ -14,8 +14,10 @@ import { z } from "zod";
 import { EvidenceSchema, type Evidence } from "../evidence/index.js";
 import {
   hashContract,
+  ReasoningEffortSchema,
   Sha256Schema,
   stableStringify,
+  type ReasoningEffort,
 } from "../mission/index.js";
 import {
   resolveIdentity as resolveCurrentIdentity,
@@ -67,7 +69,7 @@ export const MissionRunRecordSchema = z.strictObject({
   exitCode: z.number().int(),
   sessionId: z.string().min(1).nullable(),
   model: z.string().min(1),
-  effort: z.enum(["low", "medium", "high"]),
+  effort: ReasoningEffortSchema,
   sandbox: z.enum(["read-only", "workspace-write"]),
   networkAccess: z.boolean(),
   configHash: Sha256Schema,
@@ -91,7 +93,7 @@ export interface CodexLaunch {
 export interface RunMissionOptions {
   readonly prompt: string;
   readonly model?: string;
-  readonly effort?: "low" | "medium" | "high";
+  readonly effort?: ReasoningEffort;
   readonly timeoutMs?: number;
   readonly runId?: string;
   readonly hookConfigOptions?: HookConfigOptions;

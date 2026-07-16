@@ -11,7 +11,10 @@ import {
   runCommand,
   type CommandRunner,
 } from "../guard/index.js";
-import { stableStringify } from "../mission/index.js";
+import {
+  ReasoningEffortSchema,
+  stableStringify,
+} from "../mission/index.js";
 import { missionDirectory } from "../runtime/mission-files.js";
 import {
   VerificationFindingSchema,
@@ -52,9 +55,8 @@ function modelUsage(
       ? entry.usage as Record<string, unknown>
       : {};
     const model = typeof entry.model === "string" ? entry.model : "UNKNOWN";
-    const effort = entry.effort === "low" || entry.effort === "medium" || entry.effort === "high"
-      ? entry.effort
-      : "medium";
+    const parsedEffort = ReasoningEffortSchema.safeParse(entry.effort);
+    const effort = parsedEffort.success ? parsedEffort.data : "medium";
     const role = entry.role === "verifier" ? "verify" : undefined;
     const planned = contract.modelPlan.find(
       (phase) => phase.model === model && phase.effort === effort,
