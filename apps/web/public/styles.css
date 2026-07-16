@@ -135,19 +135,15 @@ select {
   gap: 9px;
 }
 
-.brand::before {
-  content: "";
-  width: 9px;
-  height: 9px;
-  border-radius: 9999px;
-  background: var(--primary);
+.brand svg {
+  color: var(--primary);
   flex: none;
 }
 
 .brand-sub {
   color: var(--muted-soft);
   font-size: 11px;
-  margin: 0 8px 26px 26px;
+  margin: 0 8px 26px 37px;
   letter-spacing: 0.2px;
 }
 
@@ -1118,6 +1114,40 @@ td.risk {
 .verify-out.fail {
   color: var(--error);
   border-color: color-mix(in srgb, var(--error) 35%, var(--hairline));
+}
+
+/* ----- Demo banner (hosted preview; never shown over real missions) ----- */
+.demo-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--primary-soft);
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--hairline));
+  color: var(--body);
+  border-radius: var(--radius-md);
+  padding: 11px 14px;
+  margin-bottom: 22px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.demo-banner b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.demo-banner a {
+  color: var(--primary-active);
+  text-decoration: underline;
+}
+
+.demo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--primary);
+  margin-top: 5px;
+  flex: none;
 }
 
 /* ----- Empty state ----- */

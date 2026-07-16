@@ -8,7 +8,7 @@
 //   AXIOMGATE_WORKSPACE=<path> node apps/web/server.mjs
 import { createServer } from "node:http";
 import { readFile, readdir, stat, writeFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { join, extname, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -227,10 +227,22 @@ function json(res, code, body) {
   res.end(data);
 }
 
+// Clean routes via directory indexes: "/" → index.html (landing),
+// "/dashboard" → dashboard/index.html. Works on any static host too.
 async function serveStatic(res, urlPath) {
-  const rel = urlPath === "/" ? "/index.html" : urlPath;
-  const file = join(PUBLIC_DIR, rel.replace(/^\/+/, ""));
+  // tolerate trailing slashes ("/dashboard/" → "/dashboard")
+  const key = urlPath.length > 1 ? urlPath.replace(/\/+$/, "") : urlPath;
+  let file = join(PUBLIC_DIR, key.replace(/^\/+/, ""));
+  try {
+    if (existsSync(file) && statSync(file).isDirectory()) file = join(file, "index.html");
+  } catch {}
   if (!file.startsWith(PUBLIC_DIR) || !existsSync(file)) {
+    // Unknown page paths bounce to the landing instead of a dead "Not found".
+    if (!extname(file)) {
+      res.writeHead(302, { location: "/" });
+      res.end();
+      return;
+    }
     res.writeHead(404).end("Not found");
     return;
   }
@@ -262,8 +274,14 @@ const server = createServer(async (req, res) => {
 
   if (path === "/api/missions") {
     const missions = await loadAllMissions();
+    // Demo when explicitly hosted (AXIOMGATE_DEMO=true) or when only the bundled
+    // sample is available; real local missions are never labeled as demo.
+    const demo =
+      process.env.AXIOMGATE_DEMO === "true" ||
+      missions.every((m) => m.label === "SAMPLE");
     return json(res, 200, {
       workspace: WORKSPACE,
+      demo,
       count: missions.length,
       missions: missions.map((m) => ({
         id: m.id,

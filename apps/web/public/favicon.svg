@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- AxiomGate mark: a solid gate plate; the proof-check is cut through it and
+       exits the top-right wall. One color, reads at 16px. -->
+  <defs>
+    <mask id="agm">
+      <path d="M5 29 V15 C5 8.9 9.9 4 16 4 s11 4.9 11 11 v14 z" fill="#ffffff" />
+      <path d="M11 17.5 L15.5 22 L30 5.5" fill="none" stroke="#000000" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" />
+    </mask>
+  </defs>
+  <path d="M5 29 V15 C5 8.9 9.9 4 16 4 s11 4.9 11 11 v14 z" fill="#f54e00" mask="url(#agm)" />
+</svg>

@@ -20,7 +20,7 @@ const STAGES = [
   { key: "prove", name: "Prove", desc: "Completion gated on evidence · receipt" },
 ];
 
-let STATE = { missions: [], current: null, capacity: null };
+let STATE = { missions: [], current: null, capacity: null, demo: false };
 
 async function api(path, opts) {
   const r = await fetch(path, opts);
@@ -32,6 +32,7 @@ async function boot() {
   loadCapacity();
   const data = await api("/api/missions");
   STATE.missions = data.missions || [];
+  STATE.demo = !!data.demo;
   $("#workspaceLabel").textContent = data.workspace || "";
   renderMissionList();
   if (STATE.missions[0]) selectMission(STATE.missions[0].id);
@@ -130,6 +131,13 @@ function renderDetail(m) {
   const c = m.contract;
   const { s, verdicts, complete } = stageStatus(m);
   const root = el("div");
+
+  if (STATE.demo) {
+    root.appendChild(el("div", "demo-banner", `
+      <span class="demo-dot"></span>
+      <span><b>Demo data.</b> This preview shows a seeded sample mission so you can explore the UI.
+      For real governed missions, run locally against your workspace. See the <a href="/#quickstart">quickstart</a>.</span>`));
+  }
 
   root.appendChild(pageHead(m, complete));
   (m.approvals || []).forEach((a) => root.appendChild(approvalBanner(m, a)));

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AxiomGate</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="side">
+        <a class="brand" href="/" title="AxiomGate home">
+          <svg viewBox="0 0 32 32" width="21" height="21" aria-hidden="true">
+            <mask id="agm-side">
+              <path d="M5 29 V15 C5 8.9 9.9 4 16 4 s11 4.9 11 11 v14 z" fill="#fff" />
+              <path d="M11 17.5 L15.5 22 L30 5.5" fill="none" stroke="#000" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" />
+            </mask>
+            <path d="M5 29 V15 C5 8.9 9.9 4 16 4 s11 4.9 11 11 v14 z" fill="currentColor" mask="url(#agm-side)" />
+          </svg>
+          AxiomGate
+        </a>
+        <div class="brand-sub">Plan · Govern · Execute · Prove</div>
+
+        <div class="side-label">Missions</div>
+        <nav class="nav" id="missionList"></nav>
+
+        <div class="sidebar-foot">
+          <span class="foot-dot" aria-hidden="true"></span>
+          <span class="mono" id="workspaceLabel">reading workspace…</span>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div id="detail">
+          <div class="empty-state">
+            <strong>Loading mission…</strong>
+            <span>Reading governed state from <code>.axiomgate/</code></span>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
