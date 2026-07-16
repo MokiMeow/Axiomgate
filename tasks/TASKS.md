@@ -22,8 +22,8 @@ This board is authoritative. Where a phase file conflicts, this board wins. Dead
 - [x] G1 Identity resolution (gh identity, git remote, Vercel project/team) + deploy-target existence/ownership proof with evidence capture. Evidence: [`evidence/public/g1-g2-verification.md`](../evidence/public/g1-g2-verification.md).
 - [x] G2 Semantic-action policy engine: ALLOW/DENY/REQUIRE_APPROVAL over the demo action set, target/identity restrictions. Evidence: [`evidence/public/g1-g2-verification.md`](../evidence/public/g1-g2-verification.md).
 - [x] G3 Hook integration: `PreToolUse`/`PermissionRequest` → policy engine; deny-wins; fail-closed config-hash check at mission start; every decision persisted as evidence. Evidence: [`evidence/public/g3-g4-verification.md`](../evidence/public/g3-g4-verification.md).
-- [-] G4 Approval flow: exact command-hash binding, expiry, single-use file store, and CLI list/approve/deny are verified. Dashboard and Telegram surfaces remain. Evidence: [`evidence/public/g3-g4-verification.md`](../evidence/public/g3-g4-verification.md).
-- [ ] G5 Negative test suite: wrong GitHub identity, wrong Vercel target, action substitution after approval, stale approval, boundary escalation, denied production action, secret-output redaction.
+- [-] G4 Approval flow: exact command-hash binding, expiry, single-use file store, CLI list/approve/deny, and external-reviewer defer routing are verified. Dashboard and Telegram surfaces remain. Evidence: [`evidence/public/g3-g4-verification.md`](../evidence/public/g3-g4-verification.md), [`evidence/public/guard-closeout-verification.md`](../evidence/public/guard-closeout-verification.md).
+- [x] G5 Negative test suite: wrong identity/target, approval substitution/mutation/expiry/reuse, boundary escalation, production and unknown-action denial, fail-closed snapshot/input handling, secret non-persistence, and permission mismatch. Evidence: [`evidence/public/guard-closeout-verification.md`](../evidence/public/guard-closeout-verification.md).
 
 ## Codex Runtime + Runway lite (target: Jul 16–17)
 

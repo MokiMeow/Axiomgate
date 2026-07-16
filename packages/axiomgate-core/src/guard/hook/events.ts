@@ -13,10 +13,14 @@ export const HookDecisionEventSchema = z.strictObject({
   toolName: z.string().min(1),
   commandHash: Sha256Schema,
   semanticAction: z.string().min(1),
-  decision: z.enum(["ALLOW", "DENY"]),
+  decision: z.enum(["ALLOW", "DENY", "DEFER"]),
   reasons: z.array(z.string().min(1)).min(1),
   missionId: z.string().min(1),
   sessionId: z.string().min(1),
+  effectiveReviewer: z.string().min(1).optional(),
+  reviewerDisposition: z
+    .enum(["AXIOMGATE", "CODEX_NATIVE", "EXPLICIT_APPROVAL"])
+    .optional(),
 });
 
 export type HookDecisionEvent = z.infer<typeof HookDecisionEventSchema>;

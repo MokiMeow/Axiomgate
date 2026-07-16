@@ -640,10 +640,12 @@ if (command === "install-codex") {
       }),
     );
   } else {
+    const approvalsReviewer = argumentValue("--approvals-reviewer");
     console.log(
       runHookEntry(rawInput, missionDir, {
         cliEntryPath: process.argv[1]!,
         nodePath: process.execPath,
+        ...(approvalsReviewer === undefined ? {} : { approvalsReviewer }),
       }),
     );
   }

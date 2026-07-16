@@ -18,7 +18,7 @@ Integration interfaces (all official): hooks (`PreToolUse`, `PermissionRequest`,
 - **Deny via JSON `hookSpecificOutput.permissionDecision: "deny"`: ENFORCED even under bypassPermissions.** Router error surfaces the `permissionDecisionReason`; the command does not execute. This is the normative AxiomGate deny mechanism.
 - Hook config injectable per-run via `-c "hooks.PreToolUse=[{matcher=..., hooks=[{type=\"command\", command=...}]}]"` + `--dangerously-bypass-hook-trust` (acceptable only for AxiomGate-authored hooks).
 - Ops rule: every `codex exec` invocation gets a hard timeout; one transient ~6-min stall observed before any tool call.
-- Still to verify during G3/G4: `PermissionRequest` payload/behavior in `on-request` mode; `exec --json` usage fields (R1).
+- Later result: `exec --json` usage fields are verified in R1. The 0.144.4 `PermissionRequest` non-interactive limitation is recorded below.
 
 ### G3 live-enforcement results — codex-cli 0.144.4, 2026-07-15 (VERIFIED)
 
@@ -27,7 +27,8 @@ Integration interfaces (all official): hooks (`PreToolUse`, `PermissionRequest`,
   - Matchers are **exact tool names**; `".*"` and `"*"` silently never fire (**fail-open**). Config must enumerate `Bash`, `apply_patch`, and any MCP tool names explicitly.
   - `hookSpecificOutput.hookEventName` is **required**; a deny without it is ignored (**fail-open**) even though the hook recorded it.
 - **Ops rule:** after ANY Codex version change, re-run the hook enforcement test suite + one live blocked-command proof before trusting enforcement; every evidence file records the exact codex-cli version. Avoid `codex update` between final verification and the submission demo.
-- `PermissionRequest`: same code path, fixture-tested; live on-request proof still pending.
+- **PermissionRequest on-request probe (2026-07-16): VERIFIED LIMITATION.** A real `codex -a on-request ... exec --json` run configured with only the AxiomGate `PermissionRequest` hook asked the model to request escalation for `git push`. Codex emitted no `command_execution`, but its router reported `approval policy is Never; reject command`; the PermissionRequest hook did not fire, so no live payload exists to characterize. `codex exec --help` exposes no exec-scoped approval option. On 0.144.4, AxiomGate therefore does not claim live PermissionRequest enforcement for non-interactive exec; the verified `PreToolUse` JSON deny remains mandatory. Evidence: `evidence/public/guard-closeout-verification.md`.
+- 0.144.4 strict config accepts `approvals_reviewer = "user" | "auto_review" | "guardian_subagent"` (the latter is a legacy-compatible name). AxiomGate fixture-tests the external-reviewer contract: `user` receives the AxiomGate policy/approval decision; native reviewers defer without a second AxiomGate prompt; unknown reviewers defer to explicit approval; explicit policy DENY always wins. Reviewer identity is bound into the hook config hash and recorded in hook events. Live defer output could not be exercised through `codex exec` because of the limitation above.
 
 ### Native skill and custom-verifier results — codex-cli 0.144.4, 2026-07-16 (VERIFIED WITH FALLBACK)
 

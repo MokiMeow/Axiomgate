@@ -278,6 +278,113 @@ describe("processHookInvocation", () => {
     expect(result.event.hookEvent).toBe("PermissionRequest");
   });
 
+  it("Approval reviewer user: AxiomGate returns its PermissionRequest decision", () => {
+    const missionDir = missionDirectory();
+    const configOptions = configureMission(
+      missionDir,
+      contract(undefined, "DEPLOY_PREVIEW"),
+    );
+    const result = processHookInvocation(
+      JSON.stringify({
+        ...payload("vercel deploy"),
+        hook_event_name: "PermissionRequest",
+      }),
+      missionDir,
+      {
+        configOptions,
+        approvalsReviewer: "user",
+        verifyDeployTarget: verifiedTarget,
+      },
+    );
+
+    expect(result.output.hookSpecificOutput.permissionDecision).toBe("deny");
+    expect(result.event).toMatchObject({
+      decision: "DENY",
+      effectiveReviewer: "user",
+      reviewerDisposition: "AXIOMGATE",
+    });
+    expect(listPending(missionDir)).toHaveLength(1);
+  });
+
+  it.each(["guardian_subagent", "auto_review"])(
+    "Approval reviewer %s: AxiomGate defers without a second prompt",
+    (reviewer) => {
+      const missionDir = missionDirectory();
+      const configOptions = configureMission(
+        missionDir,
+        contract(undefined, "DEPLOY_PREVIEW"),
+      );
+      const result = processHookInvocation(
+        JSON.stringify({
+          ...payload("vercel deploy"),
+          hook_event_name: "PermissionRequest",
+        }),
+        missionDir,
+        {
+          configOptions,
+          approvalsReviewer: reviewer,
+          verifyDeployTarget: verifiedTarget,
+        },
+      );
+
+      expect(result.output.hookSpecificOutput?.permissionDecision).toBeUndefined();
+      expect(result.output.systemMessage).toContain("native approval reviewer");
+      expect(result.event).toMatchObject({
+        decision: "DEFER",
+        effectiveReviewer: reviewer,
+        reviewerDisposition: "CODEX_NATIVE",
+      });
+      expect(result.event.reasons.join(" ")).toContain("native approval reviewer");
+      expect(listPending(missionDir)).toHaveLength(0);
+    },
+  );
+
+  it("Approval reviewer unknown: AxiomGate defers to explicit approval safely", () => {
+    const missionDir = missionDirectory();
+    const configOptions = configureMission(
+      missionDir,
+      contract(undefined, "DEPLOY_PREVIEW"),
+    );
+    const result = processHookInvocation(
+      JSON.stringify({
+        ...payload("vercel deploy"),
+        hook_event_name: "PermissionRequest",
+      }),
+      missionDir,
+      {
+        configOptions,
+        approvalsReviewer: "future_reviewer",
+        verifyDeployTarget: verifiedTarget,
+      },
+    );
+
+    expect(result.output.hookSpecificOutput?.permissionDecision).toBeUndefined();
+    expect(result.output.systemMessage).toContain("explicit approval");
+    expect(result.event).toMatchObject({
+      decision: "DEFER",
+      effectiveReviewer: "future_reviewer",
+      reviewerDisposition: "EXPLICIT_APPROVAL",
+    });
+    expect(result.event.reasons.join(" ")).toContain("explicit approval");
+    expect(listPending(missionDir)).toHaveLength(0);
+  });
+
+  it("binds a configured native reviewer into the hook command and config hash", () => {
+    const missionDir = missionDirectory();
+    const base = generateHookConfig(missionDir, {
+      cliEntryPath: join(missionDir, "cli", "index.js"),
+      nodePath: process.execPath,
+    });
+    const native = generateHookConfig(missionDir, {
+      cliEntryPath: join(missionDir, "cli", "index.js"),
+      nodePath: process.execPath,
+      approvalsReviewer: "guardian_subagent",
+    });
+
+    expect(native.command).toContain("--approvals-reviewer guardian_subagent");
+    expect(native.configHash).not.toBe(base.configHash);
+  });
+
   it("denies a policy-prohibited action through JSON stdout", () => {
     const missionDir = missionDirectory();
     const configOptions = configureMission(missionDir);

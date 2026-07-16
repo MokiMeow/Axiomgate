@@ -6,6 +6,7 @@ import { stableStringify } from "../../mission/index.js";
 export interface HookConfigOptions {
   readonly cliEntryPath?: string;
   readonly nodePath?: string;
+  readonly approvalsReviewer?: string;
 }
 
 export interface GeneratedHookConfig {
@@ -44,6 +45,9 @@ export function generateHookConfig(
     "hook",
     "--mission",
     commandArgument(resolvedMissionDir),
+    ...(options.approvalsReviewer === undefined
+      ? []
+      : ["--approvals-reviewer", commandArgument(options.approvalsReviewer)]),
   ].join(" ");
   const hook = `[${["Bash", "apply_patch"]
     .map(

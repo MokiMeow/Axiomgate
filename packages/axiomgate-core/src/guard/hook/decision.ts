@@ -47,6 +47,10 @@ export type HookDecisionOutput =
         readonly permissionDecision: "deny";
         readonly permissionDecisionReason: string;
       };
+    }
+  | {
+      readonly systemMessage: string;
+      readonly hookSpecificOutput?: undefined;
     };
 
 export interface ProcessHookOptions {
@@ -56,6 +60,7 @@ export interface ProcessHookOptions {
     target: DeployTarget,
     context: TargetEvidenceContext,
   ) => DeployTargetVerification;
+  readonly approvalsReviewer?: string;
 }
 
 export interface HookProcessResult {
@@ -219,6 +224,32 @@ function denyOutput(
   };
 }
 
+function deferOutput(
+  reasons: readonly string[],
+): HookDecisionOutput {
+  return { systemMessage: reasons.join("; ") };
+}
+
+type ReviewerDisposition =
+  | "AXIOMGATE"
+  | "CODEX_NATIVE"
+  | "EXPLICIT_APPROVAL";
+
+function permissionReviewerDisposition(
+  hookEvent: string,
+  reviewer: string,
+  policyDecision: "ALLOW" | "DENY" | "REQUIRE_APPROVAL",
+): ReviewerDisposition {
+  if (hookEvent !== "PermissionRequest" || policyDecision === "DENY") {
+    return "AXIOMGATE";
+  }
+  if (reviewer === "user") return "AXIOMGATE";
+  if (reviewer === "guardian_subagent" || reviewer === "auto_review") {
+    return "CODEX_NATIVE";
+  }
+  return "EXPLICIT_APPROVAL";
+}
+
 function looseMetadata(rawInput: string) {
   try {
     const value: unknown = JSON.parse(rawInput);
@@ -254,7 +285,9 @@ export function processHookInvocation(
   let commandHash = sha256("");
   let semanticAction = "UNKNOWN";
   let reasons: readonly string[] = ["fail-closed: hook decision unavailable"];
-  let decision: "ALLOW" | "DENY" = "DENY";
+  let decision: "ALLOW" | "DENY" | "DEFER" = "DENY";
+  const effectiveReviewer = options.approvalsReviewer ?? "user";
+  let reviewerDisposition: ReviewerDisposition = "AXIOMGATE";
   let request: ActionRequest | undefined;
   let timestamp = new Date().toISOString();
 
@@ -322,7 +355,24 @@ export function processHookInvocation(
       }
     }
 
-    if (evaluation.decision === "ALLOW") {
+    reviewerDisposition = permissionReviewerDisposition(
+      hookEvent,
+      effectiveReviewer,
+      evaluation.decision,
+    );
+    if (reviewerDisposition === "CODEX_NATIVE") {
+      decision = "DEFER";
+      reasons = [
+        ...evaluation.reasons,
+        `AxiomGate deferred PermissionRequest to Codex native approval reviewer "${effectiveReviewer}"; no AxiomGate approval prompt was created.`,
+      ];
+    } else if (reviewerDisposition === "EXPLICIT_APPROVAL") {
+      decision = "DEFER";
+      reasons = [
+        ...evaluation.reasons,
+        `Unknown approval reviewer "${effectiveReviewer}"; fail-safe defer requires explicit approval.`,
+      ];
+    } else if (evaluation.decision === "ALLOW") {
       decision = "ALLOW";
     } else if (evaluation.decision === "REQUIRE_APPROVAL") {
       createApprovalRequest(missionDir, request, evaluation.reasons, {
@@ -367,11 +417,15 @@ export function processHookInvocation(
     reasons: [...reasons],
     missionId,
     sessionId,
+    effectiveReviewer,
+    reviewerDisposition,
   });
   let output =
     decision === "ALLOW"
       ? allowOutput(hookEvent)
-      : denyOutput(reasons, hookEvent);
+      : decision === "DEFER"
+        ? deferOutput(reasons)
+        : denyOutput(reasons, hookEvent);
 
   try {
     appendHookEvent(missionDir, event);
@@ -382,7 +436,13 @@ export function processHookInvocation(
       }`,
     ];
     decision = "DENY";
-    event = { ...event, decision, reasons: [...reasons] };
+    reviewerDisposition = "AXIOMGATE";
+    event = {
+      ...event,
+      decision,
+      reasons: [...reasons],
+      reviewerDisposition,
+    };
     output = denyOutput(reasons, hookEvent);
   }
 
