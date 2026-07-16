@@ -5,6 +5,12 @@ import { z } from "zod";
 import { stableStringify } from "../../mission/index.js";
 import { ActionRequestSchema, type ActionRequest } from "../action-request.js";
 import {
+  verifyDeployTarget as verifyTarget,
+  type DeployTarget,
+  type DeployTargetVerification,
+  type TargetEvidenceContext,
+} from "../identity/index.js";
+import {
   consumeApproval,
   createApprovalRequest,
 } from "../approval-store.js";
@@ -13,6 +19,7 @@ import { classifyHookPayload } from "./classifier.js";
 import type { HookConfigOptions } from "./config.js";
 import {
   appendHookEvent,
+  appendTargetEvidence,
   HookDecisionEventSchema,
   type HookDecisionEvent,
 } from "./events.js";
@@ -45,6 +52,10 @@ export type HookDecisionOutput =
 export interface ProcessHookOptions {
   readonly configOptions?: HookConfigOptions;
   readonly now?: () => Date;
+  readonly verifyDeployTarget?: (
+    target: DeployTarget,
+    context: TargetEvidenceContext,
+  ) => DeployTargetVerification;
 }
 
 export interface HookProcessResult {
@@ -70,7 +81,11 @@ function parseGitHubRemote(url: string): { owner: string; repo: string } | undef
     : { owner: match[1]!, repo: match[2]! };
 }
 
-function requestTarget(snapshot: MissionSnapshot) {
+function requestTarget(
+  snapshot: MissionSnapshot,
+  classified: ReturnType<typeof classifyHookPayload>,
+  verifiedOwnership: boolean,
+) {
   if (snapshot.identity.gitRemotes.status !== "RESOLVED") {
     throw new HookRefusal("fail-closed: Git remote identity is unavailable");
   }
@@ -84,10 +99,14 @@ function requestTarget(snapshot: MissionSnapshot) {
   }
 
   return {
-    type: "github_repo",
+    type:
+      classified.semanticAction === "preview.deploy" ||
+      classified.semanticAction === "production.deploy"
+        ? "vercel_project"
+        : "github_repo",
     owner: remote.owner,
     repo: remote.repo,
-    verifiedOwnership: false,
+    verifiedOwnership,
     ...(snapshot.identity.vercelProject.status === "RESOLVED" &&
     snapshot.identity.vercelProject.value.projectName !== undefined
       ? { project: snapshot.identity.vercelProject.value.projectName }
@@ -106,7 +125,7 @@ function actionRequest(
   }
 
   const commandHash = sha256(classified.command);
-  const target = requestTarget(snapshot);
+  const target = requestTarget(snapshot, classified, true);
   const requestId = createHash("sha256")
     .update(
       stableStringify({
@@ -143,6 +162,42 @@ function actionRequest(
     requestedAt: now.toISOString(),
     expiresAt,
   });
+}
+
+function needsDeployTargetProof(semanticAction: string): boolean {
+  return [
+    "pull_request.create",
+    "preview.deploy",
+    "production.deploy",
+  ].includes(semanticAction);
+}
+
+function verificationTarget(
+  snapshot: MissionSnapshot,
+  request: ActionRequest,
+): DeployTarget {
+  if (request.semanticAction === "pull_request.create") {
+    return {
+      type: "github_repo",
+      owner: request.target.owner,
+      repo: request.target.repo,
+      expectedOwner: snapshot.identity.githubLogin.status === "RESOLVED"
+        ? snapshot.identity.githubLogin.value
+        : request.target.owner,
+    };
+  }
+  if (snapshot.identity.vercelProject.status !== "RESOLVED") {
+    throw new HookRefusal("fail-closed: Vercel project identity is unavailable");
+  }
+  const project = request.target.project;
+  if (project === undefined) {
+    throw new HookRefusal("fail-closed: Vercel deploy target is unavailable");
+  }
+  return {
+    type: "vercel_project",
+    project,
+    expectedAccount: snapshot.identity.vercelProject.value.orgId,
+  };
 }
 
 function allowOutput(hookEventName: string): HookDecisionOutput {
@@ -228,13 +283,44 @@ export function processHookInvocation(
     const now = (options.now ?? (() => new Date()))();
     timestamp = now.toISOString();
     request = actionRequest(verified.snapshot, payload, classified, now);
-    const evaluation = evaluatePolicy({
+    let evaluation = evaluatePolicy({
       policy: verified.snapshot.policy,
       missionBoundary: verified.snapshot.contract.intentBoundary,
       request,
       identity: verified.snapshot.identity,
     });
     reasons = evaluation.reasons;
+
+    if (
+      evaluation.decision !== "DENY" &&
+      needsDeployTargetProof(request.semanticAction)
+    ) {
+      const targetResult = (options.verifyDeployTarget ?? verifyTarget)(
+        verificationTarget(verified.snapshot, request),
+        {
+          missionId: verified.snapshot.contract.id,
+          criterionId: "environment-guard",
+          freshForCommit: verified.snapshot.contract.hash,
+          label: "LIVE",
+        },
+      );
+      if (targetResult.evidence !== undefined) {
+        appendTargetEvidence(missionDir, targetResult.evidence);
+      }
+      if (targetResult.verdict !== "VERIFIED_OWNED") {
+        request = ActionRequestSchema.parse({
+          ...request,
+          target: { ...request.target, verifiedOwnership: false },
+        });
+        evaluation = {
+          decision: "DENY",
+          reasons: [
+            `Deploy target verification ${targetResult.verdict}: ${targetResult.reason}`,
+          ],
+        };
+        reasons = evaluation.reasons;
+      }
+    }
 
     if (evaluation.decision === "ALLOW") {
       decision = "ALLOW";

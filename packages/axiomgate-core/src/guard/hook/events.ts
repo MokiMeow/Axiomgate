@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { z } from "zod";
 
 import { Sha256Schema } from "../../mission/index.js";
+import { EvidenceSchema, type Evidence } from "../../evidence/index.js";
 
 export const HookDecisionEventSchema = z.strictObject({
   source: z.literal("hook"),
@@ -25,6 +26,19 @@ export function appendHookEvent(
   event: HookDecisionEvent,
 ): void {
   const parsed = HookDecisionEventSchema.parse(event);
+  mkdirSync(missionDir, { recursive: true });
+  appendFileSync(
+    join(missionDir, "events.jsonl"),
+    `${JSON.stringify(parsed)}\n`,
+    "utf8",
+  );
+}
+
+export function appendTargetEvidence(
+  missionDir: string,
+  evidence: Evidence,
+): void {
+  const parsed = EvidenceSchema.parse(evidence);
   mkdirSync(missionDir, { recursive: true });
   appendFileSync(
     join(missionDir, "events.jsonl"),

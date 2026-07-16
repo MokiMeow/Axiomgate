@@ -140,6 +140,14 @@ function payload(command: string, toolName = "Bash") {
   };
 }
 
+function verifiedTarget() {
+  return {
+    verdict: "VERIFIED_OWNED" as const,
+    reason: "fixture target is owned",
+    rawOutput: "fixture",
+  };
+}
+
 describe("classifyHookPayload", () => {
   it.each([
     ["gh pr create --title demo", "pull_request.create"],
@@ -384,7 +392,11 @@ describe("processHookInvocation", () => {
     const first = processHookInvocation(
       JSON.stringify(payload("vercel deploy")),
       missionDir,
-      { configOptions, now: () => new Date("2026-07-15T14:10:00.000Z") },
+      {
+        configOptions,
+        now: () => new Date("2026-07-15T14:10:00.000Z"),
+        verifyDeployTarget: verifiedTarget,
+      },
     );
     expect(first.output.hookSpecificOutput.permissionDecision).toBe("deny");
     expect(first.request).toBeDefined();
@@ -399,14 +411,22 @@ describe("processHookInvocation", () => {
     const allowed = processHookInvocation(
       JSON.stringify(retriedPayload),
       missionDir,
-      { configOptions, now: () => new Date("2026-07-15T14:12:00.000Z") },
+      {
+        configOptions,
+        now: () => new Date("2026-07-15T14:12:00.000Z"),
+        verifyDeployTarget: verifiedTarget,
+      },
     );
     expect(allowed.output.hookSpecificOutput.permissionDecision).toBe("allow");
 
     const consumed = processHookInvocation(
       JSON.stringify({ ...retriedPayload, tool_use_id: "third" }),
       missionDir,
-      { configOptions, now: () => new Date("2026-07-15T14:13:00.000Z") },
+      {
+        configOptions,
+        now: () => new Date("2026-07-15T14:13:00.000Z"),
+        verifyDeployTarget: verifiedTarget,
+      },
     );
     expect(consumed.output.hookSpecificOutput.permissionDecision).toBe("deny");
     expect(
