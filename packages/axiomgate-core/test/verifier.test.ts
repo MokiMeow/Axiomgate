@@ -80,6 +80,12 @@ describe("buildVerifierPlan", () => {
       sandbox: "read-only",
       networkAccess: false,
       outputSchemaPath,
+      nativeDelegation: {
+        status: "UNSUPPORTED",
+        agentName: "axiomgate-verifier",
+        reason:
+          "codex exec has no deterministic named-agent selector; using a fresh read-only verifier session",
+      },
     });
     expect(plan.args).toEqual([
       "exec",
@@ -100,6 +106,7 @@ describe("buildVerifierPlan", () => {
       "-",
     ]);
     expect(plan.args).not.toContain("resume");
+    expect(plan.args).not.toContain("--agent");
     expect(plan.stdin).toContain("criterion_implement");
     expect(plan.stdin).toContain("diff --git a/hello.txt b/hello.txt");
     expect(plan.stdin).toContain("security issues");

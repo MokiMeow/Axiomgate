@@ -176,6 +176,11 @@ export interface VerifierPlan {
   readonly outputSchemaPath: string;
   readonly args: readonly string[];
   readonly stdin: string;
+  readonly nativeDelegation: {
+    readonly status: "UNSUPPORTED";
+    readonly agentName: "axiomgate-verifier";
+    readonly reason: string;
+  };
 }
 
 function verifierPrompt(contract: MissionContract, diff: string): string {
@@ -233,6 +238,12 @@ export function buildVerifierPlan(
     outputSchemaPath,
     args,
     stdin: verifierPrompt(input.contract, input.diff),
+    nativeDelegation: {
+      status: "UNSUPPORTED",
+      agentName: "axiomgate-verifier",
+      reason:
+        "codex exec has no deterministic named-agent selector; using a fresh read-only verifier session",
+    },
   };
 }
 

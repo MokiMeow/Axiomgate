@@ -1,16 +1,18 @@
 #!/usr/bin/env node
 
 import { readFileSync } from "node:fs";
-import { userInfo } from "node:os";
-import { resolve } from "node:path";
+import { homedir, userInfo } from "node:os";
+import { join, resolve } from "node:path";
 
 import {
   approve as approveRequest,
   createMission,
+  codexNativeStatus,
   currentCommit,
   deny as denyRequest,
   enforcementDriftWarning,
   IntentBoundarySchema,
+  installCodexIntegration,
   listPending,
   loadMissionStatus,
   loadMissionSnapshot,
@@ -43,6 +45,10 @@ import {
 function codexVersion() {
   const launch = resolveCodexLaunch();
   return runExternalCommand(launch.command, [...launch.argsPrefix, "--version"]);
+}
+
+function codexHome(): string {
+  return resolve(process.env.CODEX_HOME ?? join(homedir(), ".codex"));
 }
 
 export async function runDoctor(): Promise<void> {
@@ -100,13 +106,35 @@ export async function runDoctor(): Promise<void> {
         : `Codex capacity: plan=${weekly.planType}; weekly used=${weekly.usedPercent}%; resets=${weekly.resetsAt} [${weekly.source}/${weekly.confidence}]`,
     );
   }
+
+  const native = codexNativeStatus(codexHome());
+  console.log(
+    `AxiomGate skill: ${native.skill.installed ? "present" : "absent"} (${native.skill.path})`,
+  );
+  console.log(
+    `AxiomGate verifier agent: ${native.verifierAgent.installed ? "present" : "absent"} (${native.verifierAgent.path})`,
+  );
 }
 
 function printUsage(): void {
+  console.log("Native Codex: axiomgate install-codex [--dry-run]");
   console.log("Runway: axiomgate runway status [--project <path>]");
   console.log(
     "Usage: axiomgate doctor | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission verify <id> [--project <path>] | axiomgate mission remediate <id> --finding <id> [--timeout-ms <ms>] [--project <path>] | axiomgate mission status <id> [--project <path>] | axiomgate mission waive <id> --criterion <id> --reason <text> --risk <text> [--project <path>] | axiomgate mission receipt <id> [--format json|md] [--project <path>] | axiomgate receipt verify <file> | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
   );
+}
+
+function runInstallCodex(): void {
+  const result = installCodexIntegration({
+    sourceRoot: process.cwd(),
+    codexHome: codexHome(),
+    dryRun: process.argv.includes("--dry-run"),
+  });
+  console.log(`Codex integration: ${result.mode}`);
+  for (const action of result.actions) {
+    console.log(`${action.status}: ${action.source} -> ${action.target}`);
+    if (action.status === "CONFLICT") process.exitCode = 1;
+  }
 }
 
 function argumentValue(name: string): string | undefined {
@@ -380,6 +408,7 @@ async function runMissionReview(id: string | undefined): Promise<void> {
       console.log(
         `Verifier: FRESH (${plan.model}/${plan.effort}; sandbox=${plan.sandbox})`,
       );
+      console.log(`Native verifier: ${plan.nativeDelegation.reason}`);
     },
   });
   console.log(`Session: ${result.record.sessionId ?? "unavailable"} (verifier)`);
@@ -524,7 +553,16 @@ function zEffort(value: string): ReasoningEffort {
   throw new Error("--effort must be none, low, medium, high, xhigh, or max");
 }
 
-if (command === "doctor") {
+if (command === "install-codex") {
+  try {
+    runInstallCodex();
+  } catch (error) {
+    console.error(
+      `Codex integration install failed: ${error instanceof Error ? error.message : "unknown error"}`,
+    );
+    process.exitCode = 1;
+  }
+} else if (command === "doctor") {
   await runDoctor();
 } else if (command === "verify-enforcement") {
   await runVerifyEnforcement();

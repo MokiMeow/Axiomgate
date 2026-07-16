@@ -1,6 +1,7 @@
 export * from "./checkpoint.js";
 export * from "./codex-jsonl.js";
 export * from "./codex-plan.js";
+export * from "./codex-install.js";
 export * from "./enforcement-check.js";
 export * from "./mission-files.js";
 export * from "./mission-run.js";
