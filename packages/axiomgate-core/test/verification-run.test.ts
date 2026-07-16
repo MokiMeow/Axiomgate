@@ -49,6 +49,62 @@ function verificationIdentity(capturedAt: string): IdentityReport {
 }
 
 describe("verifyMission", () => {
+  it("fans one shared command result out to every mapped criterion", () => {
+    const workspace = mkdtempSync(join(tmpdir(), "axiomgate-verify-fanout-"));
+    try {
+      writeFileSync(
+        join(workspace, "package.json"),
+        JSON.stringify({ scripts: { test: "node --test" } }),
+        "utf8",
+      );
+      const hookConfigOptions = {
+        cliEntryPath: join(workspace, "cli", "index.js"),
+        nodePath: process.execPath,
+      };
+      createMission(
+        workspace,
+        {
+          objective: "Verify shared test evidence",
+          criteria: [
+            { id: "criterion_lockout", statement: "Lockout passes", evidenceTypes: ["test"] },
+            { id: "criterion_regression", statement: "Regression passes", evidenceTypes: ["regression_test"] },
+            { id: "criterion_secret", statement: "No secrets", evidenceTypes: ["secret_scan"] },
+          ],
+        },
+        {
+          id: "msn_verify_fanout",
+          hookConfigOptions,
+          resolveIdentity: () => verificationIdentity("2026-07-16T01:00:00.000Z"),
+        },
+      );
+      const runner: CommandRunner = (command, args) => ({
+        command,
+        args,
+        status: command === "gitleaks" ? "UNAVAILABLE" : "SUCCESS",
+        exitCode: command === "gitleaks" ? 127 : 0,
+        stdout: command === "git" ? "" : "passed",
+        stderr: command === "gitleaks" ? "not installed" : "",
+        durationMs: 1,
+      });
+
+      const result = verifyMission(workspace, "msn_verify_fanout", {
+        hookConfigOptions,
+        resolveIdentity: () => verificationIdentity("2026-07-16T01:01:00.000Z"),
+        runner,
+        currentCommit: () => "abc123",
+      });
+      const testEvidence = result.evidence.filter(
+        (record) => record.command === "npm test",
+      );
+      expect(testEvidence.map((record) => record.criterionId).sort()).toEqual([
+        "criterion_lockout",
+        "criterion_regression",
+      ]);
+    } finally {
+      rmSync(workspace, { recursive: true, force: true });
+    }
+  });
+
   it("persists typed results and never reports PASS while a required scan is UNKNOWN", () => {
     const workspace = mkdtempSync(join(tmpdir(), "axiomgate-verify-run-"));
     try {

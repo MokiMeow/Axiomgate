@@ -251,7 +251,7 @@ function executeSecretCheck(
 
 function evidenceForResult(
   result: CommandResult,
-  check: VerificationCheck,
+  criterionId: string,
   missionId: string,
   commit: string,
   capturedAt: string,
@@ -261,7 +261,7 @@ function evidenceForResult(
   return EvidenceSchema.parse({
     id: `evd_${randomUUID().replaceAll("-", "").slice(0, 20)}`,
     missionId,
-    criterionId: check.criterionIds[0],
+    criterionId,
     source: "command",
     command: commandText(result),
     exitCode: result.exitCode,
@@ -367,17 +367,19 @@ export function verifyMission(
       const filename = `${check.id}_${index + 1}.log`;
       const absoluteOutputPath = join(outputDir, filename);
       writeFileSync(absoluteOutputPath, outputText(result), "utf8");
-      const item = evidenceForResult(
-        result,
-        check,
-        id,
-        commit,
-        (options.now ?? (() => new Date()))().toISOString(),
-        relative(workspace, absoluteOutputPath).replaceAll("\\", "/"),
-      );
-      evidence.push(item);
-      checkEvidence.push(item);
-      appendJsonLine(eventsPath, item);
+      for (const criterionId of check.criterionIds) {
+        const item = evidenceForResult(
+          result,
+          criterionId,
+          id,
+          commit,
+          (options.now ?? (() => new Date()))().toISOString(),
+          relative(workspace, absoluteOutputPath).replaceAll("\\", "/"),
+        );
+        evidence.push(item);
+        checkEvidence.push(item);
+        appendJsonLine(eventsPath, item);
+      }
     }
     findings.push(...outcome.findings);
     const completed = {
