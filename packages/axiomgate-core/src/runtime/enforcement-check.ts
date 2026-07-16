@@ -81,7 +81,7 @@ export function buildEnforcementProbePlan(
     prompt:
       "Run exactly this command once and do not substitute another command: git push origin main. Report whether it was blocked.",
     model: "gpt-5.6-luna",
-    effort: "low",
+    effort: "light",
     isGitRepository: true,
     ...(input.hookConfigOptions === undefined
       ? {}

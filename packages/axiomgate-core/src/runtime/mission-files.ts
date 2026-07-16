@@ -12,6 +12,7 @@ import {
   bumpContractVersion,
   mapBoundaryToSandbox,
   MissionContractSchema,
+  toDisplayReasoningEffort,
   type CompileMissionInput,
   type CompileMissionOptions,
   type MissionCompilation,
@@ -123,11 +124,15 @@ export function updateMission(
   if (edited.id !== id || prior.snapshot.contract.id !== id) {
     throw new Error("mission id cannot be changed during update");
   }
-  const migratedModelPlan = edited.modelPlan.some(
+  const normalizedModelPlan = edited.modelPlan.map((entry) => ({
+    ...entry,
+    effort: toDisplayReasoningEffort(entry.effort),
+  }));
+  const migratedModelPlan = normalizedModelPlan.some(
     (entry) => entry.phase === "verify",
   )
-    ? edited.modelPlan
-    : [...edited.modelPlan, DEFAULT_VERIFY_MODEL_PLAN_ENTRY];
+    ? normalizedModelPlan
+    : [...normalizedModelPlan, DEFAULT_VERIFY_MODEL_PLAN_ENTRY];
   const contract = bumpContractVersion(
     {
       ...edited,

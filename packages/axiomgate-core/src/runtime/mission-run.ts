@@ -14,9 +14,11 @@ import { z } from "zod";
 import { EvidenceSchema, type Evidence } from "../evidence/index.js";
 import {
   hashContract,
+  PersistedReasoningEffortSchema,
   ReasoningEffortSchema,
   Sha256Schema,
   stableStringify,
+  toDisplayReasoningEffort,
   type ReasoningEffort,
 } from "../mission/index.js";
 import {
@@ -69,7 +71,7 @@ export const MissionRunRecordSchema = z.strictObject({
   exitCode: z.number().int(),
   sessionId: z.string().min(1).nullable(),
   model: z.string().min(1),
-  effort: ReasoningEffortSchema,
+  effort: PersistedReasoningEffortSchema,
   sandbox: z.enum(["read-only", "workspace-write"]),
   networkAccess: z.boolean(),
   configHash: Sha256Schema,
@@ -564,7 +566,8 @@ export function resumeMission(
   return runMissionInternal(projectPath, id, {
     ...options,
     model: options.model ?? checkpoint.model,
-    effort: options.effort ?? checkpoint.effort,
+    effort:
+      options.effort ?? toDisplayReasoningEffort(checkpoint.effort),
     resumeCheckpoint: checkpoint,
   });
 }

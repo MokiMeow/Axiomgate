@@ -18,6 +18,7 @@ import {
   missionDirectory,
   parseMissionCriteria,
   updateMission,
+  ULTRA_CAPABILITY_NOTE,
   type IdentityReport,
 } from "../src/index.js";
 
@@ -107,27 +108,29 @@ describe("compileMission", () => {
       {
         phase: "scout",
         model: "gpt-5.6-luna",
-        effort: "low",
-        rationale: "structured mapping",
+        effort: "light",
+        rationale: "lightweight structured mapping",
       },
       {
         phase: "build",
         model: "gpt-5.6-sol",
         effort: "high",
-        rationale: "primary implementation",
+        rationale: "primary implementation at High",
+        multiAgent: false,
+        capabilityNote: ULTRA_CAPABILITY_NOTE,
       },
       {
         phase: "remediate",
         model: "gpt-5.6-terra",
         effort: "medium",
-        rationale: "bounded fixes",
+        rationale: "bounded fixes at balanced Medium",
       },
       {
         phase: "verify",
         model: "gpt-5.6-terra",
         effort: "high",
         rationale:
-          "independent challenge; different tier than builder reduces correlated blind spots",
+          "independent challenge at High; a different tier than the builder reduces correlated blind spots",
       },
     ]);
     expect(result.contract.hash).toBe(hashContract(result.contract));
@@ -205,16 +208,16 @@ describe("compileMission", () => {
   });
 
   it.each([
-    ["high", "medium", "primary implementation"],
+    ["high", "medium", "primary implementation at High"],
     [
       "max",
       "high",
-      "single unbroken reasoning chain; hardest security-sensitive step",
+      "single unbroken reasoning chain at Max for the hardest security-sensitive step",
     ],
     [
       "max",
       "critical",
-      "single unbroken reasoning chain; hardest security-sensitive step",
+      "single unbroken reasoning chain at Max for the hardest security-sensitive step",
     ],
   ] as const)(
     "selects sol/%s reasoning from %s mission risk",
@@ -235,6 +238,8 @@ describe("compileMission", () => {
         model: "gpt-5.6-sol",
         effort,
         rationale,
+        multiAgent: false,
+        capabilityNote: ULTRA_CAPABILITY_NOTE,
       });
     },
   );
@@ -300,6 +305,8 @@ describe("mission files", () => {
       edited.modelPlan = (edited.modelPlan as Array<Record<string, unknown>>).filter(
         (entry) => entry.phase !== "verify",
       );
+      (edited.modelPlan as Array<Record<string, unknown>>)[0]!.effort = "none";
+      (edited.modelPlan as Array<Record<string, unknown>>)[1]!.effort = "low";
       writeFileSync(contractPath, `${JSON.stringify(edited, null, 2)}\n`, "utf8");
 
       const updated = updateMission(projectPath, "msn_update", {
@@ -315,12 +322,14 @@ describe("mission files", () => {
       });
       expect(updated.contract.hash).toBe(hashContract(updated.contract));
       expect(updated.contract.budgetPolicy).toEqual({ reservePercent: 20 });
+      expect(updated.contract.modelPlan[0]?.effort).toBe("light");
+      expect(updated.contract.modelPlan[1]?.effort).toBe("light");
       expect(updated.contract.modelPlan).toContainEqual({
         phase: "verify",
         model: "gpt-5.6-terra",
         effort: "high",
         rationale:
-          "independent challenge; different tier than builder reduces correlated blind spots",
+          "independent challenge at High; a different tier than the builder reduces correlated blind spots",
       });
       const snapshot = loadMissionSnapshot(directory);
       expect(snapshot.status).toBe("VALID");

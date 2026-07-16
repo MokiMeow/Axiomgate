@@ -3,6 +3,8 @@ import { resolve } from "node:path";
 import {
   mapBoundaryToSandbox,
   ReasoningEffortSchema,
+  toCodexReasoningEffort,
+  toDisplayReasoningEffort,
   type ReasoningEffort,
   type MissionContract,
 } from "../mission/index.js";
@@ -52,7 +54,10 @@ export function buildCodexRunPlan(
     throw new Error(mapping.reason);
   }
   const model = input.model ?? buildPhase.model;
-  const effort = ReasoningEffortSchema.parse(input.effort ?? buildPhase.effort);
+  const effort = ReasoningEffortSchema.parse(
+    input.effort ?? toDisplayReasoningEffort(buildPhase.effort),
+  );
+  const wireEffort = toCodexReasoningEffort(effort);
   const missionDir = resolve(input.missionDir);
   const projectPath = resolve(input.projectPath);
   const hook = generateHookConfig(missionDir, input.hookConfigOptions);
@@ -62,7 +67,7 @@ export function buildCodexRunPlan(
     "--model",
     model,
     "-c",
-    `model_reasoning_effort=${JSON.stringify(effort)}`,
+    `model_reasoning_effort=${JSON.stringify(wireEffort)}`,
     ...mapping.codexArgs,
     "--dangerously-bypass-hook-trust",
     "--cd",

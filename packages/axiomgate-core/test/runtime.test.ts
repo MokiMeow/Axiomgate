@@ -117,6 +117,8 @@ describe("buildCodexRunPlan", () => {
       ...hook.codexArgs,
       "-",
     ]);
+    expect(plan.args.join(" ").toLowerCase()).not.toContain("ultra");
+    expect(plan.args.join(" ")).not.toContain("multi_agent");
   });
 
   it("uses explicit model and effort while enabling network at PUBLISH", () => {
@@ -130,7 +132,7 @@ describe("buildCodexRunPlan", () => {
       projectPath: "C:/repo",
       prompt: "Prepare the change",
       model: "gpt-5.6-luna",
-      effort: "low",
+      effort: "light",
       isGitRepository: true,
       hookConfigOptions: {
         cliEntryPath: "C:/axiomgate/cli.js",
@@ -140,11 +142,12 @@ describe("buildCodexRunPlan", () => {
 
     expect(plan).toMatchObject({
       model: "gpt-5.6-luna",
-      effort: "low",
+      effort: "light",
       sandbox: "workspace-write",
       networkAccess: true,
     });
     expect(plan.args).toContain("sandbox_workspace_write.network_access=true");
+    expect(plan.args).toContain('model_reasoning_effort="low"');
     expect(plan.args).not.toContain("--skip-git-repo-check");
   });
 

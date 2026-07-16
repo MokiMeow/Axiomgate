@@ -9,6 +9,7 @@ import {
   RiskSchema,
   type MissionContract,
 } from "./mission-contract.js";
+import { ULTRA_CAPABILITY_NOTE } from "./reasoning-effort.js";
 
 const MissionCriterionInputSchema = z.strictObject({
   id: z.string().trim().min(1).optional(),
@@ -78,21 +79,21 @@ export const DEFAULT_VERIFY_MODEL_PLAN_ENTRY: MissionContract["modelPlan"][numbe
   model: "gpt-5.6-terra",
   effort: "high",
   rationale:
-    "independent challenge; different tier than builder reduces correlated blind spots",
+    "independent challenge at High; a different tier than the builder reduces correlated blind spots",
 };
 
 const BASE_MODEL_PLAN: MissionContract["modelPlan"] = [
   {
     phase: "scout",
     model: "gpt-5.6-luna",
-    effort: "low",
-    rationale: "structured mapping",
+    effort: "light",
+    rationale: "lightweight structured mapping",
   },
   {
     phase: "remediate",
     model: "gpt-5.6-terra",
     effort: "medium",
-    rationale: "bounded fixes",
+    rationale: "bounded fixes at balanced Medium",
   },
   DEFAULT_VERIFY_MODEL_PLAN_ENTRY,
 ];
@@ -119,13 +120,17 @@ function modelPlanFor(
         model: "gpt-5.6-sol",
         effort: "max" as const,
         rationale:
-          "single unbroken reasoning chain; hardest security-sensitive step",
+          "single unbroken reasoning chain at Max for the hardest security-sensitive step",
+        multiAgent: false as const,
+        capabilityNote: ULTRA_CAPABILITY_NOTE,
       }
     : {
         phase: "build",
         model: "gpt-5.6-sol",
         effort: "high" as const,
-        rationale: "primary implementation",
+        rationale: "primary implementation at High",
+        multiAgent: false as const,
+        capabilityNote: ULTRA_CAPABILITY_NOTE,
       };
   return [BASE_MODEL_PLAN[0]!, build, ...BASE_MODEL_PLAN.slice(1)];
 }

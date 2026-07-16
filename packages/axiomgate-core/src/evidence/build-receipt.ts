@@ -8,7 +8,7 @@ import {
   AcceptanceVerdictSchema,
   IsoDateTimeSchema,
   MissionContractSchema,
-  ReasoningEffortSchema,
+  PersistedReasoningEffortSchema,
   Sha256Schema,
 } from "../mission/index.js";
 import { VerificationFindingSchema } from "../verification/types.js";
@@ -60,7 +60,7 @@ export const BuildReceiptSchema = z.strictObject({
     z.strictObject({
       phase: z.string().min(1),
       model: z.string().min(1),
-      effort: ReasoningEffortSchema,
+      effort: PersistedReasoningEffortSchema,
       tokens: TokenUsageSchema,
     }),
   ),

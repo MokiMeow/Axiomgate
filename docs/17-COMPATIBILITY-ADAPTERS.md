@@ -37,6 +37,14 @@ Integration interfaces (all official): hooks (`PreToolUse`, `PermissionRequest`,
 - `multi_agent` is stable/enabled, but `codex exec --help` exposes no deterministic named-agent selector on 0.144.4. Custom-agent spawning is prompt/model driven. `mission review` therefore remains a fresh `gpt-5.6-terra/high`, `read-only` verifier session and reports the fallback explicitly; it does not fake delegation.
 - Live proof produced a valid advisory verifier record in fresh session `019f6af1-79f0-7860-b442-1d2791c933e9`; the target's tracked diff hash was unchanged before/after. Evidence: `evidence/public/skill-subagent-verification.md`.
 
+### Reasoning-effort wire results — codex-cli 0.144.4, 2026-07-16 (VERIFIED)
+
+- Six isolated `gpt-5.6-luna` probes through the shared timeout runner tested `light`, `low`, `medium`, `high`, `xhigh`, and `max` exactly once each.
+- `light` was rejected with HTTP 400 `invalid_enum_value`. `low`, `medium`, `high`, `xhigh`, and `max` each completed successfully.
+- AxiomGate's product vocabulary is `Light`, `Medium`, `High`, `Xhigh`, `Max`; the exec adapter translates display `light` to wire `low` and passes the other values through.
+- Legacy contracts/receipts containing `none`, `minimal`, or `low` remain parseable; `mission update` migrates those values to display `light` before versioning and re-hashing.
+- Ultra is native Codex multi-agent mode, not a reasoning-effort wire value. AxiomGate records it as a capability note only and does not orchestrate Ultra during Build Week. Evidence: `evidence/public/effort-labels-verification.md`.
+
 ### Claude
 
 Independent review only (planning, adversarial testing, blueprint review); **no Build Week runtime implementation**. Core building happens through Codex in the primary `/feedback` thread. Do not make shared-skill installation, mission handoff, or runtime parity a requirement.

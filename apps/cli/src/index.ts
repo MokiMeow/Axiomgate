@@ -11,6 +11,7 @@ import {
   currentCommit,
   deny as denyRequest,
   enforcementDriftWarning,
+  formatReasoningEffort,
   IntentBoundarySchema,
   installCodexIntegration,
   listPending,
@@ -23,6 +24,7 @@ import {
   readCodexRateLimits,
   ReasoningEffortSchema,
   recordWaiver,
+  renderModelDirectorVocabulary,
   remediateMission,
   resolveCodexLaunch,
   reviewMission,
@@ -53,6 +55,7 @@ function codexHome(): string {
 
 export async function runDoctor(): Promise<void> {
   console.log(`node: ${process.version}`);
+  console.log(renderModelDirectorVocabulary());
 
   const codex = codexVersion();
   if (codex.status !== "SUCCESS") {
@@ -365,6 +368,7 @@ function runRunwaySet(): void {
 
 async function runRunwayStatus(): Promise<void> {
   const capacity = await resolveRunwayCapacity(projectPath());
+  console.log(renderModelDirectorVocabulary());
   console.log(renderRunwayCapacity(capacity));
 }
 
@@ -406,7 +410,7 @@ async function runMissionReview(id: string | undefined): Promise<void> {
     ...(timeoutMs === undefined ? {} : { timeoutMs }),
     onReady: (plan) => {
       console.log(
-        `Verifier: FRESH (${plan.model}/${plan.effort}; sandbox=${plan.sandbox})`,
+        `Verifier: FRESH (${plan.model}/${formatReasoningEffort(plan.effort)}; sandbox=${plan.sandbox})`,
       );
       console.log(`Native verifier: ${plan.nativeDelegation.reason}`);
     },
@@ -459,7 +463,7 @@ async function runMissionRemediate(id: string | undefined): Promise<void> {
     ...(timeoutMs === undefined ? {} : { timeoutMs }),
   });
   console.log(
-    `Remediation: ${result.remediation.record.status} (${result.plan.model}/${result.plan.effort})`,
+    `Remediation: ${result.remediation.record.status} (${result.plan.model}/${formatReasoningEffort(result.plan.effort)})`,
   );
   if (result.verification === undefined) {
     console.log("Targeted verification: NOT RUN");
@@ -481,6 +485,15 @@ function runMissionStatus(id: string | undefined): void {
   const status = loadMissionStatus(project, id, {
     currentRevision: currentCommit(project),
   });
+  console.log("Phase | Model | Effort");
+  for (const phase of status.contract.modelPlan) {
+    console.log(
+      `${phase.phase} | ${phase.model} | ${formatReasoningEffort(phase.effort)}`,
+    );
+    if (phase.capabilityNote !== undefined) {
+      console.log(`  Capability: ${phase.capabilityNote}`);
+    }
+  }
   console.log("Criterion | Verdict | Evidence");
   for (const criterion of status.gate.criteria) {
     console.log(
@@ -550,7 +563,7 @@ function runReceiptVerify(path: string | undefined): void {
 function zEffort(value: string): ReasoningEffort {
   const parsed = ReasoningEffortSchema.safeParse(value);
   if (parsed.success) return parsed.data;
-  throw new Error("--effort must be none, low, medium, high, xhigh, or max");
+  throw new Error("--effort must be light, medium, high, xhigh, or max");
 }
 
 if (command === "install-codex") {

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import {
-  ReasoningEffortSchema,
+  PersistedReasoningEffortSchema,
   type ReasoningEffort,
 } from "../mission/index.js";
 import type { ParsedCodexStream } from "./codex-jsonl.js";
@@ -26,7 +26,7 @@ const MissionCheckpointValueSchema = z.strictObject({
   resetAt: z.iso.datetime({ offset: true }).nullable(),
   lastEvent: z.record(z.string(), z.unknown()).nullable(),
   model: z.string().min(1),
-  effort: ReasoningEffortSchema,
+  effort: PersistedReasoningEffortSchema,
   capturedAt: z.iso.datetime({ offset: true }),
 });
 

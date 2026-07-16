@@ -7,14 +7,14 @@ import {
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
-import { ReasoningEffortSchema } from "../mission/index.js";
+import { CodexReasoningEffortSchema } from "../mission/index.js";
 
 export const CodexAgentDefinitionSchema = z.strictObject({
   name: z.string().min(1),
   description: z.string().min(1),
   developer_instructions: z.string().min(1),
   model: z.string().min(1),
-  model_reasoning_effort: ReasoningEffortSchema,
+  model_reasoning_effort: CodexReasoningEffortSchema,
   sandbox_mode: z.literal("read-only"),
 });
 

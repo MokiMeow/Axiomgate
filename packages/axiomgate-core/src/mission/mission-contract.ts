@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { IntentBoundarySchema } from "./intent-boundary.js";
 import { IsoDateTimeSchema, Sha256Schema } from "./primitives.js";
+import { PersistedReasoningEffortSchema } from "./reasoning-effort.js";
 
 export const RiskSchema = z.enum(["low", "medium", "high", "critical"]);
 
@@ -37,21 +38,13 @@ export const ActionPolicyEntrySchema = z.strictObject({
   restrict: z.record(z.string(), z.unknown()).optional(),
 });
 
-export const ReasoningEffortSchema = z.enum([
-  "none",
-  "low",
-  "medium",
-  "high",
-  "xhigh",
-  "max",
-]);
-export type ReasoningEffort = z.infer<typeof ReasoningEffortSchema>;
-
 export const ModelPlanEntrySchema = z.strictObject({
   phase: z.string().min(1),
   model: z.string().min(1),
-  effort: ReasoningEffortSchema,
+  effort: PersistedReasoningEffortSchema,
   rationale: z.string().min(1),
+  multiAgent: z.literal(false).optional(),
+  capabilityNote: z.string().min(1).optional(),
 });
 
 export const BudgetPolicySchema = z.strictObject({

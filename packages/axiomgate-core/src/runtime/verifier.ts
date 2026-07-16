@@ -11,7 +11,10 @@ import { z } from "zod";
 import { EvidenceSchema, type Evidence } from "../evidence/index.js";
 import {
   hashContract,
+  PersistedReasoningEffortSchema,
   ReasoningEffortSchema,
+  toCodexReasoningEffort,
+  toDisplayReasoningEffort,
   type ReasoningEffort,
   type MissionContract,
 } from "../mission/index.js";
@@ -206,7 +209,10 @@ export function buildVerifierPlan(
   const projectPath = resolve(input.projectPath);
   const outputSchemaPath = resolve(input.outputSchemaPath);
   const model = input.model ?? verifyPhase.model;
-  const effort = ReasoningEffortSchema.parse(input.effort ?? verifyPhase.effort);
+  const effort = ReasoningEffortSchema.parse(
+    input.effort ?? toDisplayReasoningEffort(verifyPhase.effort),
+  );
+  const wireEffort = toCodexReasoningEffort(effort);
   const hook = generateHookConfig(missionDir, input.hookConfigOptions);
   const args = [
     "exec",
@@ -214,7 +220,7 @@ export function buildVerifierPlan(
     "--model",
     model,
     "-c",
-    `model_reasoning_effort=${JSON.stringify(effort)}`,
+    `model_reasoning_effort=${JSON.stringify(wireEffort)}`,
     "--sandbox",
     "read-only",
     "--dangerously-bypass-hook-trust",
@@ -254,7 +260,7 @@ export const VerifierFindingsRecordSchema = z.strictObject({
   status: z.enum(["VALID", "INVALID"]),
   advisory: z.literal(true),
   model: z.string().min(1),
-  effort: ReasoningEffortSchema,
+  effort: PersistedReasoningEffortSchema,
   capturedAt: z.iso.datetime({ offset: true }),
   findings: VerifierFindingsSchema,
   reason: z.string().min(1).optional(),

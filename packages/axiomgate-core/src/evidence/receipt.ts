@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 import {
+  formatReasoningEffort,
   hashContract,
   stableStringify,
   type MissionContract,
@@ -240,6 +241,15 @@ export function renderReceiptMarkdown(input: BuildReceipt): string {
     ...receipt.criteria.map(
       (criterion) =>
         `| ${markdownCell(criterion.id)} | ${criterion.verdict} | ${criterion.evidenceIds.map(markdownCell).join(", ") || "-"} |`,
+    ),
+    "",
+    "## Model usage",
+    "",
+    "| Phase | Model | Effort | Tokens |",
+    "|---|---|---|---:|",
+    ...receipt.modelUsage.map(
+      (usage) =>
+        `| ${markdownCell(usage.phase)} | ${markdownCell(usage.model)} | ${formatReasoningEffort(usage.effort)} | ${usage.tokens.input + usage.tokens.output} |`,
     ),
     "",
     "## Evidence",

@@ -198,8 +198,20 @@ describe("Build Receipt projection", () => {
     const markdown = renderReceiptMarkdown(value);
     expect(markdown).toContain("# AxiomGate Build Receipt");
     expect(markdown).toContain("| criterion_test | PASS | ev_test |");
+    expect(markdown).toContain("| build | gpt-5.6-sol | High | 15 |");
     expect(parseReceiptDocument(markdown)).toEqual(value);
     expect(verifyReceiptDocument(markdown)).toMatchObject({ valid: true });
+  });
+
+  it("continues to verify a prior receipt that stored the legacy low label", () => {
+    const value = structuredClone(receipt());
+    value.contract.modelPlan[0]!.effort = "low";
+    value.contract.hash = hashContract(value.contract);
+    value.contractHash = value.contract.hash;
+    value.modelUsage[0]!.effort = "low";
+
+    expect(parseReceiptDocument(JSON.stringify(value))).toEqual(value);
+    expect(verifyBuildReceipt(value)).toMatchObject({ valid: true });
   });
 });
 

@@ -7,6 +7,8 @@ import {
   EvidenceSchema,
   INTENT_BOUNDARIES,
   MissionContractSchema,
+  PersistedReasoningEffortSchema,
+  ReasoningEffortSchema,
   bumpContractVersion,
   compareIntentBoundaries,
   hashContract,
@@ -190,6 +192,20 @@ describe("MissionContractSchema", () => {
   });
 });
 
+describe("ReasoningEffortSchema", () => {
+  it("uses the app vocabulary while retaining legacy parse compatibility", () => {
+    expect(ReasoningEffortSchema.options).toEqual([
+      "light",
+      "medium",
+      "high",
+      "xhigh",
+      "max",
+    ]);
+    expect(ReasoningEffortSchema.safeParse("low").success).toBe(false);
+    expect(PersistedReasoningEffortSchema.parse("low")).toBe("low");
+  });
+});
+
 describe("ActionRequestSchema", () => {
   it("accepts the canonical action request", () => {
     expect(ActionRequestSchema.parse(actionRequest)).toEqual(actionRequest);
@@ -248,6 +264,21 @@ describe("BuildReceiptSchema", () => {
       BuildReceiptSchema.safeParse({ ...buildReceipt, outcome: "SUCCESS" })
         .success,
     ).toBe(false);
+  });
+
+  it("round-trips the new Light display value in receipt model usage", () => {
+    const withLight = {
+      ...buildReceipt,
+      modelUsage: [
+        {
+          ...buildReceipt.modelUsage[0],
+          phase: "scout",
+          model: "gpt-5.6-luna",
+          effort: "light",
+        },
+      ],
+    } as const;
+    expect(BuildReceiptSchema.parse(withLight)).toEqual(withLight);
   });
 });
 

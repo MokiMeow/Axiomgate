@@ -12,8 +12,9 @@ import {
   type CommandRunner,
 } from "../guard/index.js";
 import {
-  ReasoningEffortSchema,
+  PersistedReasoningEffortSchema,
   stableStringify,
+  toDisplayReasoningEffort,
 } from "../mission/index.js";
 import { missionDirectory } from "../runtime/mission-files.js";
 import {
@@ -55,11 +56,15 @@ function modelUsage(
       ? entry.usage as Record<string, unknown>
       : {};
     const model = typeof entry.model === "string" ? entry.model : "UNKNOWN";
-    const parsedEffort = ReasoningEffortSchema.safeParse(entry.effort);
-    const effort = parsedEffort.success ? parsedEffort.data : "medium";
+    const parsedEffort = PersistedReasoningEffortSchema.safeParse(entry.effort);
+    const effort = parsedEffort.success
+      ? toDisplayReasoningEffort(parsedEffort.data)
+      : "medium";
     const role = entry.role === "verifier" ? "verify" : undefined;
     const planned = contract.modelPlan.find(
-      (phase) => phase.model === model && phase.effort === effort,
+      (phase) =>
+        phase.model === model &&
+        toDisplayReasoningEffort(phase.effort) === effort,
     );
     return {
       phase: role ?? planned?.phase ?? "observed",

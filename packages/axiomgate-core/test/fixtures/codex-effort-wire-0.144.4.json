@@ -1,0 +1,43 @@
+{
+  "codexVersion": "0.144.4",
+  "verifiedAt": "2026-07-16",
+  "model": "gpt-5.6-luna",
+  "results": [
+    {
+      "value": "light",
+      "accepted": false,
+      "exitCode": 1,
+      "observation": "HTTP 400 invalid_enum_value; supported values included low, medium, high, xhigh, and max"
+    },
+    {
+      "value": "low",
+      "accepted": true,
+      "exitCode": 0,
+      "observation": "turn.completed; agent response OK"
+    },
+    {
+      "value": "medium",
+      "accepted": true,
+      "exitCode": 0,
+      "observation": "turn.completed; agent response OK"
+    },
+    {
+      "value": "high",
+      "accepted": true,
+      "exitCode": 0,
+      "observation": "turn.completed; agent response OK"
+    },
+    {
+      "value": "xhigh",
+      "accepted": true,
+      "exitCode": 0,
+      "observation": "turn.completed; agent response OK"
+    },
+    {
+      "value": "max",
+      "accepted": true,
+      "exitCode": 0,
+      "observation": "turn.completed; agent response OK"
+    }
+  ]
+}

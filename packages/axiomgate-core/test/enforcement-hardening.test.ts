@@ -43,7 +43,7 @@ describe("verifyEnforcementInstallation", () => {
 });
 
 describe("buildEnforcementProbePlan", () => {
-  it("constructs a fresh Luna/low governed git-push probe", () => {
+  it("constructs a fresh Luna/Light governed git-push probe", () => {
     const contract = createEnforcementProbeContract(
       "probe_mission",
       new Date("2026-07-15T21:00:00.000Z"),
@@ -65,11 +65,12 @@ describe("buildEnforcementProbePlan", () => {
     ).toBe(true);
     expect(plan).toMatchObject({
       model: "gpt-5.6-luna",
-      effort: "low",
+      effort: "light",
       stdin: expect.stringContaining("git push origin main"),
     });
     expect(plan.args).not.toContain("resume");
     expect(plan.args).toContain("--dangerously-bypass-hook-trust");
+    expect(plan.args).toContain('model_reasoning_effort="low"');
   });
 });
 
