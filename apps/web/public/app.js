@@ -311,14 +311,16 @@ function blockMoment(m) {
 }
 
 function twoColumn(m, verdicts, complete) {
-  const grid = el("section", "grid two");
-  grid.appendChild(proofPanel(m, verdicts, complete));
-  const stack = el("div", "stack");
+  // Proof of completion is the hero → full width. Model plan + receipt sit
+  // balanced in a row below, so there is no empty column gap.
+  const wrap = el("section", "grid");
+  wrap.appendChild(proofPanel(m, verdicts, complete));
+  const row = el("div", "grid two");
   const plan = planPanel(m);
-  if (plan) stack.appendChild(plan);
-  stack.appendChild(receiptPanel(m));
-  grid.appendChild(stack);
-  return grid;
+  if (plan) row.appendChild(plan);
+  row.appendChild(receiptPanel(m));
+  wrap.appendChild(row);
+  return wrap;
 }
 
 function proofPanel(m, verdicts, complete) {

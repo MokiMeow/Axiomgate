@@ -196,9 +196,10 @@ select {
 
 .nav .m-meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 7px;
-  margin-top: 3px;
+  gap: 3px 7px;
+  margin-top: 4px;
   font-family: var(--mono);
   font-size: 10.5px;
   color: var(--muted-soft);
@@ -274,11 +275,11 @@ h3 {
 }
 
 h1 {
-  font-size: 36px;
-  line-height: 1.14;
-  letter-spacing: -1.2px;
-  font-weight: 400;
-  max-width: 30ch;
+  font-size: 25px;
+  line-height: 1.28;
+  letter-spacing: -0.5px;
+  font-weight: 500;
+  max-width: 46ch;
 }
 
 .section-label {
@@ -410,7 +411,7 @@ h1 {
 }
 
 .two {
-  grid-template-columns: 1.45fr 1fr;
+  grid-template-columns: 1fr 1fr;
   align-items: start;
 }
 
