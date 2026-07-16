@@ -30,6 +30,10 @@ This board is authoritative. Where a phase file conflicts, this board wins. Dead
 - [x] R1 Session adapter: official SDK / `codex exec --json`; sandbox flags from intent boundary; event + token capture; primary session ID preserved. Evidence: [`evidence/public/f6-r1-verification.md`](../evidence/public/f6-r1-verification.md).
 - [x] R2 Builder + independent Verifier role contracts (fresh session, no builder-context inheritance); canonical mission state with stop/resume. Evidence: [`evidence/public/r2-r3-verification.md`](../evidence/public/r2-r3-verification.md).
 - [x] R3 Runway lite: token-actuals ledger, verification reserve, loop-signature detector (pause recommendation), source/confidence-labelled capacity snapshot + expiring-reset reminder, post-limit checkpoint + `mission resume`. Evidence: [`evidence/public/r2-r3-verification.md`](../evidence/public/r2-r3-verification.md).
+- [x] Q1 Real Codex capacity source: defensive `account/rateLimits/read` app-server probe, all reported windows, short cache, and honest UNAVAILABLE fallback. Evidence: [`evidence/public/q1-q4-verification.md`](../evidence/public/q1-q4-verification.md).
+- [x] Q2 Runway live wiring: app-server-first capacity, manual fallback, real-window reserve math, real banked-reset reminder, and post-limit details. Evidence: [`evidence/public/q1-q4-verification.md`](../evidence/public/q1-q4-verification.md).
+- [x] Q3 Model Director `max` tier: full reasoning-effort domain and risk-selected `gpt-5.6-sol/max` recommendation with recorded rationale. Evidence: [`evidence/public/q1-q4-verification.md`](../evidence/public/q1-q4-verification.md).
+- [x] Q4 CLI surfaces: live `runway status` table and doctor account-capacity signal with source/confidence labels. Evidence: [`evidence/public/q1-q4-verification.md`](../evidence/public/q1-q4-verification.md).
 
 ## Verification via PatchPilot (target: Jul 17–18)
 
