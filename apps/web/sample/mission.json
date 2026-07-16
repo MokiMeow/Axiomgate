@@ -1,0 +1,56 @@
+{
+  "id": "msn_sample_lockout",
+  "label": "SAMPLE",
+  "contract": {
+    "id": "msn_sample_lockout",
+    "version": 2,
+    "hash": "sha256:d5548d7d9cb0fcd9516908d767058f99f79f4a3e7de0638b0a602c0721f4d410",
+    "objective": "Add brute-force lockout to the login endpoint (lock after 5 failed attempts for 15 minutes), preserving existing behavior",
+    "intentBoundary": "PUBLISH",
+    "status": "VERIFYING",
+    "acceptanceCriteria": [
+      { "id": "criterion_implement", "statement": "Lockout engages after 5 failed logins and lifts after 15 minutes", "risk": "high", "evidenceTypes": ["test", "diff"], "verdict": "PASS" },
+      { "id": "criterion_regression", "statement": "Existing successful-login behavior is unchanged", "risk": "high", "evidenceTypes": ["test"], "verdict": "PASS" },
+      { "id": "criterion_security", "statement": "No new known-vulnerable dependencies are introduced", "risk": "high", "evidenceTypes": ["security_scan"], "verdict": "PASS" },
+      { "id": "criterion_secrets", "statement": "The change exposes no secrets", "risk": "critical", "evidenceTypes": ["secret_scan"], "verdict": "PASS" },
+      { "id": "criterion_browser", "statement": "Locked account shows the correct message in the browser", "risk": "medium", "evidenceTypes": ["browser"], "verdict": "UNVERIFIED" }
+    ],
+    "modelPlan": [
+      { "phase": "scout", "model": "gpt-5.6-luna", "effort": "light", "rationale": "structured repository mapping" },
+      { "phase": "build", "model": "gpt-5.6-sol", "effort": "max", "rationale": "single unbroken reasoning chain; hardest security-sensitive step" },
+      { "phase": "remediate", "model": "gpt-5.6-terra", "effort": "medium", "rationale": "bounded fixes" }
+    ]
+  },
+  "identity": { "githubLogin": { "value": "mokimeow", "source": "gh api user", "confidence": "high" } },
+  "denials": [
+    { "decision": "DENY", "hookEvent": "PreToolUse", "semanticAction": "preview.deploy", "command": "vercel deploy --prod --scope acme-staging", "reasons": ["Deploy target 'acme-staging' is not owned by the signed-in account (mokimeow). EXISTS_NOT_OWNED."] }
+  ],
+  "evidence": [
+    { "id": "evd_impl01", "criterionId": "criterion_implement", "source": "command", "exitCode": 0 },
+    { "id": "evd_impl02", "criterionId": "criterion_implement", "source": "hook", "exitCode": 0 },
+    { "id": "evd_regr01", "criterionId": "criterion_regression", "source": "command", "exitCode": 0 },
+    { "id": "evd_secu01", "criterionId": "criterion_security", "source": "api", "exitCode": 0 },
+    { "id": "evd_secr01", "criterionId": "criterion_secrets", "source": "command", "exitCode": 0 }
+  ],
+  "events": [{ "hookEvent": "PreToolUse" }],
+  "ledger": [
+    { "usage": { "input_tokens": 73764, "output_tokens": 632, "reasoning_output_tokens": 200 }, "role": "builder" },
+    { "usage": { "input_tokens": 306713, "output_tokens": 2219, "reasoning_output_tokens": 576 }, "role": "builder" },
+    { "usage": { "input_tokens": 41200, "output_tokens": 410, "reasoning_output_tokens": 180 }, "role": "verifier" }
+  ],
+  "sessions": [{ "id": "019f66d0", "role": "builder" }, { "id": "019f66d1", "role": "verifier" }],
+  "findings": [],
+  "runs": [
+    { "id": "run_a", "status": "SUCCESS", "model": "gpt-5.6-sol", "effort": "max", "startedAt": "2026-07-16T10:00:00Z" },
+    { "id": "run_b", "status": "SUCCESS", "model": "gpt-5.6-terra", "effort": "medium", "startedAt": "2026-07-16T10:20:00Z" }
+  ],
+  "verifications": [{ "id": "verify_a", "overall": "PASS", "startedAt": "2026-07-16T10:25:00Z" }],
+  "approvals": [
+    { "id": "apr_1", "actionRequestId": "act_pr", "command": "gh pr create --title 'Add brute-force lockout'", "semanticAction": "pull_request.create", "expiresAt": "2026-07-16T11:00:00Z" }
+  ],
+  "receipt": {
+    "outcome": "INCOMPLETE",
+    "evidenceChainHead": "sha256:533815f1b74dcb667998b15cdaa52c7b09a2283a033af97f20bbe2b1bca0c9f3",
+    "repo": { "commit": "7708120ed9b8" }
+  }
+}

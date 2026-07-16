@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AxiomGate — Mission Control</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="side">
+        <div class="brand">AxiomGate</div>
+        <div class="brand-sub">Plan · Govern · Execute · Prove</div>
+
+        <div class="side-label">Missions</div>
+        <nav class="nav" id="missionList"></nav>
+
+        <div class="sidebar-foot">
+          <span class="foot-dot" aria-hidden="true"></span>
+          <span class="mono" id="workspaceLabel">reading workspace…</span>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div id="detail">
+          <div class="empty-state">
+            <strong>Loading mission…</strong>
+            <span>Reading governed state from <code>.axiomgate/</code></span>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

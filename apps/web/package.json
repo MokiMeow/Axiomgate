@@ -1,0 +1,13 @@
+{
+  "name": "@axiomgate/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AxiomGate local dashboard — self-contained, zero runtime dependencies.",
+  "bin": { "axiomgate-web": "server.mjs" },
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "typecheck": "node --check server.mjs"
+  }
+}
