@@ -1,0 +1,32 @@
+[
+  {
+    "id": "criterion_implementation",
+    "statement": "The login endpoint implements an in-memory brute-force lockout without unrelated changes",
+    "risk": "high",
+    "evidenceTypes": ["diff", "build"]
+  },
+  {
+    "id": "criterion_lockout",
+    "statement": "After 5 failed attempts the synthetic account is locked for 15 minutes and correct credentials are rejected while locked",
+    "risk": "high",
+    "evidenceTypes": ["test"]
+  },
+  {
+    "id": "criterion_regression",
+    "statement": "Valid login, invalid login, malformed input, and unknown-route behavior remain regression-safe",
+    "risk": "medium",
+    "evidenceTypes": ["regression_test"]
+  },
+  {
+    "id": "criterion_dependencies",
+    "statement": "No known vulnerable dependency remains after the validated PatchPilot finding is remediated",
+    "risk": "high",
+    "evidenceTypes": ["security_scan"]
+  },
+  {
+    "id": "criterion_secrets",
+    "statement": "The change introduces no real credentials or secrets",
+    "risk": "critical",
+    "evidenceTypes": ["secret_scan"]
+  }
+]

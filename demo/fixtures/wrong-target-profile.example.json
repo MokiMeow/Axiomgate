@@ -1,0 +1,10 @@
+{
+  "expected": {
+    "orgId": "REPLACE_WITH_SIGNED_IN_ACCOUNT_OR_TEAM_ID",
+    "projectId": "REPLACE_WITH_OWNED_PROJECT_ID",
+    "projectName": "REPLACE_WITH_OWNED_PROJECT_NAME"
+  },
+  "wrongTarget": {
+    "projectId": "REPLACE_WITH_EXISTING_SECOND_ACCOUNT_PROJECT_ID"
+  }
+}

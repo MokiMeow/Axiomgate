@@ -5,8 +5,9 @@
   "packageManager": "pnpm@10.33.0",
   "scripts": {
     "build": "pnpm -r build",
+    "demo:check": "pnpm --filter @axiomgate/core build && node demo/scripts/check.mjs",
     "typecheck": "pnpm -r typecheck",
-    "test": "vitest run"
+    "test": "vitest run --exclude \"demo/fixtures/**\""
   },
   "devDependencies": {
     "@types/node": "24.12.4",

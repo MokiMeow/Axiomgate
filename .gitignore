@@ -3,6 +3,7 @@
 !.local/README.md
 !.local/.gitkeep
 .axiomgate/
+.vercel/
 
 # Machine-specific agent settings (never commit)
 .claude/settings.local.json

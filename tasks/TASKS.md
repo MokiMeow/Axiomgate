@@ -14,7 +14,7 @@ This board is authoritative. Where a phase file conflicts, this board wins. Dead
 - [x] F2 **Hook gate** passed on codex-cli 0.144.0: JSON `permissionDecision:"deny"` enforces (even under bypass); bare exit-2 fails open — never rely on it. Evidence: `docs/17` "F2 gate results". `PermissionRequest`/`exec --json` fields verified in G3/R1.
 - [x] F3 Scaffold `packages/axiomgate-core` (modules: `mission/`, `runway/`, `guard/`, `runtime/`, `evidence/`) inside the PatchPilot-style monorepo + PatchPilot `packages/core` reuse map. Evidence: [`evidence/public/f3-f4-verification.md`](../evidence/public/f3-f4-verification.md).
 - [x] F4 Canonical schemas from `docs/02` (contract, action request, approval, evidence, receipt) with validation and hashing. Evidence: [`evidence/public/f3-f4-verification.md`](../evidence/public/f3-f4-verification.md).
-- [ ] F5 Demo fixture repo (sanitized security-feature target app) + staged wrong-target GitHub/Vercel profile for the block scene.
+- [x] F5 Demo fixture repo: sanitized synthetic login target, five canonical mission criteria, isolated live-copy preparation, real wrong-target/out-of-scope staging, and a copy-paste headline runbook. Evidence: [`evidence/public/f5-demo-fixture-verification.md`](../evidence/public/f5-demo-fixture-verification.md).
 - [x] F6 Mission contract creation: one-line objective → contract with 3–6 criteria, evidence types, intent boundary → sandbox mapping, GPT-5.6 model plan (Sol/Terra/Luna + effort) with recorded rationale; editable; versioned; hashed. Evidence: [`evidence/public/f6-r1-verification.md`](../evidence/public/f6-r1-verification.md).
 
 ## Environment Guard (target: Jul 15–17)
