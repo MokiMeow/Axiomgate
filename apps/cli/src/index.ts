@@ -43,6 +43,34 @@ import {
   writeMissionReceipt,
   type ReasoningEffort,
 } from "@axiomgate/core";
+import { ui, type UiStatus } from "./ui.js";
+
+function verdictStatus(value: string): UiStatus {
+  const normalized = value.toUpperCase();
+  if (/^(?:PASS|COMPLETE|SUCCESS|ALLOW|APPROVED|WRITTEN|UNCHANGED|PRESENT)$/u.test(normalized)) {
+    return "success";
+  }
+  if (/^(?:FAIL|FAILED|DENY|DENIED|REJECTED|BLOCKED|CONFLICT|ABSENT)$/u.test(normalized)) {
+    return "failure";
+  }
+  if (/^(?:UNKNOWN|UNAVAILABLE|UNVERIFIED|WARNING|REQUIRE_APPROVAL)$/u.test(normalized)) {
+    return "warning";
+  }
+  return "neutral";
+}
+
+function verdict(value: string): string {
+  return `${ui.glyph(verdictStatus(value))} ${value}`;
+}
+
+function printCommandHeader(name: string, detail?: string): void {
+  console.log(ui.header(name, detail));
+  console.log(ui.rule());
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "unknown error";
+}
 
 function codexVersion() {
   const launch = resolveCodexLaunch();
@@ -54,25 +82,29 @@ function codexHome(): string {
 }
 
 export async function runDoctor(): Promise<void> {
-  console.log(`node: ${process.version}`);
-  console.log(renderModelDirectorVocabulary());
+  printCommandHeader("doctor", "environment & trust");
+  const rows: { key: string; value: string }[] = [
+    { key: "Node", value: `${ui.glyph("success")} ${process.version}` },
+    { key: "Model Director", value: renderModelDirectorVocabulary() },
+  ];
+  const warnings: string[] = [];
 
   const codex = codexVersion();
   if (codex.status !== "SUCCESS") {
-    console.log("codex CLI: unavailable");
+    rows.push({ key: "Codex CLI", value: verdict("UNAVAILABLE") });
   } else {
     const currentVersion = codex.stdout.trim();
-    console.log(`codex CLI: ${currentVersion}`);
+    rows.push({ key: "Codex CLI", value: `${ui.glyph("success")} ${currentVersion}` });
     try {
       const warning = enforcementDriftWarning(
         currentVersion,
         readEnforcementVerification(),
       );
       if (warning !== undefined) {
-        console.warn(warning);
+        warnings.push(warning);
       }
     } catch {
-      console.warn(
+      warnings.push(
         "WARNING: enforcement verification record is invalid - run axiomgate verify-enforcement",
       );
     }
@@ -84,39 +116,52 @@ export async function runDoctor(): Promise<void> {
     "--branch",
   ]);
   if (git.status === "UNAVAILABLE") {
-    console.log("git repository: unavailable (git executable not found)");
+    rows.push({ key: "Git repository", value: verdict("UNAVAILABLE") });
   } else if (git.status !== "SUCCESS") {
-    console.log("git repository: no");
+    rows.push({ key: "Git repository", value: verdict("ABSENT") });
   } else {
     const lines = git.stdout.trim().split(/\r?\n/u);
     const branch = lines[0]?.replace(/^## /u, "") ?? "unknown branch";
     const state = lines.length > 1 ? "changes present" : "clean";
-    console.log(`git repository: yes (${branch}; ${state})`);
+    rows.push({
+      key: "Git repository",
+      value: `${ui.glyph(state === "clean" ? "success" : "warning")} ${branch}; ${state}`,
+    });
   }
 
   const capacity = await readCodexRateLimits();
   if (capacity.status === "UNAVAILABLE") {
-    console.log(`Codex capacity: UNAVAILABLE (${capacity.reason})`);
+    rows.push({
+      key: "Codex capacity",
+      value: `${verdict("UNAVAILABLE")} (${capacity.reason})`,
+    });
   } else {
     const weekly =
       capacity.sources.find(
         (source) =>
           source.limitId === "codex" && source.windowLabel === "weekly",
       ) ?? capacity.sources.find((source) => source.windowLabel === "weekly");
-    console.log(
-      weekly === undefined
-        ? "Codex capacity: UNAVAILABLE (weekly window not reported)"
-        : `Codex capacity: plan=${weekly.planType}; weekly used=${weekly.usedPercent}%; resets=${weekly.resetsAt} [${weekly.source}/${weekly.confidence}]`,
-    );
+    rows.push({
+      key: "Codex capacity",
+      value: weekly === undefined
+        ? `${verdict("UNAVAILABLE")} (weekly window not reported)`
+        : `${ui.glyph("success")} plan=${weekly.planType}; weekly used=${weekly.usedPercent}%; resets=${weekly.resetsAt} [${weekly.source}/${weekly.confidence}]`,
+    });
   }
 
   const native = codexNativeStatus(codexHome());
-  console.log(
-    `AxiomGate skill: ${native.skill.installed ? "present" : "absent"} (${native.skill.path})`,
-  );
-  console.log(
-    `AxiomGate verifier agent: ${native.verifierAgent.installed ? "present" : "absent"} (${native.verifierAgent.path})`,
-  );
+  rows.push({
+    key: "AxiomGate skill",
+    value: `${verdict(native.skill.installed ? "PRESENT" : "ABSENT")} (${native.skill.path})`,
+  });
+  rows.push({
+    key: "Verifier agent",
+    value: `${verdict(native.verifierAgent.installed ? "PRESENT" : "ABSENT")} (${native.verifierAgent.path})`,
+  });
+  console.log(ui.rows(rows));
+  for (const warning of warnings) {
+    console.warn(ui.callout("warning", "ENFORCEMENT DRIFT", [warning]));
+  }
 }
 
 function printUsage(): void {
@@ -133,9 +178,11 @@ function runInstallCodex(): void {
     codexHome: codexHome(),
     dryRun: process.argv.includes("--dry-run"),
   });
-  console.log(`Codex integration: ${result.mode}`);
+  printCommandHeader("install-codex", result.mode.toLowerCase().replace("_", " "));
+  console.log(ui.rows([{ key: "Mode", value: result.mode }]));
+  console.log(ui.rule("artifacts"));
   for (const action of result.actions) {
-    console.log(`${action.status}: ${action.source} -> ${action.target}`);
+    console.log(`${verdict(action.status)}  ${action.source} -> ${action.target}`);
     if (action.status === "CONFLICT") process.exitCode = 1;
   }
 }
@@ -207,13 +254,18 @@ function runMissionCreate(): void {
     },
     { hookConfigOptions: hookConfigOptions() },
   );
-  console.log(`Created mission ${created.contract.id}`);
-  console.log(`Contract: ${resolve(created.missionDir, "contract.json")}`);
-  console.log(`Boundary: ${created.contract.intentBoundary}`);
+  printCommandHeader("mission create", created.contract.id);
+  console.log(ui.rows([
+    { key: "Status", value: verdict("SUCCESS") },
+    { key: "Contract", value: resolve(created.missionDir, "contract.json") },
+    { key: "Boundary", value: created.contract.intentBoundary },
+    { key: "Criteria", value: created.contract.acceptanceCriteria.length },
+  ]));
   for (const conflict of created.conflicts) {
-    console.warn(
-      `CONFLICT ${conflict.action}: ${conflict.reason}; edit the contract and run axiomgate mission update ${created.contract.id}`,
-    );
+    console.warn(ui.callout("warning", `CONFLICT · ${conflict.action}`, [
+      conflict.reason,
+      `Next: edit the contract and run axiomgate mission update ${created.contract.id}`,
+    ]));
   }
 }
 
@@ -368,7 +420,11 @@ function runRunwaySet(): void {
 
 async function runRunwayStatus(): Promise<void> {
   const capacity = await resolveRunwayCapacity(projectPath());
-  console.log(renderModelDirectorVocabulary());
+  printCommandHeader("runway status", "live capacity");
+  console.log(ui.rows([
+    { key: "Model Director", value: renderModelDirectorVocabulary() },
+  ]));
+  console.log(ui.rule("capacity"));
   console.log(renderRunwayCapacity(capacity));
 }
 
@@ -435,15 +491,20 @@ function runMissionVerify(id: string | undefined): void {
   const result = verifyMission(projectPath(), id, {
     hookConfigOptions: hookConfigOptions(),
   });
-  console.log("Criterion | Check | State");
+  printCommandHeader("mission verify", id);
+  const rows: string[][] = [];
   for (const check of result.run.checks) {
     for (const criterionId of check.criterionIds) {
-      console.log(`${criterionId} | ${check.kind} | ${check.status}`);
+      rows.push([criterionId, check.kind, verdict(check.status)]);
     }
   }
-  console.log(`Overall: ${result.run.overall}`);
-  console.log(`Findings: ${result.run.findings.length}`);
-  console.log(`Evidence: ${result.evidence.length}`);
+  console.log(ui.table(["Criterion", "Check", "State"], rows));
+  console.log(ui.rule("summary"));
+  console.log(ui.rows([
+    { key: "Overall", value: verdict(result.run.overall) },
+    { key: "Findings", value: result.run.findings.length },
+    { key: "Evidence", value: result.evidence.length },
+  ]));
   if (result.run.overall !== "PASS") {
     process.exitCode = 1;
   }
@@ -485,33 +546,47 @@ function runMissionStatus(id: string | undefined): void {
   const status = loadMissionStatus(project, id, {
     currentRevision: currentCommit(project),
   });
-  console.log("Phase | Model | Effort");
+  printCommandHeader("mission status", id);
+  console.log(ui.rule("model plan"));
+  console.log(ui.table(
+    ["Phase", "Model", "Effort"],
+    status.contract.modelPlan.map((phase) => [
+      phase.phase,
+      phase.model,
+      formatReasoningEffort(phase.effort),
+    ]),
+  ));
   for (const phase of status.contract.modelPlan) {
-    console.log(
-      `${phase.phase} | ${phase.model} | ${formatReasoningEffort(phase.effort)}`,
-    );
     if (phase.capabilityNote !== undefined) {
-      console.log(`  Capability: ${phase.capabilityNote}`);
+      console.log(`${ui.glyph("neutral")} ${phase.phase}: ${phase.capabilityNote}`);
     }
   }
-  console.log("Criterion | Verdict | Evidence");
+  console.log(ui.rule("proof table"));
+  const proofRows: string[][] = [];
   for (const criterion of status.gate.criteria) {
-    console.log(
-      `${criterion.criterionId} | ${criterion.verdict} | ${criterion.evidenceIds.join(", ") || "-"}`,
-    );
+    proofRows.push([
+      criterion.criterionId,
+      verdict(criterion.verdict),
+      criterion.evidenceIds.join(", ") || "-",
+    ]);
     if (criterion.waiver !== undefined) {
-      console.log(
-        `  WAIVER ${criterion.waiver.approver}: ${criterion.waiver.reason} (risk: ${criterion.waiver.riskAccepted})`,
-      );
+      proofRows.push([
+        `↳ waiver by ${criterion.waiver.approver}`,
+        verdict("WARNING"),
+        `${criterion.waiver.reason} (risk: ${criterion.waiver.riskAccepted})`,
+      ]);
     }
   }
-  console.log(`Gate: ${status.gate.outcome}`);
-  for (const reason of [
+  console.log(ui.table(["Criterion", "Verdict", "Evidence"], proofRows));
+  const reasons = [
     ...status.gate.blockingReasons,
     ...status.gate.permissionMismatches,
-  ]) {
-    console.log(`BLOCKING: ${reason}`);
-  }
+  ];
+  console.log(ui.callout(
+    status.gate.outcome === "COMPLETE" ? "success" : "failure",
+    status.gate.outcome === "COMPLETE" ? "PROOF GATE · COMPLETE" : "BLOCKED · PROOF GATE NOT SATISFIED",
+    reasons.length === 0 ? ["Every required criterion is backed by fresh admissible evidence."] : reasons,
+  ));
   if (status.gate.outcome !== "COMPLETE") process.exitCode = 1;
 }
 
@@ -542,20 +617,23 @@ function runMissionReceipt(id: string | undefined): void {
   const result = writeMissionReceipt(project, id, formatValue, {
     currentRevision: currentCommit(project),
   });
-  console.log(`Receipt: ${result.path}`);
-  console.log(`Outcome: ${result.receipt.outcome}`);
-  console.log(`Evidence chain: ${result.receipt.evidenceChainHead}`);
+  printCommandHeader("mission receipt", id);
+  console.log(ui.rows([
+    { key: "Receipt", value: result.path },
+    { key: "Outcome", value: verdict(result.receipt.outcome) },
+    { key: "Evidence chain", value: result.receipt.evidenceChainHead },
+  ]));
 }
 
 function runReceiptVerify(path: string | undefined): void {
   if (path === undefined) throw new Error("receipt file is required");
   const result = verifyReceiptFile(path);
   if (result.valid) {
-    console.log("PASS receipt integrity");
-    for (const check of result.checks) console.log(`CHECKED: ${check}`);
+    printCommandHeader("receipt verify", path);
+    console.log(ui.callout("success", "PASS · RECEIPT INTEGRITY", result.checks));
   } else {
-    console.error("FAIL receipt integrity");
-    for (const error of result.errors) console.error(`ERROR: ${error}`);
+    printCommandHeader("receipt verify", path);
+    console.error(ui.callout("failure", "FAIL · RECEIPT INTEGRITY", result.errors));
     process.exitCode = 1;
   }
 }
@@ -570,9 +648,7 @@ if (command === "install-codex") {
   try {
     runInstallCodex();
   } catch (error) {
-    console.error(
-      `Codex integration install failed: ${error instanceof Error ? error.message : "unknown error"}`,
-    );
+    console.error(ui.callout("failure", "CODEX INTEGRATION INSTALL FAILED", [errorMessage(error)]));
     process.exitCode = 1;
   }
 } else if (command === "doctor") {
@@ -583,18 +659,14 @@ if (command === "install-codex") {
   try {
     runRunwaySet();
   } catch (error) {
-    console.error(
-      `Runway command failed: ${error instanceof Error ? error.message : "unknown error"}`,
-    );
+    console.error(ui.callout("failure", "RUNWAY COMMAND FAILED", [errorMessage(error)]));
     process.exitCode = 1;
   }
 } else if (command === "runway" && process.argv[3] === "status") {
   try {
     await runRunwayStatus();
   } catch (error) {
-    console.error(
-      `Runway command failed: ${error instanceof Error ? error.message : "unknown error"}`,
-    );
+    console.error(ui.callout("failure", "RUNWAY COMMAND FAILED", [errorMessage(error)]));
     process.exitCode = 1;
   }
 } else if (command === "mission") {
@@ -624,18 +696,14 @@ if (command === "install-codex") {
       throw new Error("expected mission create, update, run, resume, review, verify, remediate, status, waive, or receipt");
     }
   } catch (error) {
-    console.error(
-      `Mission command failed: ${error instanceof Error ? error.message : "unknown error"}`,
-    );
+    console.error(ui.callout("failure", "MISSION COMMAND FAILED", [errorMessage(error)]));
     process.exitCode = 1;
   }
 } else if (command === "receipt" && process.argv[3] === "verify") {
   try {
     runReceiptVerify(process.argv[4]);
   } catch (error) {
-    console.error(
-      `Receipt verification failed: ${error instanceof Error ? error.message : "unknown error"}`,
-    );
+    console.error(ui.callout("failure", "RECEIPT VERIFICATION FAILED", [errorMessage(error)]));
     process.exitCode = 1;
   }
 } else if (command === "hook") {
@@ -665,25 +733,28 @@ if (command === "install-codex") {
 } else if (command === "approvals" && process.argv[3] === "list") {
   try {
     const records = listPending(approvalMissionDir());
+    printCommandHeader("approvals list", `${records.length} pending`);
     if (records.length === 0) {
-      console.log("No pending approvals.");
+      console.log(`${ui.glyph("success")} No pending approvals.`);
     } else {
       for (const record of records) {
-        console.log(
-          `${record.request.id} ${record.request.semanticAction} - ${record.reasons.join("; ")}`,
-        );
+        console.log(ui.callout("warning", "APPROVAL REQUIRED", [
+          `${record.request.id} · ${record.request.semanticAction}`,
+          ...record.reasons,
+          `Next: axiomgate approve ${record.request.id} --mission ${JSON.stringify(approvalMissionDir())}`,
+        ]));
       }
     }
   } catch (error) {
-    console.error(
-      `Unable to list approvals: ${error instanceof Error ? error.message : "unknown error"}`,
-    );
+    console.error(ui.callout("failure", "UNABLE TO LIST APPROVALS", [errorMessage(error)]));
     process.exitCode = 1;
   }
 } else if (command === "approve" || command === "deny") {
   const requestId = process.argv[3];
   if (requestId === undefined) {
-    console.error(`Usage: axiomgate ${command} <id> [--mission <directory>]`);
+    console.error(ui.callout("failure", `${command.toUpperCase()} REQUIRES AN ID`, [
+      `Usage: axiomgate ${command} <id> [--mission <directory>]`,
+    ]));
     process.exitCode = 1;
   } else {
     const result =
@@ -695,10 +766,15 @@ if (command === "install-codex") {
             approver: approvalActor(),
           });
     if (result.status === "REJECTED") {
-      console.error(`${command} rejected: ${result.reason}`);
+      console.error(ui.callout("failure", `${command.toUpperCase()} REJECTED`, [result.reason]));
       process.exitCode = 1;
     } else {
-      console.log(`${requestId} ${result.status.toLowerCase()}.`);
+      printCommandHeader(command, requestId);
+      console.log(ui.callout(
+        command === "approve" ? "success" : "failure",
+        `${requestId} · ${result.status}`,
+        [command === "approve" ? "Bound approval recorded; the hook remains the enforcement point." : "Denial recorded; the action remains blocked."],
+      ));
     }
   }
 } else {
