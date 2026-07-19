@@ -2,7 +2,11 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-import { EvidenceSchema, type Evidence } from "../../evidence/index.js";
+import {
+  EvidenceSchema,
+  redactSensitiveText,
+  type Evidence,
+} from "../../evidence/index.js";
 import { runCommand, type CommandResult, type CommandRunner } from "./command.js";
 import {
   parseVercelProjectInspect,
@@ -73,7 +77,7 @@ function captureEvidence(
     throw new Error("Evidence ID contains unsafe path characters");
   }
 
-  const output = rawOutput(result);
+  const output = redactSensitiveText(rawOutput(result));
   const outputRef = `.local/evidence/${id}.log`;
   const outputPath = join(cwd, outputRef);
   const writer =
@@ -96,7 +100,7 @@ function captureEvidence(
     capturedAt: (options.now ?? (() => new Date()))().toISOString(),
     freshForCommit: context.freshForCommit,
     label: context.label,
-    redacted: false,
+    redacted: true,
   });
 }
 

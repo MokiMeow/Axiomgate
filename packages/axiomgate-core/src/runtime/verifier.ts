@@ -8,7 +8,11 @@ import { join, resolve } from "node:path";
 
 import { z } from "zod";
 
-import { EvidenceSchema, type Evidence } from "../evidence/index.js";
+import {
+  EvidenceSchema,
+  redactSensitiveText,
+  type Evidence,
+} from "../evidence/index.js";
 import {
   hashContract,
   PersistedReasoningEffortSchema,
@@ -365,13 +369,14 @@ export async function reviewMission(
       timeoutMs: options.timeoutMs ?? 20 * 60 * 1_000,
     },
   );
-  const parsed = parseCodexJsonl(commandResult.stdout);
-  const findings = parseVerifierFindings(commandResult.stdout);
+  const persistedStdout = redactSensitiveText(commandResult.stdout);
+  const parsed = parseCodexJsonl(persistedStdout);
+  const findings = parseVerifierFindings(persistedStdout);
   const reviewId =
     options.reviewId ??
     `review_${randomUUID().replaceAll("-", "").slice(0, 20)}`;
   const capturedAt = (options.now ?? (() => new Date()))().toISOString();
-  const outputHash = sha256(commandResult.stdout);
+  const outputHash = sha256(persistedStdout);
   const record = VerifierFindingsRecordSchema.parse({
     reviewId,
     missionId: id,
@@ -389,7 +394,7 @@ export async function reviewMission(
   mkdirSync(runsDir, { recursive: true });
   writeFileSync(
     join(runsDir, `${reviewId}.jsonl`),
-    commandResult.stdout,
+    persistedStdout,
     "utf8",
   );
   writeFileSync(

@@ -11,7 +11,12 @@ import { delimiter, join, resolve } from "node:path";
 
 import { z } from "zod";
 
-import { EvidenceSchema, type Evidence } from "../evidence/index.js";
+import {
+  EvidenceSchema,
+  redactSensitiveText,
+  redactSensitiveValue,
+  type Evidence,
+} from "../evidence/index.js";
 import {
   hashContract,
   PersistedReasoningEffortSchema,
@@ -424,16 +429,18 @@ async function runMissionInternal(
     },
   );
   const endedAt = now().toISOString();
-  const parsed = parseCodexJsonl(commandResult.stdout);
+  const persistedStdout = redactSensitiveText(commandResult.stdout);
+  const persistedStderr = redactSensitiveText(commandResult.stderr);
+  const parsed = parseCodexJsonl(persistedStdout);
   const runId =
     options.runId ?? `run_${randomUUID().replaceAll("-", "").slice(0, 20)}`;
   const runsDir = join(missionDir, "runs");
   mkdirSync(runsDir, { recursive: true });
-  writeFileSync(join(runsDir, `${runId}.jsonl`), commandResult.stdout, "utf8");
-  if (commandResult.stderr.length > 0) {
+  writeFileSync(join(runsDir, `${runId}.jsonl`), persistedStdout, "utf8");
+  if (persistedStderr.length > 0) {
     writeFileSync(
       join(runsDir, `${runId}.stderr.log`),
-      commandResult.stderr,
+      persistedStderr,
       "utf8",
     );
   }
@@ -457,7 +464,7 @@ async function runMissionInternal(
     eventCount: parsed.events.length,
     itemCount: parsed.items.length,
     commandExecutionCount: parsed.commandExecutions.length,
-    errors: [...parsed.errors],
+    errors: parsed.errors.map(redactSensitiveText),
     rawUsageCount: parsed.usages.length,
     durationMs: commandResult.durationMs,
   };
@@ -477,13 +484,13 @@ async function runMissionInternal(
     missionId: id,
     parsed,
     commandStatus: commandResult.status,
-    stderr: commandResult.stderr,
+    stderr: persistedStderr,
     model: plan.model,
     effort: plan.effort,
     now: () => new Date(endedAt),
   });
   writeCheckpoint(missionDir, checkpoint);
-  const progress = runProgressFromParsed(runId, parsed);
+  const progress = redactSensitiveValue(runProgressFromParsed(runId, parsed));
   const loopRecommendation = detectLoopRecommendation([
     ...priorRunProgress(missionDir),
     progress,
@@ -521,7 +528,7 @@ async function runMissionInternal(
     source: "command",
     command: "codex exec --json",
     exitCode: commandResult.exitCode,
-    outputHash: sha256(commandResult.stdout),
+    outputHash: sha256(persistedStdout),
     outputRef: `runs/${runId}.json#${record.hash}`,
     capturedAt: endedAt,
     freshForCommit: commit,

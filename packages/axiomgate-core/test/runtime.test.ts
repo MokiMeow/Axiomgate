@@ -416,6 +416,7 @@ describe("runMission", () => {
   it("persists the primary session, token actuals, run hash, and command evidence", async () => {
     const projectPath = mkdtempSync(join(tmpdir(), "axiomgate-runtime-"));
     try {
+      const secret = "ghp_abcdefghijklmnopqrstuvwxyz123456";
       const hookConfigOptions = {
         cliEntryPath: join(projectPath, "axiomgate cli", "index.js"),
         nodePath: process.execPath,
@@ -459,7 +460,7 @@ describe("runMission", () => {
             status: "SUCCESS",
             exitCode: 0,
             stdout: stream,
-            stderr: "",
+            stderr: `Authorization: Bearer ${secret}`,
             durationMs: 25,
           };
         },
@@ -501,6 +502,12 @@ describe("runMission", () => {
       expect(
         readFileSync(join(directory, "runs", "run_fixture.jsonl"), "utf8"),
       ).toBe(stream);
+      const persistedStderr = readFileSync(
+        join(directory, "runs", "run_fixture.stderr.log"),
+        "utf8",
+      );
+      expect(persistedStderr).toContain("[REDACTED");
+      expect(persistedStderr).not.toContain(secret);
       const evidence = readFileSync(join(directory, "events.jsonl"), "utf8")
         .trim()
         .split(/\r?\n/u)

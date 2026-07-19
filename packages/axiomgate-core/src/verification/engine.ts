@@ -6,7 +6,12 @@ import {
 } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
-import { EvidenceSchema, type Evidence } from "../evidence/index.js";
+import {
+  EvidenceSchema,
+  redactSensitiveText,
+  redactSensitiveValue,
+  type Evidence,
+} from "../evidence/index.js";
 import {
   resolveIdentity as resolveCurrentIdentity,
   runCommand,
@@ -56,7 +61,9 @@ function commandText(result: CommandResult): string {
 }
 
 function outputText(result: CommandResult): string {
-  return [result.stdout, result.stderr].filter(Boolean).join("\n");
+  return redactSensitiveText(
+    [result.stdout, result.stderr].filter(Boolean).join("\n"),
+  );
 }
 
 function appendJsonLine(path: string, value: unknown): void {
@@ -391,13 +398,15 @@ export function verifyMission(
         appendJsonLine(eventsPath, item);
       }
     }
-    findings.push(...outcome.findings);
+    const safeFindings = redactSensitiveValue(outcome.findings);
+    const safeReason = redactSensitiveText(outcome.reason);
+    findings.push(...safeFindings);
     const completed = {
       ...check,
       status: outcome.status,
-      reason: outcome.reason,
+      reason: safeReason,
       ...(checkEvidence.length > 0 ? { evidenceIds: checkEvidence.map((item) => item.id) } : {}),
-      ...(outcome.findings.length > 0 ? { findingIds: outcome.findings.map((item) => item.id) } : {}),
+      ...(safeFindings.length > 0 ? { findingIds: safeFindings.map((item) => item.id) } : {}),
     } satisfies VerificationCheck;
     completedChecks.push(completed);
     const event = VerificationEventSchema.parse({
@@ -407,7 +416,7 @@ export function verifyMission(
       runId: run.id,
       checkId: check.id,
       status: outcome.status,
-      message: outcome.reason,
+      message: safeReason,
     });
     events.push(event);
     appendJsonLine(eventsPath, event);
