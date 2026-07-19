@@ -65,6 +65,33 @@ export interface LoadMissionStatusOptions {
   readonly currentRevision: string;
 }
 
+export interface MissionSummary {
+  readonly id: string;
+  readonly objective: string;
+  readonly boundary: MissionContract["intentBoundary"];
+  readonly gate: CompletionGateResult["outcome"];
+}
+
+export function listMissionSummaries(
+  projectPath: string,
+  options: LoadMissionStatusOptions,
+): MissionSummary[] {
+  const root = join(projectPath, ".axiomgate", "missions");
+  if (!existsSync(root)) return [];
+  return readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && /^msn_[A-Za-z0-9_-]+$/u.test(entry.name))
+    .map((entry) => {
+      const status = loadMissionStatus(projectPath, entry.name, options);
+      return {
+        id: status.contract.id,
+        objective: status.contract.objective,
+        boundary: status.contract.intentBoundary,
+        gate: status.gate.outcome,
+      };
+    })
+    .sort((left, right) => left.id.localeCompare(right.id));
+}
+
 export function loadMissionStatus(
   projectPath: string,
   missionId: string,

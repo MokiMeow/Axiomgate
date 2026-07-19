@@ -14,7 +14,11 @@ import { z } from "zod";
 
 import { IsoDateTimeSchema } from "../mission/index.js";
 import { ActionRequestSchema, type ActionRequest } from "./action-request.js";
-import { ApprovalSchema } from "./approval.js";
+import {
+  ApprovalSchema,
+  ApprovalSurfaceSchema,
+  type Approval,
+} from "./approval.js";
 
 const DEFAULT_APPROVAL_TTL_MS = 15 * 60 * 1_000;
 const REQUEST_ID_PATTERN = /^act_[A-Za-z0-9_-]+$/u;
@@ -28,6 +32,7 @@ export const ApprovalRequestRecordSchema = z.strictObject({
   approval: ApprovalSchema.nullable(),
   deniedAt: IsoDateTimeSchema.nullable(),
   deniedBy: z.string().min(1).nullable(),
+  deniedSurface: ApprovalSurfaceSchema.nullable().optional(),
 });
 
 export type ApprovalRequestRecord = z.infer<
@@ -44,6 +49,7 @@ interface CreateApprovalOptions extends ClockOptions {
 
 interface ApprovalActorOptions extends ClockOptions {
   readonly approver: string;
+  readonly surface?: Approval["surface"];
 }
 
 export type ApprovalMutationResult =
@@ -132,6 +138,7 @@ function pendingRecord(
     approval: null,
     deniedAt: null,
     deniedBy: null,
+    deniedSurface: null,
   });
 }
 
@@ -234,7 +241,7 @@ export function approve(
           id: `apr_${requestId.slice(4)}`,
           actionRequestId: requestId,
           boundCommandHash: record.request.rawCommandHash,
-          surface: "cli",
+          surface: options.surface ?? "cli",
           approver: options.approver,
           singleUse: true,
           grantedAt: now.toISOString(),
@@ -270,6 +277,7 @@ export function deny(
         status: "DENIED",
         deniedAt: now.toISOString(),
         deniedBy: options.approver,
+        deniedSurface: options.surface ?? "cli",
       });
       writeRecord(missionDir, requestId, denied);
       return { status: "DENIED", record: denied };

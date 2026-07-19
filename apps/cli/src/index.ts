@@ -44,6 +44,7 @@ import {
   type ReasoningEffort,
 } from "@axiomgate/core";
 import { ui, type UiStatus } from "./ui.js";
+import { runMcpServer } from "./mcp.js";
 
 function verdictStatus(value: string): UiStatus {
   const normalized = value.toUpperCase();
@@ -166,6 +167,7 @@ export async function runDoctor(): Promise<void> {
 
 function printUsage(): void {
   console.log("Native Codex: axiomgate install-codex [--dry-run]");
+  console.log("Agent protocol: axiomgate mcp");
   console.log("Runway: axiomgate runway status [--project <path>]");
   console.log(
     "Usage: axiomgate doctor | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission verify <id> [--project <path>] | axiomgate mission remediate <id> --finding <id> [--timeout-ms <ms>] [--project <path>] | axiomgate mission status <id> [--project <path>] | axiomgate mission waive <id> --criterion <id> --reason <text> --risk <text> [--project <path>] | axiomgate mission receipt <id> [--format json|md] [--project <path>] | axiomgate receipt verify <file> | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
@@ -644,7 +646,9 @@ function zEffort(value: string): ReasoningEffort {
   throw new Error("--effort must be light, medium, high, xhigh, or max");
 }
 
-if (command === "install-codex") {
+if (command === "mcp") {
+  await runMcpServer();
+} else if (command === "install-codex") {
   try {
     runInstallCodex();
   } catch (error) {
