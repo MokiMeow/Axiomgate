@@ -50,7 +50,7 @@ This board is authoritative. Where a phase file conflicts, this board wins. Dead
 - [x] E1 Criterion→evidence verdict engine; completion gate (UNKNOWN/BLOCKED/FAIL/UNVERIFIED block); visible attributed waivers; permission quad mismatches flagged. Evidence: [`evidence/public/e1-e2-verification.md`](../evidence/public/e1-e2-verification.md).
 - [x] E2 Build Receipt JSON/Markdown projected from stored records with a 25-record evidence hash chain + offline `axiomgate receipt verify <file>` and live tamper rejection. Evidence: [`evidence/public/e1-e2-verification.md`](../evidence/public/e1-e2-verification.md).
 - [ ] E3 Mission timeline dashboard (Plan → Guard → Run → Verify → Prove), blocked-action recovery UX (every block shows a next step), risk-ranked review list, first-run defaults (≤3 approval prompts).
-- [ ] E4 CLI (`doctor`, `mission create/run/resume/verify/receipt`, `receipt verify`, `replay`) + **npm publish by Jul 18 EOD** (`npx axiomgate` = doctor + replay, zero config) + protected polish pass (all states, microcopy, the block scene camera-ready).
+- [-] E4 CLI (`doctor`, `mission create/run/resume/verify/receipt`, `receipt verify`, `replay`) + npm distribution. The bundled `axiomgate@0.1.0` tarball, fresh install, doctor/help, offline receipt tamper rejection, and MCP stdio path are verified; `npm publish` is a user action and replay remains. Evidence: [`evidence/public/publish-prep-verification.md`](../evidence/public/publish-prep-verification.md).
 
 ## Submission (target: Jul 19–20)
 

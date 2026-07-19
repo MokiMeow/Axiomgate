@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-19 — Publication preparation
+
+- Prepared the unscoped `axiomgate@0.1.0` npm package as a single Node 20 ESM bundle with no runtime workspace dependency.
+- Added the MIT repository license and a compact npm README.
+- Added repeatable fresh-tarball verification for doctor/help, offline receipt integrity and tamper rejection, and MCP stdio.
+- Added a post-publication registry/npx verifier and a repository-root Codex plugin marketplace descriptor.
+- Kept npm publication and Git push as explicit user actions.
+
 ## Unreleased
 
 ### Added
@@ -33,4 +41,3 @@ No production functionality is claimed in this entry.
 - Removed universal skill installation, shared-folder migration, MCP registry, config-generation, and gateway work from Build Week scope.
 - Reframed Environment Guard around semantic actions, identity, authority, trust, and effective permissions.
 - Updated architecture, domain model, task plan, tests, UX, compatibility, security, and demo scenarios for consistency.
-
