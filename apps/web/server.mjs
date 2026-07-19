@@ -11,6 +11,12 @@ import { readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { existsSync, statSync } from "node:fs";
 import { join, extname, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  existingApprovalDirectory,
+  isAllowedDashboardOrigin,
+  resolveStaticPath,
+  validateApprovalIntent,
+} from "./security.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = join(__dirname, "public");
@@ -250,11 +256,15 @@ function json(res, code, body) {
 async function serveStatic(res, urlPath) {
   // tolerate trailing slashes ("/dashboard/" → "/dashboard")
   const key = urlPath.length > 1 ? urlPath.replace(/\/+$/, "") : urlPath;
-  let file = join(PUBLIC_DIR, key.replace(/^\/+/, ""));
+  let file = resolveStaticPath(PUBLIC_DIR, key);
+  if (file === null) {
+    res.writeHead(404).end("Not found");
+    return;
+  }
   try {
     if (existsSync(file) && statSync(file).isDirectory()) file = join(file, "index.html");
   } catch {}
-  if (!file.startsWith(PUBLIC_DIR) || !existsSync(file)) {
+  if (!existsSync(file)) {
     // Unknown page paths bounce to the landing instead of a dead "Not found".
     if (!extname(file)) {
       res.writeHead(302, { location: "/" });
@@ -276,13 +286,20 @@ async function serveStatic(res, urlPath) {
   }
 }
 
-async function readBody(req) {
+async function readBody(req, limitBytes = 64 * 1024) {
   const chunks = [];
-  for await (const c of req) chunks.push(c);
+  let length = 0;
+  for await (const c of req) {
+    length += c.length;
+    if (length > limitBytes) {
+      throw new Error("request body exceeds 64 KiB");
+    }
+    chunks.push(c);
+  }
   try {
     return JSON.parse(Buffer.concat(chunks).toString() || "{}");
   } catch {
-    return {};
+    throw new Error("request body is not valid JSON");
   }
 }
 
@@ -317,8 +334,8 @@ const server = createServer(async (req, res) => {
   if (path.startsWith("/api/mission/")) {
     const id = decodeURIComponent(path.split("/").pop());
     const all = await loadAllMissions();
-    const m = all.find((x) => x.id === id) || all[0];
-    if (!m) return json(res, 404, { error: "no missions" });
+    const m = all.find((x) => x.id === id);
+    if (!m) return json(res, 404, { error: "mission not found" });
     return json(res, 200, m);
   }
 
@@ -329,18 +346,21 @@ const server = createServer(async (req, res) => {
 
   // Web approval channel (the phone surface): approve/deny from any browser.
   if (path === "/api/approve" && req.method === "POST") {
-    const body = await readBody(req);
-    // Deterministic, auditable: writes an approval-intent file the CLI/hook consumes.
-    // In this build the endpoint records intent; the hook remains the enforcement point.
-    const dir = join(MISSIONS_DIR, body.missionId || "", "approvals");
     try {
-      if (!existsSync(dir)) throw new Error("mission not found");
+      if (!isAllowedDashboardOrigin(req.headers.origin, PORT)) {
+        return json(res, 403, { ok: false, error: "cross-origin request refused" });
+      }
+      const parsed = validateApprovalIntent(await readBody(req));
+      if (!parsed.ok) throw new Error(parsed.reason);
+      // The endpoint records an intent only; the hook remains the enforcement point.
+      const dir = existingApprovalDirectory(MISSIONS_DIR, parsed.value.missionId);
+      if (dir === null) throw new Error("mission not found");
       const rec = {
         id: `apr_web_${Date.now()}`,
-        actionRequestId: body.actionRequestId,
+        actionRequestId: parsed.value.actionRequestId,
         surface: "web",
         approver: "web-user",
-        decision: body.decision === "deny" ? "DENY" : "APPROVE",
+        decision: parsed.value.decision === "deny" ? "DENY" : "APPROVE",
         grantedAt: new Date().toISOString(),
         singleUse: true,
         note: "recorded via dashboard web approval",
@@ -355,7 +375,7 @@ const server = createServer(async (req, res) => {
   return serveStatic(res, path);
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, "127.0.0.1", () => {
   const live = existsSync(MISSIONS_DIR);
   console.log(`AxiomGate dashboard → http://localhost:${PORT}`);
   console.log(`workspace: ${WORKSPACE}`);
