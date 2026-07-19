@@ -105,7 +105,7 @@ AFTER_DIFF_HASH=433ccc689d10564c8fc15d66859acd61a7021c84
 
  M package-lock.json
  M package.json
-?? .npm-cache/
+?? <fixture-cache>/
 ?? evidence/
 ```
 

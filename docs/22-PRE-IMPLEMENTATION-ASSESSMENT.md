@@ -16,7 +16,7 @@ PatchPilot is pre-existing May 2026 work: a pnpm monorepo with Next.js web, work
 - Current HEAD before this assessment is `2e17304`; the worktree was clean and Git commit identity is configured.
 - `docs/17-COMPATIBILITY-ADAPTERS.md` records F2 on `codex-cli 0.144.0`: JSON hook denial is enforced; bare exit code 2 fails open under `approval_policy="never"`. PermissionRequest and usage-field checks remain later work.
 - Local tools: Node `v24.11.1`, pnpm `10.33.0`, Codex CLI `0.144.0`, Git `2.55.0.windows.2`, and `rg`. PowerShell script shims are blocked, so verification uses the equivalent `.cmd` launchers on Windows.
-- `C:\Users\Mohith S\Desktop\patchpilot` exists and was inspected read-only. Its `packages/core/src` exports the documented validation, scanner, Codex, audit, approval, redaction, prompt-injection, and MCP-tool-guard modules. Its worktree has two unrelated untracked voiceover documents; this session will not touch them.
+- A separate pre-existing PatchPilot checkout was inspected read-only. Its `packages/core/src` exports the documented validation, scanner, Codex, audit, approval, redaction, prompt-injection, and MCP-tool-guard modules. Its unrelated working-tree state was not touched.
 - Relevant sources read: `START_HERE.md`, `README.md`, the build contract, architecture/domain/security/test/quality/DoD/hygiene docs, ADRs, ideas inbox, status board, task board, Phase 0 file, `docs/17`, PatchPilot `FEATURE_MATRIX.md`, package manifests, core index, and relevant core exports.
 - Discovery commands: `git status/log/show/remote`, `rg --files`, `Get-Content`, tool version/presence checks, and read-only PatchPilot tree/Git inspection using a per-command safe-directory override.
 

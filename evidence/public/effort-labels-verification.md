@@ -47,14 +47,16 @@ Banked resets | 0 | codex-app-server/high
 
 `node apps/cli/dist/index.js doctor` (exit 0):
 
+Local installation paths in this captured output are redacted to `<CODEX_HOME>`.
+
 ```text
 node: v24.11.1
 Model Director efforts: Light, Medium, High, Xhigh, Max (Light uses CLI wire value low). Ultra: native Codex multi-agent mode; not orchestrated by AxiomGate during Build Week.
 codex CLI: codex-cli 0.144.4
 git repository: yes (main; changes present)
 Codex capacity: plan=pro; weekly used=1%; resets=2026-07-23T12:12:00.000Z [codex-app-server/high]
-AxiomGate skill: absent (C:\Users\Mohith S\.codex\skills\axiomgate\SKILL.md)
-AxiomGate verifier agent: absent (C:\Users\Mohith S\.codex\agents\axiomgate-verifier.toml)
+AxiomGate skill: absent (<CODEX_HOME>/skills/axiomgate/SKILL.md)
+AxiomGate verifier agent: absent (<CODEX_HOME>/agents/axiomgate-verifier.toml)
 ```
 
 The capacity fields are official app-server observations. No credentials, tokens, or private prompt content are present in this evidence.

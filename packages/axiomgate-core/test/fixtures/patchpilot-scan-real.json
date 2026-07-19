@@ -1,5 +1,5 @@
 {
-  "target": "C:\\Users\\Mohith S\\Desktop\\AxiomGate\\.local\\verifytest",
+  "target": "<workspace>/verifytest",
   "scanner": "osv-api",
   "count": 7,
   "findings": [

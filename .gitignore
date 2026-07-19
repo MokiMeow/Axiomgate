@@ -40,6 +40,7 @@ secrets.json
 # Package/build output
 node_modules/
 dist/
+*.tgz
 build/
 out/
 .next/
@@ -58,6 +59,7 @@ Thumbs.db
 # Temporary
 tmp/
 temp/
+scratch/
 *.tmp
 *.bak
 *.swp

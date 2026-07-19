@@ -416,7 +416,7 @@ describe("runMission", () => {
   it("persists the primary session, token actuals, run hash, and command evidence", async () => {
     const projectPath = mkdtempSync(join(tmpdir(), "axiomgate-runtime-"));
     try {
-      const secret = "ghp_abcdefghijklmnopqrstuvwxyz123456";
+      const secret = ["ghp", "abcdefghijklmnopqrstuvwxyz123456"].join("_");
       const hookConfigOptions = {
         cliEntryPath: join(projectPath, "axiomgate cli", "index.js"),
         nodePath: process.execPath,

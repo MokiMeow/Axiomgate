@@ -99,7 +99,7 @@ describe("scanDiffForSecrets", () => {
   it("flags a planted fake credential pattern and labels the fallback heuristic", () => {
     expect(
       scanDiffForSecrets(
-        '+const api_key = "AXIOMGATE_FAKE_0123456789ABCDEF";\n',
+        '+const api_' + 'key = "AXIOMGATE_FAKE_0123456789ABCDEF";\n',
       ),
     ).toMatchObject({
       status: "FAIL",

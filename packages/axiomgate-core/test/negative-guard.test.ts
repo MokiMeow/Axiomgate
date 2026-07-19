@@ -67,7 +67,7 @@ function resolvedIdentity(overrides: Partial<IdentityReport> = {}): IdentityRepo
       status: "RESOLVED",
       value: {
         projectId: "prj_axiomgate",
-        orgId: "team_mokimeow",
+        orgId: "team_fixture_owner",
         projectName: "axiomgate-preview",
       },
       source: ".vercel/project.json",
@@ -366,7 +366,7 @@ describe("G5 negative guard suite", () => {
   it("Local data leakage: secret-bearing output is never persisted in the denial event", () => {
     const directory = missionDir();
     const configOptions = configure(directory);
-    const secret = "ghp_fixtureSecretThatMustNeverPersist123456";
+    const secret = ["ghp", "fixtureSecretThatMustNeverPersist123456"].join("_");
     const result = invoke(directory, "rm -rf generated-output", {
       configOptions,
       extraPayload: { tool_output: { stdout: secret } },

@@ -82,7 +82,7 @@ describe("identity fixture parsers", () => {
       ok: true,
       value: {
         projectId: "prj_axiomgate",
-        orgId: "team_mokimeow",
+        orgId: "team_fixture_owner",
         projectName: "axiomgate-preview",
       },
     });
@@ -252,7 +252,7 @@ describe("verifyDeployTarget", () => {
       {
         type: "vercel_project",
         project: "axiomgate-preview",
-        expectedAccount: "team_mokimeow",
+        expectedAccount: "team_fixture_owner",
       },
       context,
       verificationOptions(
@@ -283,7 +283,7 @@ describe("verifyDeployTarget", () => {
       {
         type: "vercel_project",
         project: "missing",
-        expectedAccount: "team_mokimeow",
+        expectedAccount: "team_fixture_owner",
       },
       context,
       verificationOptions(
@@ -298,7 +298,7 @@ describe("verifyDeployTarget", () => {
       {
         type: "vercel_project",
         project: "axiomgate-preview",
-        expectedAccount: "team_mokimeow",
+        expectedAccount: "team_fixture_owner",
       },
       context,
       verificationOptions(commandResult("UNAVAILABLE")),
