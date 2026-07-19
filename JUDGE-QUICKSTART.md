@@ -57,6 +57,17 @@ node apps/cli/dist/index.js mission receipt <mission-id> --format json --project
 
 `<mission-id>` is intentional command output substitution, not an unfinished repository placeholder. Use only a disposable target: the mission guard can modify files within its declared boundary.
 
+## Optional Telegram approval relay
+
+Set `TELEGRAM_BOT_TOKEN` and a comma-separated `TELEGRAM_CHAT_ID` allowlist in the environment or ignored `.local/telegram.env`, then run:
+
+```powershell
+node apps/cli/dist/index.js telegram test
+node apps/cli/dist/index.js telegram watch --project <governed-workspace>
+```
+
+The relay uses Bot API long polling only: it opens no webhook or public listener. Approval cards bind to the existing exact command hash and canonical single-use store. `TELEGRAM_NOTIFY=approvals` suppresses stage notifications; `TELEGRAM_NOTIFY=off` disables the surface; the default is `all` when configured.
+
 ## Labels and limitations
 
 - The three built-in scenarios are labelled `REPLAY` and use deterministic synthetic data.

@@ -51,6 +51,7 @@ The final command must print `FAIL` and exit non-zero. See [JUDGE-QUICKSTART.md]
 | Intent boundary | Maps `OBSERVE` through `DEPLOY_PRODUCTION` to sandbox/network authority; production deploy is refused in this Build Week release. |
 | Semantic policy | Classifies commands and MCP tools into actions, then applies deterministic `ALLOW`, `DENY`, or `REQUIRE_APPROVAL` policy. Unknown state-changing actions fail closed. |
 | Approval binding | Binds a single-use, expiring approval to the exact command hash. Mutation or reuse is denied. |
+| Telegram relay | Optionally long-polls Telegram for allowlisted, exact-hash approvals and redacted stage notifications; no webhook or public URL is required. |
 | Completion gate | Accepts only fresh `command`, `api`, or `hook` evidence. Model prose is advisory and cannot make a criterion pass. |
 | Build Receipt | Hash-chains stored evidence and supports offline integrity, freshness, contract-hash, and no-false-green verification. |
 
@@ -116,6 +117,7 @@ Start with [JUDGE-QUICKSTART.md](JUDGE-QUICKSTART.md). The deterministic replay 
 - External commands use the shared timeout runner. Hook stdout stays machine-JSON only; internal failures deny rather than silently fail open.
 - Persisted command, verifier, verification, and deploy-target diagnostics pass through centralized credential redaction before hashing or storage.
 - `.local/`, `.axiomgate/`, `.vercel/`, dependency trees, build output, environment files, tarballs, and raw run logs are excluded from Git.
+- Optional Telegram approvals read `TELEGRAM_BOT_TOKEN` and the comma-separated `TELEGRAM_CHAT_ID` allowlist only from the process environment or ignored `.local/telegram.env`. Run `axiomgate telegram test`, then `axiomgate telegram watch --project <path>`; persisted relay state contains hashed chat identifiers, never the token or full chat ID.
 - Demo users, IDs, tokens, and wrong-target profiles are synthetic. Presenter substitutions are explicitly labelled in [demo/DEMO-RUNBOOK.md](demo/DEMO-RUNBOOK.md).
 
 See the [threat model](docs/10-SECURITY-THREAT-MODEL.md), [negative guard suite](packages/axiomgate-core/test/negative-guard.test.ts), and [public evidence index](evidence/public/README.md).
@@ -130,7 +132,7 @@ See the [threat model](docs/10-SECURITY-THREAT-MODEL.md), [negative guard suite]
 
 ## Roadmap
 
-- finish the Telegram approval surface and verify it independently;
+- complete a live Telegram card/details/approval proof when valid presenter credentials are available;
 - test macOS/Linux and publish a supported-platform matrix;
 - adopt deterministic named custom-agent targeting when Codex exposes it non-interactively;
 - broaden replay coverage beyond the three Build Week security regressions;
