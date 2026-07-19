@@ -50,6 +50,15 @@ Integration interfaces (all official): hooks (`PreToolUse`, `PermissionRequest`,
 - Codex auto-updated 0.144.4 → 0.144.6. Per the ops rule, `axiomgate verify-enforcement` was run: **PASS LIVE** — real session `019f7ab8-43d3-79d2-b71f-7ea96fe36a91`, gated command denied at the hook, zero command executions, version + timestamp recorded to `enforcement-verified.json`. Hook semantics unchanged from 0.144.4.
 - Reminder: do not `codex update` between final verification and the demo recording; re-run `verify-enforcement` after any update.
 
+### MCP and plugin packaging — codex-cli 0.144.6, 2026-07-19 (VERIFIED)
+
+- Stdio MCP registration is native: `codex mcp add <name> -- <command>...`. AxiomGate registered `node <built-cli> mcp`; `codex mcp get axiomgate` reported an enabled stdio server. Direct JSON-RPC and a real read-only Luna `codex exec` both completed `axiomgate_mission_status` and `axiomgate_receipt_verify`; the latter returned gate `COMPLETE` and receipt `valid: true`.
+- MCP read tools must declare the standard `readOnlyHint: true` annotation for non-interactive exec. Without it, 0.144.6 discovered and attempted the tools but cancelled them as approval-requiring calls even under `--ask-for-approval never`. With the truthful annotation, the same read-only calls completed. The approval mutation tool is not annotated read-only.
+- `codex plugin add` does **not** accept a local directory. It installs `PLUGIN@MARKETPLACE` from a configured marketplace snapshot. Local/Git marketplace sources are added with `codex plugin marketplace add <source>`; direct marketplace, plugin, or marketplace-publish commands beyond this installed-snapshot flow are not exposed.
+- A local marketplace root must contain `.agents/plugins/marketplace.json`; a root-level `marketplace.json` was rejected as unsupported. Each plugin has `.codex-plugin/plugin.json`, with optional `skills/`, `agents/`, and `.mcp.json` components.
+- Live install used `codex plugin marketplace add <repo>/plugin` followed by `codex plugin add axiomgate@axiomgate-build-week`. `codex plugin list --json` reported version `0.1.0`, installed `true`, enabled `true`, and the exact local source. A second `axiomgate install-codex` run reported every artifact `UNCHANGED`.
+- This is a local, version-controlled distribution proof only. No marketplace publication is claimed because 0.144.6 exposes no publish command.
+
 ### Claude
 
 Independent review only (planning, adversarial testing, blueprint review); **no Build Week runtime implementation**. Core building happens through Codex in the primary `/feedback` thread. Do not make shared-skill installation, mission handoff, or runtime parity a requirement.

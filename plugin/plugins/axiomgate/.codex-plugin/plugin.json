@@ -1,0 +1,24 @@
+{
+  "name": "axiomgate",
+  "version": "0.1.0",
+  "description": "Govern Codex missions with bounded authority and verifiable evidence.",
+  "author": {
+    "name": "AxiomGate"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "AxiomGate",
+    "shortDescription": "Bound authority and prove mission completion.",
+    "longDescription": "AxiomGate gives Codex a governed mission workflow, a read-only independent verifier artifact, and MCP tools for proof status, receipts, runway, and bounded approvals.",
+    "developerName": "AxiomGate",
+    "category": "Developer Tools",
+    "capabilities": ["Read", "Write"],
+    "defaultPrompt": [
+      "Show the current AxiomGate mission proof status.",
+      "Verify this AxiomGate Build Receipt offline.",
+      "List pending governed approvals."
+    ],
+    "brandColor": "#F97316"
+  },
+  "mcpServers": "./.mcp.json"
+}

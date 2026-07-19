@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "axiomgate": {
+      "command": "axiomgate",
+      "args": ["mcp"]
+    }
+  }
+}

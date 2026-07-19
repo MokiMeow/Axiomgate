@@ -1,0 +1,4 @@
+interface:
+  display_name: "AxiomGate Governance"
+  short_description: "Govern missions with identity, policy, and proof"
+  default_prompt: "Use $axiomgate-governance to govern this mission through verified evidence."

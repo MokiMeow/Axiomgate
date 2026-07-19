@@ -175,13 +175,21 @@ function printUsage(): void {
 }
 
 function runInstallCodex(): void {
+  const launch = resolveCodexLaunch();
   const result = installCodexIntegration({
     sourceRoot: process.cwd(),
     codexHome: codexHome(),
     dryRun: process.argv.includes("--dry-run"),
+    runner: runExternalCommand,
+    codexLaunch: launch,
+    cliEntryPath: process.argv[1]!,
+    nodePath: process.execPath,
   });
-  printCommandHeader("install-codex", result.mode.toLowerCase().replace("_", " "));
-  console.log(ui.rows([{ key: "Mode", value: result.mode }]));
+  printCommandHeader("install-codex", result.strategy.toLowerCase().replace("_", " "));
+  console.log(ui.rows([
+    { key: "Mode", value: result.mode },
+    { key: "Strategy", value: result.strategy },
+  ]));
   console.log(ui.rule("artifacts"));
   for (const action of result.actions) {
     console.log(`${verdict(action.status)}  ${action.source} -> ${action.target}`);

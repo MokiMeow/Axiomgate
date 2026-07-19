@@ -13,6 +13,7 @@ import { describe, expect, it } from "vitest";
 import {
   installCodexIntegration,
   parseCodexAgentDefinition,
+  type CommandRunner,
 } from "../src/index.js";
 
 const repositoryRoot = resolve(import.meta.dirname, "../../..");
@@ -128,6 +129,159 @@ describe("AxiomGate verifier agent", () => {
         "UNCHANGED",
       ]);
       expect(readFileSync(unrelated, "utf8")).toBe("keep me\n");
+    } finally {
+      rmSync(codexHome, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("AxiomGate Codex plugin", () => {
+  it("packages the skill, verifier, and MCP registration in a valid marketplace shape", () => {
+    const pluginRoot = resolve(repositoryRoot, "plugin/plugins/axiomgate");
+    const manifest = JSON.parse(
+      readFileSync(resolve(pluginRoot, ".codex-plugin/plugin.json"), "utf8"),
+    ) as Record<string, unknown>;
+    const marketplace = JSON.parse(
+      readFileSync(
+        resolve(repositoryRoot, "plugin/.agents/plugins/marketplace.json"),
+        "utf8",
+      ),
+    ) as { name: string; plugins: { name: string; source: { path: string } }[] };
+    const mcp = JSON.parse(
+      readFileSync(resolve(pluginRoot, ".mcp.json"), "utf8"),
+    ) as { mcpServers: { axiomgate: { command: string; args: string[] } } };
+    expect(manifest).toMatchObject({
+      name: "axiomgate",
+      version: "0.1.0",
+      skills: "./skills/",
+      mcpServers: "./.mcp.json",
+    });
+    expect(marketplace).toMatchObject({
+      name: "axiomgate-build-week",
+      plugins: [{
+        name: "axiomgate",
+        source: { path: "./plugins/axiomgate" },
+      }],
+    });
+    expect(mcp.mcpServers.axiomgate).toEqual({
+      command: "axiomgate",
+      args: ["mcp"],
+    });
+    expect(
+      readFileSync(resolve(pluginRoot, "skills/axiomgate/SKILL.md"), "utf8"),
+    ).toBe(
+      readFileSync(resolve(repositoryRoot, ".agents/skills/axiomgate/SKILL.md"), "utf8"),
+    );
+    expect(
+      readFileSync(resolve(pluginRoot, "agents/axiomgate-verifier.toml"), "utf8"),
+    ).toBe(
+      readFileSync(resolve(repositoryRoot, ".agents/agents/axiomgate-verifier.toml"), "utf8"),
+    );
+  });
+
+  it("prefers supported plugin install and is idempotent", () => {
+    const codexHome = mkdtempSync(join(tmpdir(), "axiomgate-plugin-home-"));
+    let marketplaceInstalled = false;
+    let pluginInstalled = false;
+    let mcpInstalled = false;
+    const cliEntryPath = resolve(repositoryRoot, "apps/cli/dist/index.js");
+    const runner: CommandRunner = (command, args) => {
+      const key = args.join(" ");
+      let status: "SUCCESS" | "FAILED" = "SUCCESS";
+      let stdout = "";
+      if (key.endsWith("plugin --help")) {
+        stdout = "Commands: add marketplace";
+      } else if (key.includes("plugin marketplace list --json")) {
+        stdout = JSON.stringify({
+          marketplaces: marketplaceInstalled
+            ? [{ root: resolve(repositoryRoot, "plugin") }]
+            : [],
+        });
+      } else if (key.includes("plugin marketplace add")) {
+        marketplaceInstalled = true;
+        stdout = "{}";
+      } else if (key.includes("plugin list --json")) {
+        stdout = JSON.stringify({
+          installed: pluginInstalled
+            ? [{
+                pluginId: "axiomgate@axiomgate-build-week",
+                installed: true,
+                enabled: true,
+              }]
+            : [],
+        });
+      } else if (key.includes("plugin add axiomgate@axiomgate-build-week")) {
+        pluginInstalled = true;
+        stdout = "{}";
+      } else if (key.includes("mcp get axiomgate")) {
+        if (mcpInstalled) {
+          stdout = `command: ${process.execPath}\nargs: ${cliEntryPath} mcp\n`;
+        } else {
+          status = "FAILED";
+        }
+      } else if (key.includes("mcp add axiomgate")) {
+        mcpInstalled = true;
+      }
+      return {
+        command,
+        args,
+        status,
+        exitCode: status === "SUCCESS" ? 0 : 1,
+        stdout,
+        stderr: "",
+        durationMs: 1,
+      };
+    };
+    try {
+      const dryRun = installCodexIntegration({
+        sourceRoot: repositoryRoot,
+        codexHome,
+        dryRun: true,
+        runner,
+        codexLaunch: { command: "codex", argsPrefix: [] },
+        cliEntryPath,
+        nodePath: process.execPath,
+      });
+      expect(dryRun.strategy).toBe("PLUGIN");
+      expect(dryRun.actions.map((action) => action.status)).toEqual([
+        "PLANNED",
+        "PLANNED",
+        "PLANNED",
+        "PLANNED",
+      ]);
+      expect(marketplaceInstalled).toBe(false);
+      expect(pluginInstalled).toBe(false);
+      expect(mcpInstalled).toBe(false);
+
+      const first = installCodexIntegration({
+        sourceRoot: repositoryRoot,
+        codexHome,
+        runner,
+        codexLaunch: { command: "codex", argsPrefix: [] },
+        cliEntryPath,
+        nodePath: process.execPath,
+      });
+      expect(first.strategy).toBe("PLUGIN");
+      expect(first.actions.map((action) => action.status)).toEqual([
+        "WRITTEN",
+        "WRITTEN",
+        "WRITTEN",
+        "WRITTEN",
+      ]);
+      const second = installCodexIntegration({
+        sourceRoot: repositoryRoot,
+        codexHome,
+        runner,
+        codexLaunch: { command: "codex", argsPrefix: [] },
+        cliEntryPath,
+        nodePath: process.execPath,
+      });
+      expect(second.actions.map((action) => action.status)).toEqual([
+        "UNCHANGED",
+        "UNCHANGED",
+        "UNCHANGED",
+        "UNCHANGED",
+      ]);
     } finally {
       rmSync(codexHome, { recursive: true, force: true });
     }
