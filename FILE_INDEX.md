@@ -3,6 +3,9 @@
 ## Root contracts
 
 - `README.md` — product overview and navigation.
+- `JUDGE-QUICKSTART.md` — credential-free replay, receipt, and tamper-verification path.
+- `HACKATHON_DELTA.md` — pre-event baseline and Build Week implementation boundary.
+- `CODEX_COLLABORATION.md` — sanitized Codex model/session usage record.
 - `START_HERE.md` — mandatory pre-implementation protocol.
 - `MASTER_BUILD_CONTRACT.md` — authoritative scope and engineering contract.
 - `AGENTS.md` — repository-wide coding-agent rules.
@@ -67,3 +70,4 @@
 - `tests/fixtures/public/README.md` — sanitized deterministic test fixtures.
 - `demo/fixtures/README.md` — reproducible judge demo fixtures.
 - `evidence/public/README.md` — publishable evidence rules.
+- `docs/assets/` — sanitized public landing-page and dashboard captures.

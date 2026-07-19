@@ -25,4 +25,5 @@ How Codex and GPT-5.6 are used to build AxiomGate. Updated continuously.
 
 ## Primary build thread
 
-- Session ID: _to be designated at first build session (F3) and preserved for `/feedback`._
+- The primary repository implementation was completed in the submission's Codex workspace thread. Governed runtime session identifiers are listed above; the seven headline rows total 3,159,955 input-plus-output tokens from the mission ledger.
+- Build Week commits are reproducible with `git log --oneline 58c1a0a..HEAD`; no non-Codex tool is credited with core implementation.

@@ -43,7 +43,7 @@
   },
   "contractHash": "sha256:351125f4961a379feb7b9c5c2b79b5473c19c1c3c9b41aa6ed059c904e273562",
   "repo": {
-    "remote": "https://github.com/OWNER/axiomgate.git",
+    "remote": "https://github.com/mokimeow/axiomgate.git",
     "branch": "main",
     "commit": "fixture-commit"
   },

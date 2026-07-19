@@ -13,9 +13,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OWNER/axiomgate.git"
+    "url": "git+https://github.com/mokimeow/axiomgate.git"
   },
-  "homepage": "https://github.com/OWNER/axiomgate#readme",
+  "homepage": "https://github.com/mokimeow/axiomgate#readme",
   "type": "module",
   "bin": {
     "axiomgate": "./dist/index.js"

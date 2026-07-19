@@ -111,13 +111,13 @@ Verify the public Codex plugin with an isolated home so the result cannot inheri
 
 ```powershell
 $env:CODEX_HOME = Join-Path $env:TEMP "axiomgate-codex-home"
-codex plugin marketplace add <GIT_URL> --json
+codex plugin marketplace add https://github.com/mokimeow/axiomgate --json
 codex plugin add axiomgate@axiomgate-build-week --json
 codex plugin list --json
 npx -y axiomgate@latest doctor
 ```
 
-The marketplace-add result must name `axiomgate-build-week`; plugin list must report `axiomgate` installed and enabled. Doctor must report the skill via the plugin. Inspect the installed plugin record to confirm the read-only verifier agent and the `npx -y axiomgate@latest mcp` stdio server are present. Replace `<GIT_URL>` with the final public repository HTTPS Git URL; no URL is guessed in committed artifacts.
+The marketplace-add result must name `axiomgate-build-week`; plugin list must report `axiomgate` installed and enabled. Doctor must report the skill via the plugin. Inspect the installed plugin record to confirm the read-only verifier agent and the `npx -y axiomgate@latest mcp` stdio server are present.
 
 ## Truth
 

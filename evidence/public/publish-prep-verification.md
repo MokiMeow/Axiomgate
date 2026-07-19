@@ -24,7 +24,7 @@ package.json    902 bytes
 entryCount:     3
 ```
 
-The bundle begins with `#!/usr/bin/env node`. Package metadata sets MIT, Node `>=20`, registry `https://registry.npmjs.org/`, public access, requested keywords, and explicit GitHub placeholders. The user must replace `OWNER` with the final public GitHub owner before publishing.
+The bundle begins with `#!/usr/bin/env node`. Package metadata sets MIT, Node `>=20`, registry `https://registry.npmjs.org/`, public access, requested keywords, and the finalized public repository URL.
 
 ## Fresh tarball install
 
@@ -175,6 +175,6 @@ No known vulnerabilities found
 
 ## Limitations
 
-- The package and plugin repository fields use `OWNER` / `<GIT_URL>` placeholders because no Git remote or final public URL exists in this workspace.
+- The repository URL was finalized during submission sanitation as `https://github.com/mokimeow/axiomgate`; publication and push remain user actions.
 - Registry visibility and public Git marketplace cloning are `PENDING` user actions.
 - The optional packaged dashboard was not included; the required CLI, offline receipt verifier, and MCP server are the publication scope.
