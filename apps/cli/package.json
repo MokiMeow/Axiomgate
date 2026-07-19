@@ -1,19 +1,43 @@
 {
-  "name": "@axiomgate/cli",
+  "name": "axiomgate",
   "version": "0.1.0",
-  "private": true,
+  "description": "Govern Codex missions with bounded authority and verifiable evidence.",
+  "keywords": [
+    "codex",
+    "openai",
+    "governance",
+    "agent",
+    "security",
+    "mcp"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OWNER/axiomgate.git"
+  },
+  "homepage": "https://github.com/OWNER/axiomgate#readme",
   "type": "module",
   "bin": {
     "axiomgate": "./dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "node scripts/build.mjs",
+    "prepack": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
-  "dependencies": {
-    "@axiomgate/core": "workspace:*"
+  "devDependencies": {
+    "@axiomgate/core": "workspace:*",
+    "esbuild": "0.28.1"
   }
 }
