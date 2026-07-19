@@ -45,7 +45,7 @@ A developer or small team who:
 - cares about usage, credits, and expiring capacity;
 - wants safe approvals away from the laptop;
 - needs trustworthy verification;
-- may use Claude or another agent as a secondary reviewer;
+- may use another model or tool as a secondary reviewer;
 - wants local-first control and clear auditability.
 
 ## Required vertical mission
@@ -147,7 +147,7 @@ Responsibilities:
 
 ## Post-hackathon scope
 
-The following are documented intent, **not** Build Week requirements. An implementation agent must not build them during Build Week (ADR-008): full multi-source quota normalization (weekly/rolling/promotional/team-pool/multi-provider matrices), context-pressure and compaction management, model/provider transition safety and handoff packs, custom worktree/branch/port/process leasing, general browser/e2e orchestration, console/network failure capture, maintainability/duplication/complexity engines, instruction-compilation NLP breadth, capability-discovery generalization, non-Codex provider adapters, and Claude portability proofs.
+The following are documented intent, **not** Build Week requirements. An implementation agent must not build them during Build Week (ADR-008): full multi-source quota normalization (weekly/rolling/promotional/team-pool/multi-provider matrices), context-pressure and compaction management, model/provider transition safety and handoff packs, custom worktree/branch/port/process leasing, general browser/e2e orchestration, console/network failure capture, maintainability/duplication/complexity engines, instruction-compilation NLP breadth, capability-discovery generalization, non-Codex provider adapters, and cross-provider portability proofs.
 
 ## System-wide invariants
 

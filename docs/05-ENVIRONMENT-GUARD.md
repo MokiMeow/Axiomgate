@@ -82,7 +82,7 @@ Compile a mission-specific policy:
 Example:
 
 ```text
-ALLOW             repository.read on smohith58/zkauth
+ALLOW             repository.read on fixture-owner/target-app
 ALLOW             branch.create under agent/*
 REQUIRE_APPROVAL  pull_request.create
 ALLOW             preview.deploy to zkauth-preview

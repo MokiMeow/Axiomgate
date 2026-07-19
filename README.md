@@ -59,6 +59,6 @@ Environment Guard enforces policy through official Codex extension points — ho
 
 ## Current status
 
-**Blueprint revised after independent review (2026-07-14): hook-native enforcement specified, PatchPilot architecture corrected, scope cut to one vertical mission. Implementation not started.** See [`docs/27-CLAUDE-INDEPENDENT-REVIEW.md`](docs/27-CLAUDE-INDEPENDENT-REVIEW.md).
+The Build Week implementation now covers the governed mission spine end to end. See [`docs/21-IMPLEMENTATION-STATUS.md`](docs/21-IMPLEMENTATION-STATUS.md) for evidence-backed subsystem status.
 
 Update [`docs/21-IMPLEMENTATION-STATUS.md`](docs/21-IMPLEMENTATION-STATUS.md) as work proceeds. Never mark a subsystem complete from memory or model confidence.

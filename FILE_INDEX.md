@@ -43,8 +43,6 @@
 - `docs/24-REPO-HYGIENE.md`
 - `docs/25-EVALUATION-REPLAY-LAB.md`
 - `docs/26-OFFICIAL-RULES-COMPLIANCE.md` — official Devpost/OpenAI submission and eligibility checklist.
-- `docs/27-CLAUDE-INDEPENDENT-REVIEW.md` — independent blueprint review, verdict, and required changes (2026-07-14).
-- `docs/28-BUILD-WEEK-RESEARCH.md` — mid-build evidence sweep and un-defer decisions (2026-07-16).
 
 ## Execution tasks
 
@@ -69,4 +67,3 @@
 - `tests/fixtures/public/README.md` — sanitized deterministic test fixtures.
 - `demo/fixtures/README.md` — reproducible judge demo fixtures.
 - `evidence/public/README.md` — publishable evidence rules.
-

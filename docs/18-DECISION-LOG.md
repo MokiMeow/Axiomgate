@@ -27,7 +27,7 @@ Use Mission Compiler, Runway, Environment Guard, Codex Runtime, Verification Eng
 
 **Status:** Accepted
 
-Codex receives full implementation. Claude may demonstrate independent review or handoff. Do not claim equal support for every provider.
+Codex receives full implementation. Other tools may support planning or independent review. Do not claim equal support for every provider.
 
 ### ADR-003 — PatchPilot integration
 
@@ -71,13 +71,13 @@ The hackathon flow stops at PR and preview deployment.
 
 Environment Guard enforces policy through official Codex hooks (`PreToolUse`/`PermissionRequest`, deny-wins), sandbox/permission-profile mapping, and the App Server/SDK for session control. Prompt-level instructions are never the enforcement mechanism. Missions fail closed when hook configuration cannot be verified.
 
-**Evidence:** official Codex hooks and SDK/App Server documentation; independent review `docs/27` §6.3, §9.
+**Evidence:** official Codex hooks and SDK/App Server documentation; independent pre-implementation review.
 
 ### ADR-008 — Vertical-slice scope for Build Week
 
 **Date:** 2026-07-14 · **Status:** Accepted
 
-Build the one governed mission end to end (contract → hook-enforced guard → Codex build → PatchPilot verify → receipt). Deferred: desktop app, general browser/e2e orchestration, maintainability engine, capability-discovery generalization, worktree/port coordination, continuity/model-transition machinery, instruction-compilation NLP, multi-provider adapters, Claude portability proof, 11 of 14 quota scenarios, 9 of 12 replay scenarios. `tasks/TASKS.md` v3 is the authoritative board; where a phase file lists deferred work, TASKS.md wins.
+Build the one governed mission end to end (contract → hook-enforced guard → Codex build → PatchPilot verify → receipt). Deferred: desktop app, general browser/e2e orchestration, maintainability engine, capability-discovery generalization, worktree/port coordination, continuity/model-transition machinery, instruction-compilation NLP, multi-provider adapters, cross-provider portability proof, 11 of 14 quota scenarios, 9 of 12 replay scenarios. `tasks/TASKS.md` v3 is the authoritative board; where a phase file lists deferred work, TASKS.md wins.
 
 **Consequences:** a finished, demonstrable product; deferred items remain documented for post-hackathon.
 
@@ -93,7 +93,7 @@ The product surface is the CLI plus a local web dashboard extending the existing
 
 PatchPilot is a pnpm monorepo web product (`apps/web` Next.js 15, `apps/worker`, `apps/cli`, `apps/mcp`, `packages/core`) built 2026-05-26→31; it has never been a desktop app. All blueprint references corrected. Browser verification and maintainability analysis do **not** exist in PatchPilot and must not be claimed as integration.
 
-**Evidence:** local audit 2026-07-14 (`FEATURE_MATRIX.md`, `packages/core/src`, git log); `docs/27` §10.
+**Evidence:** local audit 2026-07-14 (`FEATURE_MATRIX.md`, `packages/core/src`, git log); independent pre-implementation review.
 
 ### ADR-011 — Judge-verifiable receipts
 
@@ -111,19 +111,19 @@ Add `axiomgate receipt verify <file>`: verifies the Build Receipt evidence hash 
 
 **Date:** 2026-07-16 · **Status:** Accepted
 
-`account/rateLimits/read` (Codex app-server JSON-RPC) is verified live on 0.144.4 and returns real `usedPercent`, window duration, `resetsAt`, `planType`, and banked `rateLimitResetCredits`. Runway's capacity snapshot is upgraded from advisory/manual to this first-party source (labelled `source: "codex-app-server"`, confidence high), feeding the verification reserve and expiring-reset reminder. Un-defers the quota-snapshot core the independent review had parked for "no reliable source." Honest bounds preserved: we surface used-percent/window/reset/credits, never invented message counts; app-server is experimental so the version is recorded and failures degrade to UNKNOWN. Evidence: `docs/28`, `.local/ratelimit-probe.mjs` output.
+`account/rateLimits/read` (Codex app-server JSON-RPC) is verified live on 0.144.4 and returns real `usedPercent`, window duration, `resetsAt`, `planType`, and banked `rateLimitResetCredits`. Runway's capacity snapshot is upgraded from advisory/manual to this first-party source (labelled `source: "codex-app-server"`, confidence high), feeding the verification reserve and expiring-reset reminder. Un-defers the quota-snapshot core the independent review had parked for "no reliable source." Honest bounds preserved: we surface used-percent/window/reset/credits, never invented message counts; app-server is experimental so the version is recorded and failures degrade to UNKNOWN. Evidence: mid-build research sweep and local app-server probe output.
 
 ### ADR-016 — Codex-native depth: max tier, skill, subagent, approval reviewer
 
 **Date:** 2026-07-16 · **Status:** Accepted
 
-Deepen genuine Codex usage across official surfaces: (a) Model Director offers GPT-5.6 `max` reasoning for the highest-risk single-chain build phase; (b) AxiomGate ships as a Codex **skill** (`.agents/skills/`) so governance is a workflow Codex loads natively; (c) the independent Verifier is a native Codex **custom subagent** (`~/.codex/agents/`, read-only sandbox, different tier); (d) complete the live **PermissionRequest** proof with AxiomGate acting as the external approval reviewer Codex defers to. No off-thesis surface added; Ultra-Mode orchestration remains roadmap-only. Evidence: `docs/28`.
+Deepen genuine Codex usage across official surfaces: (a) Model Director offers GPT-5.6 `max` reasoning for the highest-risk single-chain build phase; (b) AxiomGate ships as a Codex **skill** (`.agents/skills/`) so governance is a workflow Codex loads natively; (c) the independent Verifier is a native Codex **custom subagent** (`~/.codex/agents/`, read-only sandbox, different tier); (d) complete the live **PermissionRequest** proof with AxiomGate acting as the external approval reviewer Codex defers to. No off-thesis surface added; Ultra-Mode orchestration remains roadmap-only. Evidence: mid-build research sweep.
 
 ### ADR-014 — Verification integrates via the published PatchPilot CLI
 
 **Date:** 2026-07-15 · **Status:** Accepted
 
-PatchPilot is a separate repository (`C:/Users/Mohith S/Desktop/patchpilot`) with heavy deps (pg, bullmq, openai). Judges clone only AxiomGate, so the Verification Engine integrates by invoking the **published `patchpilot-cli`** (npm, v0.1.3, bin `patchpilot`) via the timeout runner — plus running the target repo's own test/build commands directly. This supersedes the `docs/09` assumption of an in-process typed API over a co-located `packages/core`.
+PatchPilot is a separate pre-existing repository with heavy dependencies (pg, bullmq, openai). Judges clone only AxiomGate, so the Verification Engine integrates by invoking the **published `patchpilot-cli`** (npm, v0.1.3, bin `patchpilot`) via the timeout runner — plus running the target repo's own test/build commands directly. This supersedes the `docs/09` assumption of an in-process typed API over a co-located `packages/core`.
 
 **Consequences:** self-contained for judges (npm resolves the dependency); honest reuse of pre-existing published work (no copy, rewrite, or submodule); clean pre-existing/Build-Week separation for `HACKATHON_DELTA.md`. AxiomGate parses the CLI's JSON output into typed findings; if a needed capability is CLI-only-partial, the target repo's native commands cover the gap. Board task V4 ("PatchPilot regression suite passes") is reinterpreted: PatchPilot is unmodified, so its suite is unaffected; V4 becomes "the published-CLI integration is verified against a real fixture."
 

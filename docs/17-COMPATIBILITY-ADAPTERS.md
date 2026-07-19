@@ -61,9 +61,9 @@ Integration interfaces (all official): hooks (`PreToolUse`, `PermissionRequest`,
 - This is a local, version-controlled distribution proof only. No marketplace publication is claimed because 0.144.6 exposes no publish command.
 - Plugin presentation assets are supported on 0.144.6 through `interface.composerIcon` and `interface.logo`; installed official manifests use relative PNG or SVG paths. AxiomGate uses the existing web favicon mark at `./assets/axiomgate.svg` for both fields, and the plugin validator confirms the referenced asset is packaged.
 
-### Claude
+### Other tools
 
-Independent review only (planning, adversarial testing, blueprint review); **no Build Week runtime implementation**. Core building happens through Codex in the primary `/feedback` thread. Do not make shared-skill installation, mission handoff, or runtime parity a requirement.
+Planning and adversarial review support was used during Build Week. **All core implementation, remediation, runtime proof, and evidence work ran through Codex GPT-5.6 sessions.** Shared-skill installation, mission handoff, and non-Codex runtime parity are not product requirements.
 
 ### Generic provider
 
