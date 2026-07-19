@@ -29,6 +29,7 @@ import {
   remediateMission,
   resolveCodexLaunch,
   reviewMission,
+  runSubmissionReplay,
   resumeMission,
   runCommand as runExternalCommand,
   runHookEntry,
@@ -183,9 +184,10 @@ export async function runDoctor(): Promise<void> {
 function printUsage(): void {
   console.log("Native Codex: axiomgate install-codex [--dry-run]");
   console.log("Agent protocol: axiomgate mcp");
+  console.log("Credential-free proof: axiomgate replay all");
   console.log("Runway: axiomgate runway status [--project <path>]");
   console.log(
-    "Usage: axiomgate doctor | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission verify <id> [--project <path>] | axiomgate mission remediate <id> --finding <id> [--timeout-ms <ms>] [--project <path>] | axiomgate mission status <id> [--project <path>] | axiomgate mission waive <id> --criterion <id> --reason <text> --risk <text> [--project <path>] | axiomgate mission receipt <id> [--format json|md] [--project <path>] | axiomgate receipt verify <file> | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
+    "Usage: axiomgate doctor | axiomgate replay all | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission verify <id> [--project <path>] | axiomgate mission remediate <id> --finding <id> [--timeout-ms <ms>] [--project <path>] | axiomgate mission status <id> [--project <path>] | axiomgate mission waive <id> --criterion <id> --reason <text> --risk <text> [--project <path>] | axiomgate mission receipt <id> [--format json|md] [--project <path>] | axiomgate receipt verify <file> | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
   );
 }
 
@@ -683,6 +685,32 @@ function zEffort(value: string): ReasoningEffort {
   throw new Error("--effort must be light, medium, high, xhigh, or max");
 }
 
+function runReplayAll(): void {
+  const results = runSubmissionReplay();
+  printCommandHeader("replay all", "deterministic · no credentials");
+  console.log(
+    ui.table(
+      ["Scenario", "Expected", "Observed", "Result"],
+      results.map((result) => [
+        result.title,
+        result.expected,
+        result.observed,
+        verdict(result.status),
+      ]),
+    ),
+  );
+  console.log(
+    ui.callout(
+      results.every((result) => result.status === "PASS") ? "success" : "failure",
+      results.every((result) => result.status === "PASS")
+        ? "PASS · GOVERNANCE REPLAY"
+        : "FAIL · GOVERNANCE REPLAY",
+      ["Production policy, approval-binding, and evidence-gate logic executed locally."],
+    ),
+  );
+  if (results.some((result) => result.status === "FAIL")) process.exitCode = 1;
+}
+
 if (hasHelpFlag(process.argv.slice(2))) {
   printUsage();
 } else if (command === "mcp") {
@@ -696,6 +724,8 @@ if (hasHelpFlag(process.argv.slice(2))) {
   }
 } else if (command === "doctor") {
   await runDoctor();
+} else if (command === "replay" && process.argv[3] === "all") {
+  runReplayAll();
 } else if (command === "verify-enforcement") {
   await runVerifyEnforcement();
 } else if (command === "runway" && process.argv[3] === "set") {
