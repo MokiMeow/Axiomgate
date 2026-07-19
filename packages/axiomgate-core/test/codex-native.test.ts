@@ -148,6 +148,12 @@ describe("AxiomGate Codex plugin", () => {
         "utf8",
       ),
     ) as { name: string; plugins: { name: string; source: { path: string } }[] };
+    const repositoryMarketplace = JSON.parse(
+      readFileSync(
+        resolve(repositoryRoot, ".agents/plugins/marketplace.json"),
+        "utf8",
+      ),
+    ) as { name: string; plugins: { name: string; source: { path: string } }[] };
     const mcp = JSON.parse(
       readFileSync(resolve(pluginRoot, ".mcp.json"), "utf8"),
     ) as { mcpServers: { axiomgate: { command: string; args: string[] } } };
@@ -170,8 +176,15 @@ describe("AxiomGate Codex plugin", () => {
       }],
     });
     expect(mcp.mcpServers.axiomgate).toEqual({
-      command: "axiomgate",
-      args: ["mcp"],
+      command: "npx",
+      args: ["-y", "axiomgate@latest", "mcp"],
+    });
+    expect(repositoryMarketplace).toMatchObject({
+      name: "axiomgate-build-week",
+      plugins: [{
+        name: "axiomgate",
+        source: { path: "./plugin/plugins/axiomgate" },
+      }],
     });
     expect(
       readFileSync(resolve(pluginRoot, "skills/axiomgate/SKILL.md"), "utf8"),
@@ -311,12 +324,16 @@ describe("AxiomGate Codex plugin", () => {
         stderr: "",
         durationMs: 1,
       });
-      expect(
-        codexNativeStatus(codexHome, {
+      const status = codexNativeStatus(codexHome, {
           runner,
           codexLaunch: { command: "codex", argsPrefix: [] },
-        }).skill,
-      ).toMatchObject({
+        });
+      expect(status.skill).toMatchObject({
+        installed: true,
+        via: "plugin",
+        pluginId: "axiomgate@axiomgate-build-week",
+      });
+      expect(status.verifierAgent).toMatchObject({
         installed: true,
         via: "plugin",
         pluginId: "axiomgate@axiomgate-build-week",

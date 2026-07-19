@@ -169,7 +169,10 @@ export async function runDoctor(): Promise<void> {
   });
   rows.push({
     key: "Verifier agent",
-    value: `${verdict(native.verifierAgent.installed ? "PRESENT" : "ABSENT")} (${native.verifierAgent.path})`,
+    value:
+      native.verifierAgent.via === "plugin"
+        ? `${ui.glyph("success")} via plugin ${native.verifierAgent.pluginId}`
+        : `${verdict(native.verifierAgent.installed ? "PRESENT" : "ABSENT")} (${native.verifierAgent.path})`,
   });
   console.log(ui.rows(rows));
   for (const warning of warnings) {

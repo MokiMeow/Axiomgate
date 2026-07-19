@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "axiomgate": {
-      "command": "axiomgate",
-      "args": ["mcp"]
+      "command": "npx",
+      "args": ["-y", "axiomgate@latest", "mcp"]
     }
   }
 }

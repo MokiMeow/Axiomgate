@@ -353,7 +353,12 @@ export interface CodexNativeStatus {
     readonly via: "standalone" | "plugin" | null;
     readonly pluginId?: string;
   };
-  readonly verifierAgent: { readonly installed: boolean; readonly path: string };
+  readonly verifierAgent: {
+    readonly installed: boolean;
+    readonly path: string;
+    readonly via: "standalone" | "plugin" | null;
+    readonly pluginId?: string;
+  };
 }
 
 export interface CodexNativeStatusOptions {
@@ -372,9 +377,10 @@ export function codexNativeStatus(
   const skillPath = join(home, "skills", "axiomgate", "SKILL.md");
   const agentPath = join(home, "agents", "axiomgate-verifier.toml");
   const standaloneInstalled = existsSync(skillPath);
+  const standaloneAgentInstalled = existsSync(agentPath);
   let pluginInstalled = false;
   if (
-    !standaloneInstalled &&
+    (!standaloneInstalled || !standaloneAgentInstalled) &&
     options.runner !== undefined &&
     options.codexLaunch !== undefined
   ) {
@@ -412,6 +418,17 @@ export function codexNativeStatus(
         ? { pluginId: "axiomgate@axiomgate-build-week" }
         : {}),
     },
-    verifierAgent: { installed: existsSync(agentPath), path: agentPath },
+    verifierAgent: {
+      installed: standaloneAgentInstalled || pluginInstalled,
+      path: agentPath,
+      via: standaloneAgentInstalled
+        ? "standalone"
+        : pluginInstalled
+          ? "plugin"
+          : null,
+      ...(pluginInstalled
+        ? { pluginId: "axiomgate@axiomgate-build-week" }
+        : {}),
+    },
   };
 }
