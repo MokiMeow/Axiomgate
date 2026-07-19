@@ -7,6 +7,7 @@ export interface HookConfigOptions {
   readonly cliEntryPath?: string;
   readonly nodePath?: string;
   readonly approvalsReviewer?: string;
+  readonly mcpToolMatchers?: readonly string[];
 }
 
 export interface GeneratedHookConfig {
@@ -39,6 +40,16 @@ export function generateHookConfig(
       : resolve(configuredNodePath);
   const cliEntryPath = resolve(options.cliEntryPath ?? process.argv[1]!);
   const resolvedMissionDir = resolve(missionDir);
+  const mcpToolMatchers = [...new Set(options.mcpToolMatchers ?? [])].sort();
+  for (const matcher of mcpToolMatchers) {
+    if (
+      !/^[A-Za-z0-9_.:-]+$/u.test(matcher) ||
+      matcher === "Bash" ||
+      matcher === "apply_patch"
+    ) {
+      throw new Error(`invalid MCP hook matcher: ${matcher}`);
+    }
+  }
   const command = [
     commandArgument(nodePath),
     commandArgument(cliEntryPath),
@@ -48,8 +59,12 @@ export function generateHookConfig(
     ...(options.approvalsReviewer === undefined
       ? []
       : ["--approvals-reviewer", commandArgument(options.approvalsReviewer)]),
+    ...mcpToolMatchers.flatMap((matcher) => [
+      "--mcp-tool-matcher",
+      commandArgument(matcher),
+    ]),
   ].join(" ");
-  const hook = `[${["Bash", "apply_patch"]
+  const hook = `[${["Bash", "apply_patch", ...mcpToolMatchers]
     .map(
       (matcher) =>
         `{matcher=${JSON.stringify(matcher)},hooks=[{type="command",command=${JSON.stringify(command)}}]}`,

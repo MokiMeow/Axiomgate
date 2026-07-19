@@ -202,6 +202,14 @@ function argumentValue(name: string): string | undefined {
   return index === -1 ? undefined : process.argv[index + 1];
 }
 
+function argumentValues(name: string): string[] {
+  return process.argv.flatMap((value, index) =>
+    value === name && process.argv[index + 1] !== undefined
+      ? [process.argv[index + 1]!]
+      : [],
+  );
+}
+
 const command = process.argv[2];
 
 function approvalMissionDir(): string {
@@ -232,9 +240,11 @@ function projectPath(): string {
 }
 
 function hookConfigOptions() {
+  const mcpToolMatchers = argumentValues("--mcp-tool-matcher");
   return {
     cliEntryPath: process.argv[1]!,
     nodePath: process.execPath,
+    ...(mcpToolMatchers.length === 0 ? {} : { mcpToolMatchers }),
   };
 }
 
@@ -739,6 +749,9 @@ if (command === "mcp") {
         cliEntryPath: process.argv[1]!,
         nodePath: process.execPath,
         ...(approvalsReviewer === undefined ? {} : { approvalsReviewer }),
+        ...(argumentValues("--mcp-tool-matcher").length === 0
+          ? {}
+          : { mcpToolMatchers: argumentValues("--mcp-tool-matcher") }),
       }),
     );
   }

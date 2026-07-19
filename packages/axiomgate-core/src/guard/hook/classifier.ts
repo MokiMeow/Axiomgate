@@ -60,6 +60,21 @@ export function classifyHookPayload(
   const toolName = payload.tool_name.toLowerCase();
 
   if (
+    toolName === "github_create_pull_request" ||
+    toolName === "mcp__github__create_pull_request"
+  ) {
+    return classification(
+      command,
+      "pull_request.create",
+      `mcp:${payload.tool_name}`,
+      "PUBLISH",
+      "high",
+      "close the pull request or delete the remote branch",
+      true,
+    );
+  }
+
+  if (
     /\bvercel(?:\.cmd|\.exe)?(?:\s+deploy)?\b[^\r\n]*\s--prod(?:uction)?\b/u.test(
       normalized,
     )
@@ -160,6 +175,18 @@ export function classifyHookPayload(
       command,
       "UNKNOWN",
       "unclassified",
+      "MODIFY_LOCAL",
+      "high",
+      "no verified rollback available",
+      true,
+    );
+  }
+
+  if (toolName !== "bash" && toolName !== "apply_patch") {
+    return classification(
+      command,
+      "UNKNOWN",
+      `mcp:${payload.tool_name}`,
       "MODIFY_LOCAL",
       "high",
       "no verified rollback available",

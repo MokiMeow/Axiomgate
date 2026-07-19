@@ -64,7 +64,7 @@ This board is authoritative. Where a phase file conflicts, this board wins. Dead
 - [ ] X1 One scripted Playwright browser check on the fixture app (browser evidence type).
 - [ ] X2 Diff-size/risky-path maintainability warning.
 - [ ] X3 Scout phase (Luna repo-mapping pass feeding the contract).
-- [ ] X4 Multi-mechanism equivalence test: the same semantic action via shell CLI and via MCP tool receives the identical policy verdict at the hook (mostly a test over G2/G3 — strong differentiator vs. native guardian).
+- [x] X4 Multi-mechanism equivalence test: shell `gh pr create` and MCP `github_create_pull_request` classify as `pull_request.create`, receive identical policy reasons/verdicts, and persist separate hook evidence. Exact MCP tool matchers extend the generated hook configuration without a wildcard. Evidence: [`evidence/public/cli-mcp-plugin-verification.md`](../evidence/public/cli-mcp-plugin-verification.md).
 - [ ] X5 Malicious capability-description scan: run MCP tool descriptions through the existing PatchPilot `promptInjection`/`mcpToolGuard` modules before a mechanism becomes eligible for a semantic action (reuse, not new build).
 
 ## Deferred beyond Build Week (ADR-008)
