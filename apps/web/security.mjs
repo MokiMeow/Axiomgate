@@ -80,3 +80,14 @@ export function applyDashboardApproval(missionDir, intent, mutations) {
   }
   return { ok: true, status: result.status, record: result.record };
 }
+
+export function isPendingApproval(record, now = Date.now()) {
+  return (
+    record !== null &&
+    typeof record === "object" &&
+    record.status === "PENDING" &&
+    typeof record.expiresAt === "string" &&
+    Number.isFinite(Date.parse(record.expiresAt)) &&
+    Date.parse(record.expiresAt) > now
+  );
+}

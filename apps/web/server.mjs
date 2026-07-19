@@ -15,6 +15,7 @@ import { approve, deny } from "@axiomgate/core";
 import {
   applyDashboardApproval,
   isAllowedDashboardOrigin,
+  isPendingApproval,
   resolveMissionDirectory,
   resolveStaticPath,
   validateApprovalIntent,
@@ -163,7 +164,7 @@ async function loadMission(dir, id) {
     verifications: verifications.sort((a, b) =>
       (a.startedAt || "").localeCompare(b.startedAt || "")
     ),
-    approvals: approvals.filter((a) => !a.consumedAt),
+    approvals: approvals.filter((a) => isPendingApproval(a)),
     receipt,
     label: events.length || runs.length ? "LIVE" : "REPLAY",
   };

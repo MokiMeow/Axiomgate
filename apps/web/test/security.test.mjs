@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   applyDashboardApproval,
   isAllowedDashboardOrigin,
+  isPendingApproval,
   isPathWithin,
   resolveApprovalDirectory,
   resolveStaticPath,
@@ -111,5 +112,33 @@ describe("local dashboard security boundaries", () => {
         },
       ),
     ).toEqual({ ok: false, reason: "approval request expired" });
+  });
+
+  it("shows only active pending approvals", () => {
+    const now = Date.parse("2026-07-20T10:00:00.000Z");
+    expect(
+      isPendingApproval(
+        { status: "PENDING", expiresAt: "2026-07-20T10:01:00.000Z" },
+        now,
+      ),
+    ).toBe(true);
+    expect(
+      isPendingApproval(
+        { status: "APPROVED", expiresAt: "2026-07-20T10:01:00.000Z" },
+        now,
+      ),
+    ).toBe(false);
+    expect(
+      isPendingApproval(
+        { status: "DENIED", expiresAt: "2026-07-20T10:01:00.000Z" },
+        now,
+      ),
+    ).toBe(false);
+    expect(
+      isPendingApproval(
+        { status: "PENDING", expiresAt: "2026-07-20T09:59:00.000Z" },
+        now,
+      ),
+    ).toBe(false);
   });
 });
