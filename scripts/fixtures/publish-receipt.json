@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "missionId": "msn_publish_fixture",
+  "contract": {
+    "id": "msn_publish_fixture",
+    "version": 1,
+    "hash": "sha256:351125f4961a379feb7b9c5c2b79b5473c19c1c3c9b41aa6ed059c904e273562",
+    "objective": "Verify the installed AxiomGate receipt checker",
+    "projectProfileId": "public-fixture",
+    "intentBoundary": "OBSERVE",
+    "acceptanceCriteria": [
+      {
+        "id": "criterion_receipt",
+        "statement": "Offline receipt verification succeeds",
+        "risk": "low",
+        "evidenceTypes": ["command"],
+        "verdict": "UNVERIFIED",
+        "evidenceIds": []
+      }
+    ],
+    "constraints": [],
+    "nonGoals": [],
+    "actionPolicy": [
+      {
+        "action": "repository.read",
+        "decision": "ALLOW"
+      }
+    ],
+    "modelPlan": [
+      {
+        "phase": "verify",
+        "model": "gpt-5.6-terra",
+        "effort": "high",
+        "rationale": "independent offline verification"
+      }
+    ],
+    "budgetPolicy": {
+      "reservePercent": 20
+    },
+    "status": "COMPLETE",
+    "createdAt": "2026-07-19T00:00:00.000Z",
+    "updatedAt": "2026-07-19T00:00:00.000Z"
+  },
+  "contractHash": "sha256:351125f4961a379feb7b9c5c2b79b5473c19c1c3c9b41aa6ed059c904e273562",
+  "repo": {
+    "remote": "https://github.com/OWNER/axiomgate.git",
+    "branch": "main",
+    "commit": "fixture-commit"
+  },
+  "identities": {
+    "github": "public-fixture",
+    "vercel": "UNKNOWN"
+  },
+  "modelUsage": [],
+  "capacityLedger": {
+    "estimated": {},
+    "actual": {},
+    "sourceLabels": {}
+  },
+  "actions": [],
+  "permissionQuad": {
+    "requested": "0/0",
+    "approved": "0/0",
+    "applied": "0/0",
+    "observed": "0/0"
+  },
+  "criteria": [
+    {
+      "id": "criterion_receipt",
+      "verdict": "PASS",
+      "evidenceIds": ["ev_publish_fixture"],
+      "evidenceHashes": [
+        "sha256:d42f6323d86ff0116693d4802520d807ce8e013ba20f26eedba3fb2a702e2323"
+      ]
+    }
+  ],
+  "findings": [],
+  "waivers": [],
+  "outcome": "COMPLETE",
+  "evidenceRecords": [
+    {
+      "record": {
+        "id": "ev_publish_fixture",
+        "missionId": "msn_publish_fixture",
+        "criterionId": "criterion_receipt",
+        "source": "command",
+        "command": "axiomgate receipt verify fixture.json",
+        "exitCode": 0,
+        "outputHash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "outputRef": "evidence/public/publish-receipt.json",
+        "capturedAt": "2026-07-19T00:01:00.000Z",
+        "freshForCommit": "fixture-commit",
+        "label": "REPLAY",
+        "redacted": true
+      },
+      "previousHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "sha256:d42f6323d86ff0116693d4802520d807ce8e013ba20f26eedba3fb2a702e2323"
+    }
+  ],
+  "evidenceChainHead": "sha256:d42f6323d86ff0116693d4802520d807ce8e013ba20f26eedba3fb2a702e2323",
+  "limitations": [
+    "Sanitized deterministic publication fixture; no account data."
+  ],
+  "generatedAt": "2026-07-19T00:02:00.000Z"
+}

@@ -6,6 +6,8 @@
   "scripts": {
     "build": "pnpm -r build",
     "demo:check": "pnpm --filter @axiomgate/core build && node demo/scripts/check.mjs",
+    "publish:check": "node scripts/verify-packed.mjs",
+    "publish:verify": "node scripts/verify-published.mjs",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm --filter @axiomgate/core build && vitest run --exclude \"demo/fixtures/**\""
   },
