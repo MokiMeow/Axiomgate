@@ -127,6 +127,12 @@ PatchPilot is a separate repository (`C:/Users/Mohith S/Desktop/patchpilot`) wit
 
 **Consequences:** self-contained for judges (npm resolves the dependency); honest reuse of pre-existing published work (no copy, rewrite, or submodule); clean pre-existing/Build-Week separation for `HACKATHON_DELTA.md`. AxiomGate parses the CLI's JSON output into typed findings; if a needed capability is CLI-only-partial, the target repo's native commands cover the gap. Board task V4 ("PatchPilot regression suite passes") is reinterpreted: PatchPilot is unmodified, so its suite is unaffected; V4 becomes "the published-CLI integration is verified against a real fixture."
 
+### ADR-017 — AxiomGate ships as an MCP server and a Codex plugin
+
+**Date:** 2026-07-16 · **Status:** Accepted
+
+Distribution surfaces, not capability management (no conflict with ADR-004 — we ship OUR tool, we do not manage others'): (a) `axiomgate mcp` — a zero-dependency stdio MCP server exposing governance tools (mission status, receipt verify, runway status, approvals) so any MCP-aware agent can consume governance state; (b) a Codex plugin package bundling the skill, verifier agent, and MCP config, installable via whatever `codex plugin` actually supports on the installed version (verified empirically; no marketplace claim unless the mechanism exists). Also enables the X4 multi-mechanism equivalence test (same semantic action via CLI or MCP → same policy verdict).
+
 ### ADR-013 — Ship-during-week distribution
 
 **Date:** 2026-07-14 · **Status:** Accepted
