@@ -45,6 +45,11 @@ Integration interfaces (all official): hooks (`PreToolUse`, `PermissionRequest`,
 - Legacy contracts/receipts containing `none`, `minimal`, or `low` remain parseable; `mission update` migrates those values to display `light` before versioning and re-hashing.
 - Ultra is native Codex multi-agent mode, not a reasoning-effort wire value. AxiomGate records it as a capability note only and does not orchestrate Ultra during Build Week. Evidence: `evidence/public/effort-labels-verification.md`.
 
+### Enforcement re-verification — codex-cli 0.144.6, 2026-07-19 (VERIFIED)
+
+- Codex auto-updated 0.144.4 → 0.144.6. Per the ops rule, `axiomgate verify-enforcement` was run: **PASS LIVE** — real session `019f7ab8-43d3-79d2-b71f-7ea96fe36a91`, gated command denied at the hook, zero command executions, version + timestamp recorded to `enforcement-verified.json`. Hook semantics unchanged from 0.144.4.
+- Reminder: do not `codex update` between final verification and the demo recording; re-run `verify-enforcement` after any update.
+
 ### Claude
 
 Independent review only (planning, adversarial testing, blueprint review); **no Build Week runtime implementation**. Core building happens through Codex in the primary `/feedback` thread. Do not make shared-skill installation, mission handoff, or runtime parity a requirement.
