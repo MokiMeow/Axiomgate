@@ -94,6 +94,7 @@ describe("buildCodexRunPlan", () => {
     expect(plan).toMatchObject({
       model: "gpt-5.6-sol",
       effort: "high",
+      wireEffort: "high",
       sandbox: "workspace-write",
       networkAccess: false,
       stdin: "Create hello.txt",

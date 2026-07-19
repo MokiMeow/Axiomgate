@@ -19,6 +19,7 @@ import {
 } from "../evidence/index.js";
 import {
   hashContract,
+  CodexReasoningEffortSchema,
   PersistedReasoningEffortSchema,
   ReasoningEffortSchema,
   Sha256Schema,
@@ -77,6 +78,7 @@ export const MissionRunRecordSchema = z.strictObject({
   sessionId: z.string().min(1).nullable(),
   model: z.string().min(1),
   effort: PersistedReasoningEffortSchema,
+  wireEffort: CodexReasoningEffortSchema,
   sandbox: z.enum(["read-only", "workspace-write"]),
   networkAccess: z.boolean(),
   configHash: Sha256Schema,
@@ -456,6 +458,7 @@ async function runMissionInternal(
     sessionId: parsed.sessionId ?? null,
     model: plan.model,
     effort: plan.effort,
+    wireEffort: plan.wireEffort,
     sandbox: plan.sandbox,
     networkAccess: plan.networkAccess,
     configHash: plan.configHash,

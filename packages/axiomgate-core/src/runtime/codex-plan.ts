@@ -5,6 +5,7 @@ import {
   ReasoningEffortSchema,
   toCodexReasoningEffort,
   toDisplayReasoningEffort,
+  type CodexReasoningEffort,
   type ReasoningEffort,
   type MissionContract,
 } from "../mission/index.js";
@@ -29,6 +30,7 @@ export interface CodexRunPlan {
   readonly projectPath: string;
   readonly model: string;
   readonly effort: ReasoningEffort;
+  readonly wireEffort: CodexReasoningEffort;
   readonly sandbox: "read-only" | "workspace-write";
   readonly networkAccess: boolean;
   readonly configHash: string;
@@ -82,6 +84,7 @@ export function buildCodexRunPlan(
     projectPath,
     model,
     effort,
+    wireEffort,
     sandbox: mapping.sandbox,
     networkAccess: mapping.networkAccess,
     configHash: hook.configHash,
