@@ -99,7 +99,7 @@ Provide:
 
 ### Fresh-machine publication checks
 
-After the user publishes npm and pushes the public repository, verify the public CLI from a directory outside the clone:
+Verify the published public CLI from a directory outside the clone:
 
 ```powershell
 node scripts/verify-published.mjs

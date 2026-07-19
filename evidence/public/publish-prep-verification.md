@@ -1,8 +1,8 @@
-# Publication preparation verification
+# Publication verification
 
 Captured 2026-07-19 on Windows with Node 24.11.1, npm 11.6.2, pnpm 10.33.0, and Codex CLI 0.144.6. All package checks used a locally generated tarball installed into a fresh temporary project. Temporary absolute paths are represented as `<temp>`; no credential, token, private target ID, tarball, or `node_modules` content is committed.
 
-No `npm publish`, Git remote creation, or `git push` was run. Public registry and Git-URL checks remain user actions after publication.
+The initial preparation phase did not publish or push. On 2026-07-20 IST, the user explicitly authorized both actions; the verified publication results are recorded below without including authentication material.
 
 ## Publishable package
 
@@ -175,6 +175,33 @@ No known vulnerabilities found
 
 ## Limitations
 
-- The repository URL was finalized during submission sanitation as `https://github.com/mokimeow/axiomgate`; publication and push remain user actions.
-- Registry visibility and public Git marketplace cloning are `PENDING` user actions.
+- The repository URL is `https://github.com/mokimeow/axiomgate`; GitHub `main` and npm registry visibility are verified.
+- A public plugin marketplace install from GitHub remains a separate post-push judge check.
 - The optional packaged dashboard was not included; the required CLI, offline receipt verifier, and MCP server are the publication scope.
+
+## Public registry and GitHub verification
+
+The authenticated identities and targets were checked before mutation: GitHub account `MokiMeow` had admin/push permission on public repository `MokiMeow/Axiomgate`, and npm authenticated as `mohitsm`. The npm token was provided interactively, held only in process memory, and was not written to the repository or captured here.
+
+```text
+git push -u origin main
+new branch main -> main
+local HEAD:       41bc5cc5baeec8964a3032da00f66321c1b0a19f
+remote main:      41bc5cc5baeec8964a3032da00f66321c1b0a19f
+GitHub API main:  41bc5cc5baeec8964a3032da00f66321c1b0a19f
+
+npm publish --access public
++ axiomgate@0.1.0
+
+npm view axiomgate@latest
+version: 0.1.0
+bin: axiomgate -> dist/index.js
+license: MIT
+dist-tag latest: 0.1.0
+
+node scripts/verify-published.mjs
+PASS registry exposes axiomgate version
+PASS fresh npx doctor
+```
+
+npm normalized the manifest bin path from `./dist/index.js` to `dist/index.js` while publishing. A registry-backed `npm exec --package=axiomgate@0.1.0 -- axiomgate --help` exited 0, confirming the executable was retained and works; no corrective patch release was necessary.

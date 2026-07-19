@@ -18,7 +18,7 @@ AxiomGate makes both failures testable: unsafe actions are denied at the hook bo
 
 ## 90-second quickstart
 
-After `axiomgate@0.1.0` is published:
+Published package:
 
 ```powershell
 npx -y axiomgate@0.1.0 doctor
@@ -27,7 +27,7 @@ npx -y axiomgate@0.1.0 replay all
 
 `replay all` needs no Codex login or cloud credentials. It executes three deterministic regressions through production logic: wrong-target ownership denial, exact-command approval binding, and missing-evidence completion blocking.
 
-From a clean clone, the same path is available before npm publication:
+From a clean clone, the same path is also available from source:
 
 ```powershell
 git clone https://github.com/mokimeow/axiomgate.git

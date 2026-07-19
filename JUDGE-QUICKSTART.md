@@ -32,7 +32,7 @@ The second command must report `FAIL · RECEIPT INTEGRITY` and return a non-zero
 
 ## Published-package path
 
-After the user publishes version 0.1.0, the clean-machine equivalent is:
+The published `axiomgate@0.1.0` clean-machine equivalent is:
 
 ```powershell
 npx -y axiomgate@0.1.0 doctor
