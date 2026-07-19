@@ -110,3 +110,42 @@ Rollback is commit-level revert plus deletion of ignored `.axiomgate/telegram-st
 - **Missing configuration:** doctor reports `UNAVAILABLE`; watcher/test exits with a safe instruction; governed runs continue and retain CLI approval.
 - **Live interaction timing:** use a bounded proof window. If no allowlisted Details/Approve callbacks arrive, leave the live proof `PENDING` rather than fabricating a tap.
 - **Future npm release:** source/package versioning and publication are outside this task unless separately authorized; public docs will distinguish source availability from the already-published `0.1.0` when necessary.
+
+---
+
+# Validation Assessment — Full-System Matrix
+
+**Date:** 2026-07-20
+
+**Starting checkpoint:** `9c0746b` on clean `main`
+
+**Verdict:** Feasible as a mixed LIVE/REPLAY/fixture audit. Published `axiomgate@0.1.0` necessarily tests the released snapshot, while current-source-only improvements must be labelled separately until a user-authorized release.
+
+## Authority and scope
+
+This session validates Plan, Guard, Run, Verify, Prove, Runway, CLI, npm, plugin, MCP, dashboard, and Telegram surfaces. Read-only registry/GitHub/Codex queries, disposable state under `.local/`, bounded Luna runs, local dashboard processes, Telegram messages to the configured allowlist, and canonical scratch approvals are authorized by the matrix. Production deploys, Git pushes, npm publication, real remote repository mutation, permission broadening, and invented provider state are not authorized.
+
+The smallest capability set is the existing CLI, `npx` against registry.npmjs.org, Codex CLI/plugin commands with an isolated `CODEX_HOME`, direct MCP stdio JSON-RPC, the loopback dashboard, the configured Telegram long-polling adapter, repository test fixtures, and official/read-only web pages. No dependency installation or architecture expansion is planned.
+
+## Verified prerequisites and risks
+
+- The worktree is clean on `main`; origin is the public GitHub repository.
+- Local source has 28 green test files and 279 passing tests plus one opt-in identity skip as of the preceding Telegram gate.
+- The public npm version remains `0.1.0`; later source commits are not assumed present in it.
+- Six MCP tools exist; five are read-only and `axiomgate_approve` is the only mutating tool.
+- Telegram is configured through ignored local state and has a completed live approval proof; this matrix requires additional real interactions and will mask all identifiers.
+- Provider quota, plugin behavior, GitHub/npm rendering, and Codex model execution are live mutable dependencies and can become honestly PENDING/FAIL.
+- The matrix is intentionally broader than one automated test run. Existing public evidence may satisfy explicitly linked rows, but every row still receives a result and proof pointer.
+
+## Execution and evidence plan
+
+1. Create one complete coverage table with no empty cells and explicit N/A reasoning.
+2. Test published npm and plugin paths from fresh directories/homes; check public pages through read-only network access.
+3. Run only the bounded model/effort cases allowed by the live weekly-usage threshold, then inspect ledger/run records rather than trusting stdout.
+4. Execute uncovered layer paths with scratch missions; link existing headline/replay evidence for already-proven destructive or expensive cases.
+5. Exercise all MCP tools directly and use Codex for two read-only calls if the installed plugin route supports it.
+6. Execute Telegram approval, denial, expiry, race, security, notification, dedupe, and suppression paths; distinguish live callbacks from fixture-only adversarial cases.
+7. Fix only small defects with regression tests and atomic commits. Record larger or published-artifact gaps without republishing.
+8. Finish with typecheck, test, build, secret/path/identity review, public evidence, and an ignored detailed report.
+
+Rollback is deletion of disposable `.local/matrix*` state and commit-level revert for any fixes. External Telegram messages and isolated plugin downloads may remain, but no production or remote repository state will be changed.
