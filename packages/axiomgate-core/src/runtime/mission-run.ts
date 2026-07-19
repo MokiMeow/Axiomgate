@@ -505,6 +505,64 @@ async function runMissionInternal(
     })}\n`,
     "utf8",
   );
+  appendFileSync(
+    join(missionDir, "events.jsonl"),
+    `${JSON.stringify({
+      type: "run.finished",
+      ts: endedAt,
+      missionId: id,
+      runId,
+      status: record.status,
+      model: record.model,
+      effort: record.effort,
+      inputTokens: typeof parsed.usages.at(-1)?.input_tokens === "number"
+        ? parsed.usages.at(-1)!.input_tokens
+        : 0,
+      outputTokens: typeof parsed.usages.at(-1)?.output_tokens === "number"
+        ? parsed.usages.at(-1)!.output_tokens
+        : 0,
+      message: `Governed run finished with ${record.status}`,
+    })}\n`,
+    "utf8",
+  );
+  if (checkpoint !== undefined) {
+    appendFileSync(
+      join(missionDir, "events.jsonl"),
+      `${JSON.stringify({
+        type: "run.checkpoint",
+        ts: endedAt,
+        missionId: id,
+        runId,
+        reason: checkpoint.reason,
+        resetAt: checkpoint.resetAt ?? null,
+        message: checkpoint.reason === "rate_limit"
+          ? `Rate limit reached; reset ${checkpoint.resetAt ?? "UNKNOWN"}`
+          : `Run checkpointed: ${checkpoint.reason}`,
+      })}\n`,
+      "utf8",
+    );
+  }
+  if (weekly !== undefined) {
+    appendFileSync(
+      join(missionDir, "events.jsonl"),
+      `${JSON.stringify({ type: "runway.usage", ts: endedAt, missionId: id, usedPercent: weekly.usedPercent, message: `Weekly Codex usage is ${weekly.usedPercent}%` })}\n`,
+      "utf8",
+    );
+  }
+  if (reserve.warning !== undefined) {
+    appendFileSync(
+      join(missionDir, "events.jsonl"),
+      `${JSON.stringify({ type: "runway.reserve.warning", ts: endedAt, missionId: id, message: reserve.warning })}\n`,
+      "utf8",
+    );
+  }
+  if (initialRunway.reminder !== undefined) {
+    appendFileSync(
+      join(missionDir, "events.jsonl"),
+      `${JSON.stringify({ type: "runway.banked_reset.expiring", ts: endedAt, missionId: id, message: initialRunway.reminder })}\n`,
+      "utf8",
+    );
+  }
   if (loopRecommendation !== undefined) {
     appendFileSync(
       join(missionDir, "events.jsonl"),

@@ -3,6 +3,10 @@ const SECRET_PATTERNS: readonly [RegExp, string][] = [
     /\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|npm_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|sk-[A-Za-z0-9_-]{20,})\b/gu,
     "[REDACTED_TOKEN]",
   ],
+  [
+    /\b\d{6,12}:[A-Za-z0-9_-]{30,}\b/gu,
+    "[REDACTED_TELEGRAM_TOKEN]",
+  ],
   [/\bAKIA[0-9A-Z]{16}\b/gu, "[REDACTED_AWS_ACCESS_KEY]"],
   [
     /(\b(?:authorization)\b\s*[:=]\s*(?:Bearer|Basic)\s+)[A-Za-z0-9._~+/=-]{8,}/giu,

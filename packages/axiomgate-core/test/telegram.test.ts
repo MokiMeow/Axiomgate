@@ -1,0 +1,328 @@
+import { appendFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import { afterEach, describe, expect, it } from "vitest";
+
+import {
+  ActionRequestSchema,
+  approve,
+  consumeApproval,
+  createMissionSnapshot,
+  createTelegramClient,
+  createApprovalRequest,
+  escapeTelegramHtml,
+  generateHookConfig,
+  getApprovalRequest,
+  hashContract,
+  parseTelegramCallback,
+  processTelegramUpdate,
+  readTelegramConfig,
+  readTelegramState,
+  reconcileApprovalCards,
+  renderApprovalCard,
+  sendPendingApprovalCards,
+  sendStageNotifications,
+  stageNotificationFromEvent,
+  telegramActionLabel,
+  telegramCallbackRef,
+  telegramChatKey,
+  watchTelegram,
+  writeMissionSnapshot,
+  writeTelegramState,
+  type IdentityReport,
+  type MissionContract,
+  type TelegramClient,
+  type TelegramConfig,
+  type TelegramUpdate,
+} from "../src/index.js";
+
+const projects: string[] = [];
+const NOW = "2026-07-20T10:00:00.000Z";
+const CHAT = "123456789";
+const HASH = `sha256:${"a".repeat(64)}`;
+
+afterEach(() => {
+  for (const project of projects.splice(0)) rmSync(project, { recursive: true, force: true });
+});
+
+function project(): string {
+  const path = mkdtempSync(join(tmpdir(), "axiomgate-telegram-"));
+  projects.push(path);
+  return path;
+}
+
+function identity(): IdentityReport {
+  return {
+    githubLogin: { status: "RESOLVED", value: "mokimeow", source: "gh api user", confidence: "HIGH", capturedAt: NOW },
+    gitRemotes: { status: "RESOLVED", value: [], source: "git remote -v", confidence: "HIGH", capturedAt: NOW },
+    vercelUser: { status: "RESOLVED", value: "mokimeow", source: "vercel whoami", confidence: "HIGH", capturedAt: NOW },
+    vercelProject: { status: "RESOLVED", value: { projectId: "prj_demo", orgId: "team_demo", projectName: "preview" }, source: ".vercel/project.json", confidence: "HIGH", capturedAt: NOW },
+  };
+}
+
+function contract(objective = "Deploy a governed preview"): MissionContract {
+  const draft = {
+    id: "msn_telegram",
+    version: 1,
+    hash: `sha256:${"0".repeat(64)}`,
+    objective,
+    projectProfileId: "target-app",
+    intentBoundary: "DEPLOY_PREVIEW" as const,
+    acceptanceCriteria: [], constraints: [], nonGoals: [],
+    actionPolicy: [{ action: "preview.deploy", decision: "REQUIRE_APPROVAL" as const }],
+    modelPlan: [{ phase: "build", model: "gpt-5.6-sol", effort: "high" as const, rationale: "fixture" }],
+    budgetPolicy: { reservePercent: 20 }, status: "ACTIVE", createdAt: NOW, updatedAt: NOW,
+  };
+  return { ...draft, hash: hashContract(draft) };
+}
+
+function setup(objective?: string, count = 1, displayCommand = "vercel deploy <hostile>& --name token-safe"): { projectPath: string; missionDir: string } {
+  const projectPath = project();
+  const missionDir = join(projectPath, ".axiomgate", "missions", "msn_telegram");
+  const mission = contract(objective);
+  const hook = generateHookConfig(missionDir, { cliEntryPath: "cli.js", nodePath: "node" });
+  writeMissionSnapshot(missionDir, createMissionSnapshot({ contract: mission, policy: mission.actionPolicy, identity: identity(), hookConfigHash: hook.configHash }));
+  for (let index = 0; index < count; index += 1) {
+    const id = `act_preview_${index}`;
+    createApprovalRequest(missionDir, ActionRequestSchema.parse({
+      id, missionId: "msn_telegram", semanticAction: "preview.deploy", mechanism: "vercel_cli",
+      target: { type: "vercel_project", owner: "mokimeow", repo: "AxiomGate", project: "preview", verifiedOwnership: true },
+      identity: { githubLogin: "mokimeow", vercelUser: "mokimeow", source: "gh api user" },
+      rawCommandHash: index === 0 ? HASH : `sha256:${String(index).padStart(64, "b").slice(-64)}`,
+      intentBoundaryRequired: "DEPLOY_PREVIEW", risk: "high", rollback: "remove preview", decision: "AWAITING_APPROVAL",
+      requestedAt: NOW, expiresAt: "2026-07-20T10:15:00.000Z",
+    }), ["policy requires explicit approval"], { now: () => new Date(NOW), displayCommand, evidenceEventId: `ev_${id}` });
+  }
+  return { projectPath, missionDir };
+}
+
+function config(chatIds: readonly string[] = [CHAT]): TelegramConfig {
+  return { token: `${"123456"}:${"x".repeat(35)}`, chatIds, notify: "all", notifyUsagePercent: 80, source: "environment" };
+}
+
+class FakeClient implements TelegramClient {
+  readonly sent: Array<{ chatId: string; text: string; markup?: unknown; id: number }> = [];
+  readonly edits: Array<{ chatId: string; id: number; text: string }> = [];
+  readonly answers: string[] = [];
+  updates: readonly TelegramUpdate[] = [];
+  failSend = false;
+  getMe = async () => ({ id: 1, is_bot: true, username: "axiom_fixture_bot" });
+  sendMessage = async (chatId: string, text: string, markup?: unknown) => {
+    if (this.failSend) throw new Error("network unavailable");
+    const id = this.sent.length + 1;
+    this.sent.push({ chatId, text, ...(markup === undefined ? {} : { markup }), id });
+    return { message_id: id };
+  };
+  editMessageText = async (chatId: string, id: number, text: string) => { this.edits.push({ chatId, id, text }); };
+  answerCallbackQuery = async (_id: string, text?: string) => { this.answers.push(text ?? ""); };
+  getUpdates = async () => this.updates;
+}
+
+async function sentCard(projectPath: string, client: FakeClient): Promise<{ ref: string; callback: TelegramUpdate }> {
+  await sendPendingApprovalCards(projectPath, config(), client, { now: () => new Date(NOW) });
+  const state = readTelegramState(projectPath);
+  const ref = state.cards[0]!.ref;
+  return { ref, callback: { update_id: 1, callback_query: { id: "cb_1", from: { id: CHAT }, data: `ag:${ref}:a`, message: { message_id: 1, chat: { id: CHAT } } } } };
+}
+
+describe("Telegram approval relay", () => {
+  it("approves through the canonical store and edits the card", async () => {
+    const { projectPath, missionDir } = setup(); const client = new FakeClient();
+    const { callback } = await sentCard(projectPath, client);
+    await processTelegramUpdate(projectPath, config(), client, callback, { now: () => new Date("2026-07-20T10:01:00.000Z") });
+    const record = getApprovalRequest(missionDir, "act_preview_0");
+    expect(record?.status).toBe("APPROVED");
+    expect(record?.approval).toMatchObject({ surface: "telegram", singleUse: true, boundCommandHash: HASH });
+    expect(client.edits[0]?.text).toContain("APPROVED");
+    await processTelegramUpdate(projectPath, config(), client, callback, { now: () => new Date("2026-07-20T10:02:00.000Z") });
+    expect(client.answers.at(-1)).toContain("already decided");
+  });
+
+  it("edits an approved card to consumed with the stored run id", async () => {
+    const { projectPath, missionDir } = setup(); const client = new FakeClient();
+    const { callback } = await sentCard(projectPath, client);
+    await processTelegramUpdate(projectPath, config(), client, callback, { now: () => new Date("2026-07-20T10:01:00.000Z") });
+    expect(consumeApproval(missionDir, "act_preview_0", HASH, { now: () => new Date("2026-07-20T10:02:00.000Z") }).status).toBe("CONSUMED");
+    mkdirSync(join(missionDir, "runs"), { recursive: true });
+    writeFileSync(join(missionDir, "runs", "run_fixture.json"), JSON.stringify({ id: "run_fixture", startedAt: "2026-07-20T10:01:30.000Z", endedAt: "2026-07-20T10:02:30.000Z" }));
+    await reconcileApprovalCards(projectPath, config(), client, { now: () => new Date("2026-07-20T10:03:00.000Z") });
+    expect(client.edits.at(-1)?.text).toContain("CONSUMED");
+    expect(client.edits.at(-1)?.text).toContain("run_fixture");
+  });
+
+  it("denies through the canonical store", async () => {
+    const { projectPath, missionDir } = setup(); const client = new FakeClient();
+    const { ref, callback } = await sentCard(projectPath, client);
+    const denyUpdate = { ...callback, callback_query: { ...callback.callback_query!, data: `ag:${ref}:d` } };
+    await processTelegramUpdate(projectPath, config(), client, denyUpdate, { now: () => new Date("2026-07-20T10:01:00.000Z") });
+    expect(getApprovalRequest(missionDir, "act_preview_0")?.status).toBe("DENIED");
+  });
+
+  it("renders every normative card field and sends redacted details", async () => {
+    const { projectPath } = setup(); const client = new FakeClient();
+    const { ref, callback } = await sentCard(projectPath, client);
+    const card = client.sent[0]!;
+    for (const field of ["Mission", "msn_telegram", "Action", "preview.deploy", "Deploy preview", "Target", "preview", "As", "mokimeow (Vercel)", "Workspace", "target-app", "Command", "Hash", "approval binds to this exact command", "Risk", "Grant", "single use"]) {
+      expect(card.text).toContain(field);
+    }
+    const markup = card.markup as { inline_keyboard: Array<Array<{ text: string }>> };
+    expect(markup.inline_keyboard.flat().map((button) => button.text)).toEqual(["Approve once", "Deny", "Details"]);
+    await processTelegramUpdate(projectPath, config(), client, { ...callback, callback_query: { ...callback.callback_query!, data: `ag:${ref}:i` } });
+    const details = client.sent.at(-1)?.text ?? "";
+    for (const field of ["policy requires explicit approval", "Requested", "DEPLOY_PREVIEW", "target-app", HASH, "ev_act_preview_0"]) expect(details).toContain(field);
+  });
+
+  it("expires without granting authority", async () => {
+    const { projectPath, missionDir } = setup(); const client = new FakeClient();
+    const { callback } = await sentCard(projectPath, client);
+    await processTelegramUpdate(projectPath, config(), client, callback, { now: () => new Date("2026-07-20T10:16:00.000Z") });
+    expect(getApprovalRequest(missionDir, "act_preview_0")?.status).toBe("PENDING");
+    expect(client.edits[0]?.text).toContain("EXPIRED");
+  });
+
+  it("sends and independently binds multiple pending approvals", async () => {
+    const { projectPath } = setup(undefined, 2); const client = new FakeClient();
+    const result = await sendPendingApprovalCards(projectPath, config(), client);
+    expect(result.cardsSent).toBe(2);
+    expect(new Set(readTelegramState(projectPath).cards.map((card) => card.ref)).size).toBe(2);
+  });
+
+  it("loses safely to a CLI decision race and does not double decide", async () => {
+    const { projectPath, missionDir } = setup(); const client = new FakeClient();
+    const { callback } = await sentCard(projectPath, client);
+    approve(missionDir, "act_preview_0", { approver: "cli-user", now: () => new Date("2026-07-20T10:00:30.000Z") });
+    await processTelegramUpdate(projectPath, config(), client, callback);
+    expect(getApprovalRequest(missionDir, "act_preview_0")?.approval?.approver).toBe("cli-user");
+    expect(client.answers[0]).toContain("already decided");
+  });
+
+  it("ignores an unauthorized forwarded callback and persists only a masked chat", async () => {
+    const { projectPath, missionDir } = setup(); const client = new FakeClient();
+    const { callback } = await sentCard(projectPath, client);
+    const intruder = "987654321";
+    await processTelegramUpdate(projectPath, config(), client, { ...callback, callback_query: { ...callback.callback_query!, from: { id: intruder }, message: { message_id: 1, chat: { id: intruder } } } });
+    expect(getApprovalRequest(missionDir, "act_preview_0")?.status).toBe("PENDING");
+    const log = readFileSync(join(projectPath, ".axiomgate", "telegram-events.jsonl"), "utf8");
+    expect(log).not.toContain(intruder); expect(log).toContain("***4321");
+  });
+
+  it("bounds send failure without changing the approval", async () => {
+    const { projectPath, missionDir } = setup(); const client = new FakeClient(); client.failSend = true;
+    const result = await sendPendingApprovalCards(projectPath, config(), client);
+    expect(result.failures).toEqual(["network unavailable"]);
+    expect(getApprovalRequest(missionDir, "act_preview_0")?.status).toBe("PENDING");
+  });
+
+  it("escapes hostile text and keeps callback data short", async () => {
+    const { projectPath } = setup("<b>steal & destroy</b>"); const client = new FakeClient();
+    await sendPendingApprovalCards(projectPath, config(), client);
+    expect(client.sent[0]?.text).toContain("&lt;b&gt;steal &amp; destroy&lt;/b&gt;");
+    expect(client.sent[0]?.text).not.toContain("<hostile>");
+    const markup = client.sent[0]?.markup as { inline_keyboard: Array<Array<{ callback_data: string }>> };
+    expect(Buffer.byteLength(markup.inline_keyboard[0]![0]!.callback_data)).toBeLessThanOrEqual(64);
+  });
+
+  it("truncates long display text while preserving the full bound hash", async () => {
+    const { projectPath, missionDir } = setup("x".repeat(500)); const client = new FakeClient();
+    await sendPendingApprovalCards(projectPath, config(), client);
+    expect(client.sent[0]?.text).toContain("…");
+    const record = getApprovalRequest(missionDir, "act_preview_0");
+    expect(record?.request.rawCommandHash).toBe(HASH);
+    expect(consumeApproval(missionDir, "act_preview_0", HASH).status).toBe("NOT_AUTHORIZED");
+  });
+
+  it("marks a redacted command without revealing the credential", async () => {
+    const credential = `${"123456"}:${"q".repeat(35)}`;
+    const { projectPath } = setup(undefined, 1, `deploy --token ${credential}`); const client = new FakeClient();
+    await sendPendingApprovalCards(projectPath, config(), client);
+    expect(client.sent[0]?.text).toContain("[redacted]");
+    expect(client.sent[0]?.text).not.toContain(credential);
+  });
+
+  it("persists getUpdates offset so callbacks are not replayed", async () => {
+    const { projectPath } = setup(); const client = new FakeClient();
+    await sendPendingApprovalCards(projectPath, config(), client);
+    const ref = readTelegramState(projectPath).cards[0]!.ref;
+    client.updates = [{ update_id: 41, callback_query: { id: "cb", from: { id: CHAT }, data: `ag:${ref}:d`, message: { message_id: 1, chat: { id: CHAT } } } }];
+    await watchTelegram(projectPath, config(), client, { once: true });
+    expect(readTelegramState(projectPath).nextUpdateOffset).toBe(42);
+  });
+});
+
+describe("Telegram rendering, configuration, and notifications", () => {
+  it("defines semantic labels for all demo actions", () => {
+    for (const action of ["repository.read", "file.modify", "branch.create", "pull_request.create", "preview.deploy", "production.deploy", "verification.run"]) {
+      expect(telegramActionLabel(action)).not.toContain("Unknown");
+    }
+  });
+
+  it("parses only allowlisted environment keys and masks configuration", () => {
+    const token = `${"654321"}:${"z".repeat(35)}`;
+    const result = readTelegramConfig({ cwd: project(), env: { TELEGRAM_BOT_TOKEN: token, TELEGRAM_CHAT_ID: `${CHAT},-${CHAT}`, TELEGRAM_NOTIFY: "approvals" } });
+    expect(result.status).toBe("CONFIGURED");
+    expect(JSON.stringify(result).includes(token)).toBe(true);
+    expect(escapeTelegramHtml("<&>\"")).toBe("&lt;&amp;&gt;&quot;");
+  });
+
+  it("redacts token-shaped API failures and never persists credentials", async () => {
+    const token = `${"123456"}:${"s".repeat(35)}`;
+    const api = createTelegramClient({ ...config(), token }, { maxAttempts: 1, fetchImpl: async () => { throw new Error(`failed ${token}`); } });
+    await expect(api.getMe()).rejects.not.toThrow(token);
+  });
+
+  it("bounds transient Telegram retries", async () => {
+    let attempts = 0;
+    const api = createTelegramClient(config(), {
+      maxAttempts: 3,
+      sleep: async () => undefined,
+      fetchImpl: async () => {
+        attempts += 1;
+        return new Response(JSON.stringify({ ok: false, error_code: 503, description: "busy" }), { status: 503, headers: { "content-type": "application/json" } });
+      },
+    });
+    await expect(api.getMe()).rejects.toThrow("busy");
+    expect(attempts).toBe(3);
+  });
+
+  it("maps stage events, respects approvals-only, and deduplicates event keys", () => {
+    const event = { type: "verification.completed", ts: NOW, missionId: "msn_telegram", message: "PASS" };
+    expect(stageNotificationFromEvent(event, "approvals")).toBeUndefined();
+    expect(stageNotificationFromEvent(event, "all")).toEqual(stageNotificationFromEvent(event, "all"));
+    for (const type of ["hook.denied", "run.finished", "run.checkpoint", "remediation.completed", "proof.completed", "runway.reserve.warning", "runway.banked_reset.expiring", "runway.recommendation"]) {
+      expect(stageNotificationFromEvent({ type, ts: NOW, missionId: "msn_telegram", message: "fixture" }, "all")?.text).toBeTruthy();
+    }
+    expect(stageNotificationFromEvent({ type: "runway.usage", ts: NOW, missionId: "msn_telegram", usedPercent: 79 }, "all", 80)).toBeUndefined();
+    expect(stageNotificationFromEvent({ type: "runway.usage", ts: NOW, missionId: "msn_telegram", usedPercent: 80 }, "all", 80)?.text).toContain("80%");
+  });
+
+  it("deduplicates stage pushes and caps a watch-session batch at twenty", async () => {
+    const { projectPath, missionDir } = setup(); const client = new FakeClient();
+    for (let index = 0; index < 25; index += 1) {
+      appendFileSync(join(missionDir, "events.jsonl"), `${JSON.stringify({ type: "proof.completed", ts: NOW, missionId: "msn_telegram", criteriaCount: index, chainHead: `sha256:${String(index).padStart(64, "a")}` })}\n`);
+    }
+    expect(await sendStageNotifications(projectPath, config(), client, 20)).toBe(20);
+    expect(client.sent).toHaveLength(21);
+    expect(client.sent.at(-1)?.text).toContain("5 additional notifications suppressed");
+    const before = client.sent.length;
+    expect(await sendStageNotifications(projectPath, config(), client, 20)).toBe(5);
+    expect(client.sent.length - before).toBe(5);
+    expect(await sendStageNotifications(projectPath, config(), client, 20)).toBe(0);
+  });
+
+  it("parses only bounded callback references and hashes chat identifiers", () => {
+    const ref = telegramCallbackRef("msn_telegram", "act_preview_0");
+    expect(parseTelegramCallback(`ag:${ref}:a`)).toEqual({ ref, verb: "a" });
+    expect(parseTelegramCallback(`ag:${"x".repeat(70)}:a`)).toBeUndefined();
+    expect(telegramChatKey(CHAT)).not.toContain(CHAT);
+  });
+
+  it("does not persist bot tokens in relay state", async () => {
+    const { projectPath } = setup(); const client = new FakeClient(); const configured = config();
+    await sendPendingApprovalCards(projectPath, configured, client);
+    const persisted = readFileSync(join(projectPath, ".axiomgate", "telegram-state.json"), "utf8");
+    expect(persisted).not.toContain(configured.token);
+    expect(persisted).not.toContain(CHAT);
+    writeTelegramState(projectPath, readTelegramState(projectPath));
+  });
+});

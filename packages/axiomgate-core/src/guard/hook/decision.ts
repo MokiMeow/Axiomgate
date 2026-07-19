@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 
 import { z } from "zod";
 
+import { redactSensitiveText } from "../../evidence/index.js";
 import { stableStringify } from "../../mission/index.js";
 import { ActionRequestSchema, type ActionRequest } from "../action-request.js";
 import {
@@ -73,6 +74,18 @@ class HookRefusal extends Error {}
 
 function sha256(value: string): `sha256:${string}` {
   return `sha256:${createHash("sha256").update(value, "utf8").digest("hex")}`;
+}
+
+function hookEvidenceId(
+  missionId: string,
+  sessionId: string,
+  timestamp: string,
+  commandHash: string,
+): string {
+  return `ev_hook_${createHash("sha256")
+    .update(`${missionId}\0${sessionId}\0${timestamp}\0${commandHash}`, "utf8")
+    .digest("hex")
+    .slice(0, 20)}`;
 }
 
 function parseGitHubRemote(url: string): { owner: string; repo: string } | undefined {
@@ -375,8 +388,16 @@ export function processHookInvocation(
     } else if (evaluation.decision === "ALLOW") {
       decision = "ALLOW";
     } else if (evaluation.decision === "REQUIRE_APPROVAL") {
+      const evidenceEventId = hookEvidenceId(
+        verified.snapshot.contract.id,
+        sessionId,
+        timestamp,
+        request.rawCommandHash,
+      );
       createApprovalRequest(missionDir, request, evaluation.reasons, {
         now: () => now,
+        displayCommand: redactSensitiveText(classified.command).slice(0, 500),
+        evidenceEventId,
       });
       const approval = consumeApproval(
         missionDir,
@@ -407,6 +428,7 @@ export function processHookInvocation(
   }
 
   let event = HookDecisionEventSchema.parse({
+    id: hookEvidenceId(missionId, sessionId, timestamp, commandHash),
     source: "hook",
     ts: timestamp,
     hookEvent,

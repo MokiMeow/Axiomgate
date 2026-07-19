@@ -7,6 +7,7 @@ import { Sha256Schema } from "../../mission/index.js";
 import { EvidenceSchema, type Evidence } from "../../evidence/index.js";
 
 export const HookDecisionEventSchema = z.strictObject({
+  id: z.string().min(1).optional(),
   source: z.literal("hook"),
   ts: z.iso.datetime({ offset: true }),
   hookEvent: z.string().min(1),

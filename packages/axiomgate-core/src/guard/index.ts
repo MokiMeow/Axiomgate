@@ -4,3 +4,4 @@ export * from "./approval-store.js";
 export * from "./identity/index.js";
 export * from "./policy/index.js";
 export * from "./hook/index.js";
+export * from "./telegram/index.js";

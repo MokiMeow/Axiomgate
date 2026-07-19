@@ -1,4 +1,5 @@
 import {
+  appendFileSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -203,6 +204,20 @@ export function writeMissionReceipt(
     format === "json"
       ? `${stableStringify(receipt)}\n`
       : renderReceiptMarkdown(receipt),
+    "utf8",
+  );
+  appendFileSync(
+    join(missionDirectory(resolve(projectPath), missionId), "events.jsonl"),
+    `${JSON.stringify({
+      type: "proof.completed",
+      ts: receipt.generatedAt,
+      missionId,
+      outcome: receipt.outcome,
+      criteriaCount: receipt.criteria.filter((criterion) => criterion.verdict === "PASS" || criterion.verdict === "WAIVED").length,
+      chainHead: receipt.evidenceChainHead,
+      message: `Build Receipt generated with ${receipt.outcome}`,
+      outputRef: path,
+    })}\n`,
     "utf8",
   );
   return { path, receipt };

@@ -26,6 +26,8 @@ const REQUEST_ID_PATTERN = /^act_[A-Za-z0-9_-]+$/u;
 export const ApprovalRequestRecordSchema = z.strictObject({
   request: ActionRequestSchema,
   reasons: z.array(z.string().min(1)).min(1),
+  displayCommand: z.string().min(1).optional(),
+  evidenceEventId: z.string().min(1).optional(),
   status: z.enum(["PENDING", "APPROVED", "DENIED"]),
   createdAt: IsoDateTimeSchema,
   expiresAt: IsoDateTimeSchema,
@@ -45,6 +47,8 @@ interface ClockOptions {
 
 interface CreateApprovalOptions extends ClockOptions {
   readonly ttlMs?: number;
+  readonly displayCommand?: string;
+  readonly evidenceEventId?: string;
 }
 
 interface ApprovalActorOptions extends ClockOptions {
@@ -128,10 +132,17 @@ function pendingRecord(
   reasons: readonly string[],
   now: Date,
   ttlMs: number,
+  display?: Pick<CreateApprovalOptions, "displayCommand" | "evidenceEventId">,
 ): ApprovalRequestRecord {
   return ApprovalRequestRecordSchema.parse({
     request,
     reasons: [...reasons],
+    ...(display?.displayCommand === undefined
+      ? {}
+      : { displayCommand: display.displayCommand }),
+    ...(display?.evidenceEventId === undefined
+      ? {}
+      : { evidenceEventId: display.evidenceEventId }),
     status: "PENDING",
     createdAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + ttlMs).toISOString(),
@@ -170,13 +181,13 @@ export function createApprovalRequest(
         return existing;
       }
 
-      const renewed = pendingRecord(request, reasons, now, ttlMs);
+      const renewed = pendingRecord(request, reasons, now, ttlMs, options);
       writeRecord(missionDir, request.id, renewed);
       return renewed;
     });
   }
 
-  const record = pendingRecord(request, reasons, now, ttlMs);
+  const record = pendingRecord(request, reasons, now, ttlMs, options);
 
   try {
     writeFileSync(path, `${JSON.stringify(record, null, 2)}\n`, {
@@ -213,6 +224,17 @@ export function listPending(
         record.status === "PENDING" && Date.parse(record.expiresAt) > now,
     )
     .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+}
+
+export function getApprovalRequest(
+  missionDir: string,
+  requestId: string,
+): ApprovalRequestRecord | undefined {
+  try {
+    return readRecord(missionDir, requestId);
+  } catch {
+    return undefined;
+  }
 }
 
 export function approve(

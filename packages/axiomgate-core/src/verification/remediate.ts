@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { appendFileSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { z } from "zod";
@@ -163,5 +163,17 @@ export async function remediateMission(
       ? {}
       : { hookConfigOptions: options.hookConfigOptions }),
   });
+  appendFileSync(
+    join(missionDir, "events.jsonl"),
+    `${JSON.stringify({
+      type: "remediation.completed",
+      ts: new Date().toISOString(),
+      missionId: id,
+      findingId,
+      status: verification.run.overall,
+      message: `Remediation rerun completed with ${verification.run.overall}`,
+    })}\n`,
+    "utf8",
+  );
   return { plan, remediation, verification };
 }

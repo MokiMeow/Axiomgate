@@ -6,6 +6,7 @@ import { join, resolve } from "node:path";
 
 import {
   approve as approveRequest,
+  createTelegramClient,
   createMission,
   codexNativeStatus,
   currentCommit,
@@ -15,6 +16,8 @@ import {
   IntentBoundarySchema,
   installCodexIntegration,
   listPending,
+  readTelegramConfig,
+  renderTelegramConfigSummary,
   loadMissionStatus,
   loadMissionSnapshot,
   liveLimitSummary,
@@ -34,6 +37,7 @@ import {
   runCommand as runExternalCommand,
   runHookEntry,
   runMission,
+  sendPendingApprovalCards,
   resolveRunwayCapacity,
   setCapacitySnapshot,
   renderCapacitySnapshot,
@@ -42,6 +46,7 @@ import {
   verifyMission,
   verifyEnforcementInstallation,
   verifyReceiptFile,
+  watchTelegram,
   writeMissionReceipt,
   type ReasoningEffort,
 } from "@axiomgate/core";
@@ -175,6 +180,13 @@ export async function runDoctor(): Promise<void> {
         ? `${ui.glyph("success")} via plugin ${native.verifierAgent.pluginId}`
         : `${verdict(native.verifierAgent.installed ? "PRESENT" : "ABSENT")} (${native.verifierAgent.path})`,
   });
+  const telegram = readTelegramConfig({ cwd: process.cwd() });
+  rows.push({
+    key: "Telegram",
+    value: telegram.status === "CONFIGURED"
+      ? `${ui.glyph("success")} ${renderTelegramConfigSummary(telegram)}`
+      : `${verdict("UNAVAILABLE")} (${telegram.reason})`,
+  });
   console.log(ui.rows(rows));
   for (const warning of warnings) {
     console.warn(ui.callout("warning", "ENFORCEMENT DRIFT", [warning]));
@@ -186,8 +198,9 @@ function printUsage(): void {
   console.log("Agent protocol: axiomgate mcp");
   console.log("Credential-free proof: axiomgate replay all");
   console.log("Runway: axiomgate runway status [--project <path>]");
+  console.log("Telegram: axiomgate telegram watch [--project <path>] | axiomgate telegram test [--project <path>]");
   console.log(
-    "Usage: axiomgate doctor | axiomgate replay all | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission verify <id> [--project <path>] | axiomgate mission remediate <id> --finding <id> [--timeout-ms <ms>] [--project <path>] | axiomgate mission status <id> [--project <path>] | axiomgate mission waive <id> --criterion <id> --reason <text> --risk <text> [--project <path>] | axiomgate mission receipt <id> [--format json|md] [--project <path>] | axiomgate receipt verify <file> | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
+    "Usage: axiomgate doctor | axiomgate telegram watch|test [--project <path>] | axiomgate replay all | axiomgate verify-enforcement [--offline] | axiomgate runway set [--plan <name>] [--resets-available <count>] [--reset-expires <date>] [--project <path>] | axiomgate mission create --objective <text> [--boundary <level>] [--project <path>] [--criteria <file.json>] | axiomgate mission update <id> [--project <path>] | axiomgate mission run <id> [--prompt <text>] [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission resume <id> [--prompt <text>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission review <id> [--model <model>] [--effort <level>] [--timeout-ms <ms>] [--project <path>] | axiomgate mission verify <id> [--project <path>] | axiomgate mission remediate <id> --finding <id> [--timeout-ms <ms>] [--project <path>] | axiomgate mission status <id> [--project <path>] | axiomgate mission waive <id> --criterion <id> --reason <text> --risk <text> [--project <path>] | axiomgate mission receipt <id> [--format json|md] [--project <path>] | axiomgate receipt verify <file> | axiomgate hook --mission <directory> | axiomgate approvals list [--mission <directory>] | axiomgate approve <id> [--mission <directory>] | axiomgate deny <id> [--mission <directory>]",
   );
 }
 
@@ -438,6 +451,24 @@ async function runGovernedMission(
         `resume with: axiomgate mission resume ${id} --project ${JSON.stringify(projectPath())}`,
     );
   }
+  const telegram = readTelegramConfig({ cwd: projectPath() });
+  if (telegram.status === "CONFIGURED" && telegram.config.notify !== "off") {
+    try {
+      const delivery = await sendPendingApprovalCards(
+        projectPath(),
+        telegram.config,
+        createTelegramClient(telegram.config),
+      );
+      if (delivery.cardsSent > 0) {
+        console.log(`Telegram: ${delivery.cardsSent} approval card${delivery.cardsSent === 1 ? "" : "s"} sent.`);
+      }
+      if (delivery.failures.length > 0) {
+        console.warn(`Telegram: delivery unavailable (${delivery.failures.join("; ")})`);
+      }
+    } catch (error) {
+      console.warn(`Telegram: delivery unavailable (${errorMessage(error)})`);
+    }
+  }
   if (result.record.status !== "SUCCESS") {
     process.exitCode = 1;
   }
@@ -467,6 +498,39 @@ async function runRunwayStatus(): Promise<void> {
   ]));
   console.log(ui.rule("capacity"));
   console.log(renderRunwayCapacity(capacity));
+}
+
+async function runTelegramCommand(subcommand: string | undefined): Promise<void> {
+  const configResult = readTelegramConfig({ cwd: projectPath() });
+  if (configResult.status === "UNAVAILABLE") {
+    throw new Error(`Telegram unavailable: ${configResult.reason}`);
+  }
+  const client = createTelegramClient(configResult.config);
+  if (subcommand === "test") {
+    const bot = await client.getMe();
+    printCommandHeader("telegram test", "Bot API round trip");
+    console.log(ui.rows([
+      { key: "Configuration", value: renderTelegramConfigSummary(configResult) },
+      { key: "Bot", value: bot.username === undefined ? "authenticated bot" : `@${bot.username}` },
+      { key: "Result", value: verdict("PASS") },
+    ]));
+    return;
+  }
+  if (subcommand !== "watch") throw new Error("expected telegram watch or telegram test");
+  const controller = new AbortController();
+  const stop = () => controller.abort();
+  process.once("SIGINT", stop);
+  printCommandHeader("telegram watch", renderTelegramConfigSummary(configResult));
+  console.log("Long polling active. Press Ctrl+C to stop.");
+  try {
+    const result = await watchTelegram(projectPath(), configResult.config, client, {
+      signal: controller.signal,
+    });
+    console.log(`Telegram relay stopped: cards=${result.cardsSent}; notifications=${result.notificationsSent}; failures=${result.failures.length}`);
+    for (const failure of result.failures) console.warn(`Telegram: ${failure}`);
+  } finally {
+    process.removeListener("SIGINT", stop);
+  }
 }
 
 async function runVerifyEnforcement(): Promise<void> {
@@ -724,6 +788,13 @@ if (hasHelpFlag(process.argv.slice(2))) {
   }
 } else if (command === "doctor") {
   await runDoctor();
+} else if (command === "telegram") {
+  try {
+    await runTelegramCommand(process.argv[3]);
+  } catch (error) {
+    console.error(ui.callout("failure", "TELEGRAM COMMAND FAILED", [errorMessage(error)]));
+    process.exitCode = 1;
+  }
 } else if (command === "replay" && process.argv[3] === "all") {
   runReplayAll();
 } else if (command === "verify-enforcement") {

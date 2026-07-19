@@ -56,6 +56,8 @@ export const VerificationEventSchema = z.strictObject({
   checkId: z.string().min(1).optional(),
   status: z.union([VerificationCheckStateSchema, VerificationOverallSchema]),
   message: z.string().min(1),
+  checkCount: z.number().int().nonnegative().optional(),
+  findingCount: z.number().int().nonnegative().optional(),
 });
 
 export type VerificationEvent = z.infer<typeof VerificationEventSchema>;

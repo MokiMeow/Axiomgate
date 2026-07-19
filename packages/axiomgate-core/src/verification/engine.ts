@@ -431,6 +431,8 @@ export function verifyMission(
     runId: run.id,
     status: overall,
     message: `Verification completed with ${overall}`,
+    checkCount: completedChecks.length,
+    findingCount: findings.length,
   });
   events.push(completion);
   appendJsonLine(eventsPath, completion);
