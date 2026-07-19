@@ -132,7 +132,6 @@ See the [threat model](docs/10-SECURITY-THREAT-MODEL.md), [negative guard suite]
 
 ## Roadmap
 
-- complete a live Telegram card/details/approval proof when valid presenter credentials are available;
 - test macOS/Linux and publish a supported-platform matrix;
 - adopt deterministic named custom-agent targeting when Codex exposes it non-interactively;
 - broaden replay coverage beyond the three Build Week security regressions;

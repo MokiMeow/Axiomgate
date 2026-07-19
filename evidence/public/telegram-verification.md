@@ -40,13 +40,41 @@ Full repository gates:
 ```text
 pnpm typecheck  PASS
 pnpm test       28 files passed; 279 tests passed; 1 optional live identity test skipped
-pnpm build      PASS; bundled CLI dist/index.js 810.9kb
+pnpm build      PASS; bundled CLI dist/index.js 812.7kb
 ```
 
 ## Live Bot API proof
 
-Status: **PENDING**.
+Status: **PASS**.
 
-An ignored `.local/telegram.env` file was present during the initial bounded probe. The Bot API round trip returned `404 Not Found`; no bot identity was authenticated. At the final gate the file was absent, and `telegram test` reported configuration unavailable. A real approval card was therefore not sent, and Details/Approve/re-tap interactions are not claimed. No credential or full chat identifier appeared in command output or persisted evidence.
+The presenter supplied a valid full BotFather token and numeric chat allowlist through ignored `.local/telegram.env`. The safe configuration probe authenticated the bot without printing the credential:
 
-The implementation and local security matrix are verified, but G4 and the Environment Guard layer remain `IN_PROGRESS` until a valid presenter credential completes the real card/details/approve/re-tap proof.
+```text
+AXIOMGATE / telegram test · Bot API round trip
+Bot     @Axiomgate_bot
+Result  PASS
+```
+
+A disposable mission under ignored `.local/` produced a canonical pending `preview.deploy` request bound to the exact command hash. The live watcher then completed this sequence:
+
+1. Sent one newly formatted approval card to the allowlisted chat.
+2. Received the **Details** callback and sent the full redacted details card.
+3. Received **Approve once** and wrote the canonical approval record.
+4. Edited the original card to the concise **Approved once** outcome while retaining an **Approved once (tap for status)** button.
+5. Received a repeated post-decision tap, returned the already-decided callback response, and did not grant again.
+
+Sanitized stored result:
+
+```text
+status: APPROVED
+surface: telegram
+approver: telegram:***3884
+singleUse: true
+approval decision events: 1
+card outcome: APPROVED
+persisted chat identifier: sha256 hash only
+```
+
+The update offset advanced across Details, approval, and repeated status callbacks, while exactly one approval decision event remained. No deploy command was executed. The disposable hook-generated attempt first failed closed because the shared runner could not resolve shell-only GitHub/Vercel commands in that workspace; the transport proof therefore created the pending request through the same exported canonical approval-store API and records this limitation rather than weakening identity enforcement.
+
+No token, full chat ID, private path, raw environment value, or source payload is present in this evidence. G4 and the Environment Guard layer are now `VERIFIED`.
