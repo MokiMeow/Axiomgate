@@ -9,7 +9,7 @@
     "id": "criterion_lockout",
     "statement": "After 5 failed attempts the synthetic account is locked for 15 minutes and correct credentials are rejected while locked",
     "risk": "high",
-    "evidenceTypes": ["test"]
+    "evidenceTypes": ["lockout_test"]
   },
   {
     "id": "criterion_regression",

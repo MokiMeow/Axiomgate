@@ -105,6 +105,33 @@ describe("computeCriterionVerdict", () => {
     ).toMatchObject({ verdict: "UNVERIFIED", evidenceIds: [] });
   });
 
+  it("never treats a generic passing suite as dedicated lockout proof", () => {
+    const lockoutCriterion = {
+      ...criterion,
+      id: "criterion_lockout",
+      statement: "The account locks after five failures",
+      evidenceTypes: ["lockout_test"],
+    };
+    expect(
+      computeCriterionVerdict(
+        lockoutCriterion,
+        [evidence({ criterionId: "criterion_lockout", command: "npm test" })],
+        "WORKTREE:abc123",
+      ),
+    ).toMatchObject({ verdict: "UNVERIFIED", missingEvidenceTypes: ["lockout_test"] });
+    expect(
+      computeCriterionVerdict(
+        lockoutCriterion,
+        [evidence({
+          criterionId: "criterion_lockout",
+          command: "npm run test:lockout",
+          exitCode: 1,
+        })],
+        "WORKTREE:abc123",
+      ),
+    ).toMatchObject({ verdict: "FAIL", evidenceIds: ["ev_test"] });
+  });
+
   it.each([
     [1, "FAIL"],
     [124, "BLOCKED"],

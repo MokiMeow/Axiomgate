@@ -11,6 +11,11 @@ npm run build
 npm start
 ```
 
+`npm run test:lockout` is the dedicated mission proof. It intentionally fails
+on the committed vulnerable baseline and passes only after the 5-attempt,
+15-minute lockout behavior is implemented. The normal regression suite remains
+green at baseline.
+
 The synthetic request body is:
 
 ```json

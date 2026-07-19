@@ -22,13 +22,24 @@ describe("native project checks", () => {
     try {
       writeFileSync(
         join(workspace, "package.json"),
-        JSON.stringify({ scripts: { test: "node --test", build: "tsc" } }),
+        JSON.stringify({
+          scripts: {
+            test: "node --test",
+            "test:lockout": "node --test spec/lockout.behavior.mjs",
+            build: "tsc",
+          },
+        }),
         "utf8",
       );
       writeFileSync(join(workspace, "requirements.txt"), "pytest==8.4.0\n", "utf8");
 
       expect(detectNativeChecks(workspace)).toEqual([
         { kind: "target.test", command: "npm", args: ["test"] },
+        {
+          kind: "target.lockout-test",
+          command: "npm",
+          args: ["run", "test:lockout"],
+        },
         { kind: "target.build", command: "npm", args: ["run", "build"] },
         { kind: "target.test", command: "python", args: ["-m", "pytest"] },
       ]);

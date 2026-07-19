@@ -12,6 +12,7 @@ export interface UiOptions {
 export interface KeyValueRow {
   readonly key: string;
   readonly value: string | number;
+  readonly subline?: string;
 }
 
 export interface TerminalUi {
@@ -112,7 +113,12 @@ export function createUi(options: UiOptions = {}): TerminalUi {
     rows(values) {
       const width = Math.max(0, ...values.map((row) => row.key.length));
       return values
-        .map((row) => `${paint(pad(row.key, width), "muted")}  ${row.value}`)
+        .map((row) => {
+          const primary = `${paint(pad(row.key, width), "muted")}  ${row.value}`;
+          return row.subline === undefined
+            ? primary
+            : `${primary}\n${" ".repeat(width)}  ${paint(row.subline, "muted")}`;
+        })
         .join("\n");
     },
     table(headers, rows) {

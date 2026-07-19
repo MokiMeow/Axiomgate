@@ -59,6 +59,7 @@ Integration interfaces (all official): hooks (`PreToolUse`, `PermissionRequest`,
 - A local marketplace root must contain `.agents/plugins/marketplace.json`; a root-level `marketplace.json` was rejected as unsupported. Each plugin has `.codex-plugin/plugin.json`, with optional `skills/`, `agents/`, and `.mcp.json` components.
 - Live install used `codex plugin marketplace add <repo>/plugin` followed by `codex plugin add axiomgate@axiomgate-build-week`. `codex plugin list --json` reported version `0.1.0`, installed `true`, enabled `true`, and the exact local source. A second `axiomgate install-codex` run reported every artifact `UNCHANGED`.
 - This is a local, version-controlled distribution proof only. No marketplace publication is claimed because 0.144.6 exposes no publish command.
+- Plugin presentation assets are supported on 0.144.6 through `interface.composerIcon` and `interface.logo`; installed official manifests use relative PNG or SVG paths. AxiomGate uses the existing web favicon mark at `./assets/axiomgate.svg` for both fields, and the plugin validator confirms the referenced asset is packaged.
 
 ### Claude
 

@@ -347,16 +347,71 @@ export function installCodexIntegration(
 }
 
 export interface CodexNativeStatus {
-  readonly skill: { readonly installed: boolean; readonly path: string };
+  readonly skill: {
+    readonly installed: boolean;
+    readonly path: string;
+    readonly via: "standalone" | "plugin" | null;
+    readonly pluginId?: string;
+  };
   readonly verifierAgent: { readonly installed: boolean; readonly path: string };
 }
 
-export function codexNativeStatus(codexHome: string): CodexNativeStatus {
+export interface CodexNativeStatusOptions {
+  readonly runner?: CommandRunner;
+  readonly codexLaunch?: {
+    readonly command: string;
+    readonly argsPrefix: readonly string[];
+  };
+}
+
+export function codexNativeStatus(
+  codexHome: string,
+  options: CodexNativeStatusOptions = {},
+): CodexNativeStatus {
   const home = resolve(codexHome);
   const skillPath = join(home, "skills", "axiomgate", "SKILL.md");
   const agentPath = join(home, "agents", "axiomgate-verifier.toml");
+  const standaloneInstalled = existsSync(skillPath);
+  let pluginInstalled = false;
+  if (
+    !standaloneInstalled &&
+    options.runner !== undefined &&
+    options.codexLaunch !== undefined
+  ) {
+    const result = options.runner(
+      options.codexLaunch.command,
+      [...options.codexLaunch.argsPrefix, "plugin", "list", "--json"],
+      { timeoutMs: 30_000 },
+    );
+    if (result.status === "SUCCESS") {
+      try {
+        const parsed = JSON.parse(result.stdout) as {
+          installed?: {
+            pluginId?: string;
+            installed?: boolean;
+            enabled?: boolean;
+          }[];
+        };
+        pluginInstalled = parsed.installed?.some(
+          (plugin) =>
+            plugin.pluginId === "axiomgate@axiomgate-build-week" &&
+            plugin.installed === true &&
+            plugin.enabled === true,
+        ) ?? false;
+      } catch {
+        pluginInstalled = false;
+      }
+    }
+  }
   return {
-    skill: { installed: existsSync(skillPath), path: skillPath },
+    skill: {
+      installed: standaloneInstalled || pluginInstalled,
+      path: skillPath,
+      via: standaloneInstalled ? "standalone" : pluginInstalled ? "plugin" : null,
+      ...(pluginInstalled
+        ? { pluginId: "axiomgate@axiomgate-build-week" }
+        : {}),
+    },
     verifierAgent: { installed: existsSync(agentPath), path: agentPath },
   };
 }

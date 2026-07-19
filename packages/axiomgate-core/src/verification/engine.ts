@@ -112,7 +112,13 @@ function executeNativeCheck(
   if (commands.length === 0) {
     return {
       status: "UNKNOWN",
-      reason: `No native ${check.kind === "target.test" ? "test" : "build"} command detected`,
+      reason: `No native ${
+        check.kind === "target.lockout-test"
+          ? "lockout test"
+          : check.kind === "target.test"
+            ? "test"
+            : "build"
+      } command detected`,
       results: [],
       findings: [],
     };
@@ -347,7 +353,11 @@ export function verifyMission(
         results: [diffResult],
         findings: [],
       };
-    } else if (check.kind === "target.test" || check.kind === "target.build") {
+    } else if (
+      check.kind === "target.test" ||
+      check.kind === "target.lockout-test" ||
+      check.kind === "target.build"
+    ) {
       outcome = executeNativeCheck(check, workspace, runner);
     } else if (check.kind === "dependency.scan") {
       outcome = executePatchPilotCheck(check, workspace, runner);

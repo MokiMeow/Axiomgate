@@ -81,7 +81,7 @@ describe("AxiomGate MCP protocol", () => {
     });
     expect(initialized?.result).toMatchObject({
       protocolVersion: "2025-06-18",
-      serverInfo: { name: "axiomgate" },
+      serverInfo: { name: "axiomgate", version: "0.1.0" },
     });
 
     const listed = await handleMcpMessage({

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { createInterface } from "node:readline";
 import { userInfo } from "node:os";
 import { resolve } from "node:path";
@@ -43,6 +44,11 @@ export interface McpServerDependencies {
 }
 
 const PROTOCOL_VERSION = "2025-06-18";
+const CLI_VERSION = (
+  JSON.parse(
+    readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+  ) as { version: string }
+).version;
 
 export const AXIOMGATE_MCP_TOOLS = [
   {
@@ -264,7 +270,7 @@ export async function handleMcpMessage(
     return response(id, {
       protocolVersion: PROTOCOL_VERSION,
       capabilities: { tools: { listChanged: false } },
-      serverInfo: { name: "axiomgate", version: "0.0.0" },
+      serverInfo: { name: "axiomgate", version: CLI_VERSION },
       instructions: "Use AxiomGate tools to inspect governed mission evidence and record bounded approvals. Never claim completion unless the proof gate is COMPLETE.",
     });
   }

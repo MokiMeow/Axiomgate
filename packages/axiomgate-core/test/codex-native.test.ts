@@ -11,6 +11,7 @@ import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  codexNativeStatus,
   installCodexIntegration,
   parseCodexAgentDefinition,
   type CommandRunner,
@@ -152,10 +153,15 @@ describe("AxiomGate Codex plugin", () => {
     ) as { mcpServers: { axiomgate: { command: string; args: string[] } } };
     expect(manifest).toMatchObject({
       name: "axiomgate",
-      version: "0.1.0",
       skills: "./skills/",
       mcpServers: "./.mcp.json",
+      interface: {
+        composerIcon: "./assets/axiomgate.svg",
+        logo: "./assets/axiomgate.svg",
+      },
     });
+    expect(manifest.version).toMatch(/^0\.1\.0(?:\+codex\.[0-9A-Za-z.-]+)?$/u);
+    expect(existsSync(resolve(pluginRoot, "assets/axiomgate.svg"))).toBe(true);
     expect(marketplace).toMatchObject({
       name: "axiomgate-build-week",
       plugins: [{
@@ -282,6 +288,39 @@ describe("AxiomGate Codex plugin", () => {
         "UNCHANGED",
         "UNCHANGED",
       ]);
+    } finally {
+      rmSync(codexHome, { recursive: true, force: true });
+    }
+  });
+
+  it("treats an installed and enabled plugin as a healthy skill source", () => {
+    const codexHome = mkdtempSync(join(tmpdir(), "axiomgate-plugin-status-"));
+    try {
+      const runner: CommandRunner = (command, args) => ({
+        command,
+        args,
+        status: "SUCCESS",
+        exitCode: 0,
+        stdout: JSON.stringify({
+          installed: [{
+            pluginId: "axiomgate@axiomgate-build-week",
+            installed: true,
+            enabled: true,
+          }],
+        }),
+        stderr: "",
+        durationMs: 1,
+      });
+      expect(
+        codexNativeStatus(codexHome, {
+          runner,
+          codexLaunch: { command: "codex", argsPrefix: [] },
+        }).skill,
+      ).toMatchObject({
+        installed: true,
+        via: "plugin",
+        pluginId: "axiomgate@axiomgate-build-week",
+      });
     } finally {
       rmSync(codexHome, { recursive: true, force: true });
     }

@@ -9,6 +9,7 @@
   "scripts": {
     "start": "node src/server.js",
     "test": "node --test",
+    "test:lockout": "node --test spec/lockout.behavior.mjs",
     "build": "node scripts/build.mjs"
   },
   "dependencies": {

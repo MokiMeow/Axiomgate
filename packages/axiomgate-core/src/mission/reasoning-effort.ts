@@ -40,6 +40,9 @@ export const MODEL_DIRECTOR_EFFORT_LABELS = [
   "Max",
 ] as const;
 
+export const MODEL_DIRECTOR_NOTE =
+  "Light uses CLI wire value low · Ultra is native Codex multi-agent mode (not orchestrated by AxiomGate).";
+
 /**
  * Verified live with codex-cli 0.144.4 on 2026-07-16: `light` was
  * rejected, while `low`, `medium`, `high`, `xhigh`, and `max` succeeded.
@@ -88,4 +91,8 @@ export function formatReasoningEffort(
 
 export function renderModelDirectorVocabulary(): string {
   return `Model Director efforts: ${MODEL_DIRECTOR_EFFORT_LABELS.join(", ")} (Light uses CLI wire value low). Ultra: native Codex multi-agent mode; not orchestrated by AxiomGate during Build Week.`;
+}
+
+export function renderModelDirectorSummary(): string {
+  return MODEL_DIRECTOR_EFFORT_LABELS.join(" · ");
 }

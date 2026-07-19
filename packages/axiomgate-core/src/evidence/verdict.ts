@@ -80,6 +80,9 @@ function normalizedEvidenceTypes(evidence: Evidence): Set<string> {
       types.add(type);
     }
   }
+  if (/\bnpm\s+run\s+test:lockout\b/u.test(command)) {
+    types.add("lockout_test");
+  }
   if (/\b(?:build|tsc)\b/u.test(command)) types.add("build");
   if (/\bgit\s+(?:diff|status|rev-parse)\b/u.test(command)) {
     types.add("diff");

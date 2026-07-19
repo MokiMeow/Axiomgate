@@ -60,6 +60,19 @@ for (const [command, args, timeoutMs] of commands) {
   );
 }
 
+const baselineLockout = runCommand("npm", ["run", "test:lockout"], {
+  cwd: target,
+  timeoutMs: 60_000,
+});
+process.stdout.write(baselineLockout.stdout);
+process.stderr.write(baselineLockout.stderr);
+if (baselineLockout.status !== "FAILED") {
+  throw new Error(
+    `baseline lockout proof must fail before implementation; observed ${baselineLockout.status}`,
+  );
+}
+console.log("baseline lockout proof: PASS (dedicated spec fails closed)");
+
 if (!existsSync(join(target, "package-lock.json"))) {
   throw new Error("npm install did not produce package-lock.json");
 }

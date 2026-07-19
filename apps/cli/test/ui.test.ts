@@ -44,4 +44,22 @@ describe("terminal presentation", () => {
       "Criterion  Verdict\nlockout    PASS\nsecurity   UNKNOWN",
     );
   });
+
+  it("aligns a muted sub-line under the value column", () => {
+    const terminal = createUi({ isTTY: false });
+    expect(
+      terminal.rows([
+        {
+          key: "Model Director",
+          value: "Light · Medium · High · Xhigh · Max",
+          subline: "Light uses CLI wire value low · Ultra is native multi-agent mode.",
+        },
+        { key: "Codex CLI", value: "0.144.6" },
+      ]),
+    ).toBe(
+      "Model Director  Light · Medium · High · Xhigh · Max\n" +
+        "                Light uses CLI wire value low · Ultra is native multi-agent mode.\n" +
+        "Codex CLI       0.144.6",
+    );
+  });
 });

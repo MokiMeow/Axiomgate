@@ -49,12 +49,17 @@ function verificationIdentity(capturedAt: string): IdentityReport {
 }
 
 describe("verifyMission", () => {
-  it("fans one shared command result out to every mapped criterion", () => {
+  it("does not credit the baseline regression suite as lockout proof", () => {
     const workspace = mkdtempSync(join(tmpdir(), "axiomgate-verify-fanout-"));
     try {
       writeFileSync(
         join(workspace, "package.json"),
-        JSON.stringify({ scripts: { test: "node --test" } }),
+        JSON.stringify({
+          scripts: {
+            test: "node --test",
+            "test:lockout": "node --test spec/lockout.behavior.mjs",
+          },
+        }),
         "utf8",
       );
       const hookConfigOptions = {
@@ -66,7 +71,7 @@ describe("verifyMission", () => {
         {
           objective: "Verify shared test evidence",
           criteria: [
-            { id: "criterion_lockout", statement: "Lockout passes", evidenceTypes: ["test"] },
+            { id: "criterion_lockout", statement: "Lockout passes", evidenceTypes: ["lockout_test"] },
             { id: "criterion_regression", statement: "Regression passes", evidenceTypes: ["regression_test"] },
             { id: "criterion_secret", statement: "No secrets", evidenceTypes: ["secret_scan"] },
           ],
@@ -77,15 +82,23 @@ describe("verifyMission", () => {
           resolveIdentity: () => verificationIdentity("2026-07-16T01:00:00.000Z"),
         },
       );
-      const runner: CommandRunner = (command, args) => ({
-        command,
-        args,
-        status: command === "gitleaks" ? "UNAVAILABLE" : "SUCCESS",
-        exitCode: command === "gitleaks" ? 127 : 0,
-        stdout: command === "git" ? "" : "passed",
-        stderr: command === "gitleaks" ? "not installed" : "",
-        durationMs: 1,
-      });
+      const runner: CommandRunner = (command, args) => {
+        const lockout = command === "npm" && args.join(" ") === "run test:lockout";
+        return {
+          command,
+          args,
+          status:
+            command === "gitleaks"
+              ? "UNAVAILABLE"
+              : lockout
+                ? "FAILED"
+                : "SUCCESS",
+          exitCode: command === "gitleaks" ? 127 : lockout ? 1 : 0,
+          stdout: command === "git" ? "" : lockout ? "lockout missing" : "passed",
+          stderr: command === "gitleaks" ? "not installed" : "",
+          durationMs: 1,
+        };
+      };
 
       const result = verifyMission(workspace, "msn_verify_fanout", {
         hookConfigOptions,
@@ -97,9 +110,15 @@ describe("verifyMission", () => {
         (record) => record.command === "npm test",
       );
       expect(testEvidence.map((record) => record.criterionId).sort()).toEqual([
-        "criterion_lockout",
         "criterion_regression",
       ]);
+      const lockoutEvidence = result.evidence.filter(
+        (record) => record.command === "npm run test:lockout",
+      );
+      expect(lockoutEvidence).toEqual([
+        expect.objectContaining({ criterionId: "criterion_lockout", exitCode: 1 }),
+      ]);
+      expect(result.run.overall).toBe("FAIL");
     } finally {
       rmSync(workspace, { recursive: true, force: true });
     }

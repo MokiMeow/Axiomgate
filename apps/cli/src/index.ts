@@ -24,7 +24,8 @@ import {
   readCodexRateLimits,
   ReasoningEffortSchema,
   recordWaiver,
-  renderModelDirectorVocabulary,
+  MODEL_DIRECTOR_NOTE,
+  renderModelDirectorSummary,
   remediateMission,
   resolveCodexLaunch,
   reviewMission,
@@ -45,6 +46,7 @@ import {
 } from "@axiomgate/core";
 import { ui, type UiStatus } from "./ui.js";
 import { runMcpServer } from "./mcp.js";
+import { friendlyMissionError, hasHelpFlag } from "./cli-args.js";
 
 function verdictStatus(value: string): UiStatus {
   const normalized = value.toUpperCase();
@@ -84,9 +86,13 @@ function codexHome(): string {
 
 export async function runDoctor(): Promise<void> {
   printCommandHeader("doctor", "environment & trust");
-  const rows: { key: string; value: string }[] = [
+  const rows: { key: string; value: string; subline?: string }[] = [
     { key: "Node", value: `${ui.glyph("success")} ${process.version}` },
-    { key: "Model Director", value: renderModelDirectorVocabulary() },
+    {
+      key: "Model Director",
+      value: renderModelDirectorSummary(),
+      subline: MODEL_DIRECTOR_NOTE,
+    },
   ];
   const warnings: string[] = [];
 
@@ -150,10 +156,16 @@ export async function runDoctor(): Promise<void> {
     });
   }
 
-  const native = codexNativeStatus(codexHome());
+  const native = codexNativeStatus(codexHome(), {
+    runner: runExternalCommand,
+    codexLaunch: resolveCodexLaunch(),
+  });
   rows.push({
     key: "AxiomGate skill",
-    value: `${verdict(native.skill.installed ? "PRESENT" : "ABSENT")} (${native.skill.path})`,
+    value:
+      native.skill.via === "plugin"
+        ? `${ui.glyph("success")} via plugin ${native.skill.pluginId}`
+        : `${verdict(native.skill.installed ? "PRESENT" : "ABSENT")} (${native.skill.path})`,
   });
   rows.push({
     key: "Verifier agent",
@@ -442,7 +454,11 @@ async function runRunwayStatus(): Promise<void> {
   const capacity = await resolveRunwayCapacity(projectPath());
   printCommandHeader("runway status", "live capacity");
   console.log(ui.rows([
-    { key: "Model Director", value: renderModelDirectorVocabulary() },
+    {
+      key: "Model Director",
+      value: renderModelDirectorSummary(),
+      subline: MODEL_DIRECTOR_NOTE,
+    },
   ]));
   console.log(ui.rule("capacity"));
   console.log(renderRunwayCapacity(capacity));
@@ -664,7 +680,9 @@ function zEffort(value: string): ReasoningEffort {
   throw new Error("--effort must be light, medium, high, xhigh, or max");
 }
 
-if (command === "mcp") {
+if (hasHelpFlag(process.argv.slice(2))) {
+  printUsage();
+} else if (command === "mcp") {
   await runMcpServer();
 } else if (command === "install-codex") {
   try {
@@ -718,7 +736,9 @@ if (command === "mcp") {
       throw new Error("expected mission create, update, run, resume, review, verify, remediate, status, waive, or receipt");
     }
   } catch (error) {
-    console.error(ui.callout("failure", "MISSION COMMAND FAILED", [errorMessage(error)]));
+    console.error(ui.callout("failure", "MISSION COMMAND FAILED", [
+      friendlyMissionError(error, process.argv[4], projectPath()),
+    ]));
     process.exitCode = 1;
   }
 } else if (command === "receipt" && process.argv[3] === "verify") {

@@ -7,7 +7,7 @@ import type { CommandResult } from "../../guard/index.js";
 import type { VerificationCheckState } from "../types.js";
 
 export const NativeCheckCommandSchema = z.strictObject({
-  kind: z.enum(["target.test", "target.build"]),
+  kind: z.enum(["target.test", "target.lockout-test", "target.build"]),
   command: z.string().min(1),
   args: z.array(z.string()),
 });
@@ -31,6 +31,13 @@ export function detectNativeChecks(workspace: string): NativeCheckCommand[] {
         : {};
     if (typeof scripts.test === "string") {
       checks.push({ kind: "target.test", command: "npm", args: ["test"] });
+    }
+    if (typeof scripts["test:lockout"] === "string") {
+      checks.push({
+        kind: "target.lockout-test",
+        command: "npm",
+        args: ["run", "test:lockout"],
+      });
     }
     if (typeof scripts.build === "string") {
       checks.push({

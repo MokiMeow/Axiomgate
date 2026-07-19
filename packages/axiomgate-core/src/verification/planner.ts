@@ -15,6 +15,7 @@ const EVIDENCE_TO_CHECK: Record<string, string> = {
   command: "target.build",
   build: "target.build",
   test: "target.test",
+  lockout_test: "target.lockout-test",
   unit_test: "target.test",
   integration_test: "target.test",
   regression_test: "target.test",
@@ -27,6 +28,7 @@ const CHECK_ORDER = [
   "git.diff",
   "target.build",
   "target.test",
+  "target.lockout-test",
   "dependency.scan",
   "secret.scan",
 ];
