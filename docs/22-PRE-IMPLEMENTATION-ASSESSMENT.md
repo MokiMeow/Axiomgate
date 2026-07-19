@@ -43,3 +43,70 @@ The canonical sketches need deterministic validation choices: strict objects, IS
 | Resolve dependencies | `pnpm install` | Anonymous npm network read and local workspace write; requested by task | Lockfile and successful install |
 | Check CLI environment | Node child processes for Codex and Git | Local process state only; pre-authorized | `doctor` output |
 | Record checkpoints | Local Git commits | Configured local Git identity; explicitly required | Three atomic commit hashes |
+
+---
+
+# Pre-Implementation Assessment — G4 Telegram Relay and T3 Notifications
+
+**Date:** 2026-07-20
+**Starting checkpoint:** `4eb1e8b` on clean `main`
+**Verdict:** Feasible with narrow adapter and persistence additions; no new runtime dependency is needed.
+
+## Understanding and authority
+
+This task completes the remote approval surface without changing AxiomGate's authority model. Telegram is a secondary presentation and input adapter over the canonical ActionRequest and approval store: it may render a redacted request, submit an exact request ID to the existing atomic `approve`/`deny` mutation, edit its own card, and publish read-only stage notifications. The hook remains the enforcement point, command-hash binding remains authoritative, and Telegram failure must never block a governed run or silently grant authority.
+
+The maximum implementation boundary is `MODIFY_LOCAL`: source, tests, documentation, ignored local state, and local Git commits are authorized. The optional live proof may call the Telegram Bot API only because the task explicitly authorizes it when `.local/telegram.env` exists. No webhook, public listener, production deployment, npm publication, or Git push is authorized by this task.
+
+## Verified repository reality
+
+- `@axiomgate/core` is TypeScript/NodeNext with Zod as its sole production dependency; the published CLI bundles core with esbuild. No Telegram dependency exists or is required because Node 20 provides `fetch`, `AbortController`, and standard crypto/filesystem APIs.
+- The canonical file approval store already provides strict schemas, exact-command binding, a 15-minute default TTL, per-record `wx` locks, CLI/dashboard/MCP surfaces, atomic first-decision wins, and single-use consumption. Telegram must call this store rather than create another approval format.
+- Mission state is local under `.axiomgate/missions/<id>/`; approvals are one JSON file per ActionRequest and events are append-only JSONL. Existing run, verification, checkpoint, ledger, receipt, and hook records can feed T3 without a daemon or database.
+- Central `redactSensitiveText`/`redactSensitiveValue` functions already cover common token and credential shapes before persistence. Telegram adds the Bot API token shape and applies redaction before rendering, errors, events, or evidence.
+- The CLI is a zero-dependency command router. `doctor`, mission run summaries, and approval commands are direct integration points for the new surface.
+- `.local/telegram.env` exists and is ignored by `.gitignore`; its contents were not displayed or inspected during discovery. Telegram variables are not present in the current process environment.
+- The separate PatchPilot checkout was inspected read-only. Its adapter validates the 64-byte callback limit, masks chat IDs, checks an allowlist, calls `answerCallbackQuery`, and edits messages. It is not imported: ADR-014 keeps AxiomGate self-contained and the normative task requires a different local lookup/canonical-store contract.
+- Telegram's official Bot API confirms that `getUpdates` long polling and webhooks are mutually exclusive, offsets must advance to highest `update_id + 1`, `callback_data` is limited to 1–64 bytes, callback queries must be answered to stop the client spinner, HTML parse mode supports `<b>` and `<code>`, and `editMessageText` edits bot messages.
+- Baseline `pnpm test` passed 27 files with 258 tests and one explicitly opt-in live identity smoke skipped.
+
+## Architecture critique and decisions
+
+- Keep provider HTTP, rendering, local state, and orchestration separate. Rendering and event-to-notification mapping remain pure; the watcher receives an injectable Telegram client and clock for deterministic tests.
+- Use a compact callback `{short local reference, verb}` only. The reference resolves through ignored `.axiomgate/telegram-state.json`; no command, target, identity, chat ID, signature, or token enters `callback_data`.
+- Persist a SHA-256 chat key, never the full chat ID. At runtime it is matched against the configured allowlist; user-facing and evidence output uses only `***<last4>`.
+- Reuse the canonical record lock for CLI-versus-Telegram races. A rejected Telegram mutation re-reads the canonical outcome and reports the winning surface without retrying or re-granting.
+- Expiration is a presentation state derived from the canonical expiry. The existing approval schema need not gain a fourth storage status. Expired cards are edited and later taps are rejected.
+- Use bounded HTTPS retries with abort timeouts and redacted typed results. Telegram availability never changes the governed run result; the CLI approval path remains the recovery path.
+- Stage notifications are projections of stored events/records, not new authority. Remote model switching is deliberately absent.
+- A consumed approval is associated with the run record whose time window contains `consumedAt`; the card is edited only after such a stored run ID exists.
+
+## Planned implementation and tests
+
+1. Add `src/guard/telegram/` modules for config, API client, schemas/state, HTML-safe rendering, approval callbacks, mission scanning, and watcher orchestration; export them through the guard barrel.
+2. Extend centralized redaction for fabricated Telegram bot-token shapes and add a regression proving the token cannot reach rendered cards, API errors, event logs, or state.
+3. Add table-driven/snapshot tests for all normative card fields, all seven demo actions, HTML/emoji hostility, truncation, hash integrity, details, outcomes, and callback byte limits.
+4. Cover the ten case-matrix entries: approve, deny/evidence, both expiry timings, multiple approvals, CLI race, non-allowlisted/forwarded callbacks, bounded send failure, hostile/long text, and restart offset persistence. Assert canonical CLI/Telegram record equivalence and single-use consumption.
+5. Add T3 event/record projections, dedupe cursor, 20-message suppression guard, usage-threshold handling, approvals-only/off modes, and fixture coverage for every notification family.
+6. Add `telegram watch` and `telegram test`, masked doctor status, optional non-blocking run-summary send, README/Judge notes, task/status/changelog updates, public evidence, and an ignored detailed report.
+7. If local configuration validates, run a real getMe/card/details/approve/re-tap proof without printing configuration values. If interaction cannot be completed safely and deterministically, record the exact honest `PENDING` boundary.
+8. Run targeted and full tests, typecheck, build, dependency/secret scans, inspect all persisted fixtures and diffs, then commit approval relay and notification/CLI/docs changes atomically.
+
+Rollback is commit-level revert plus deletion of ignored `.axiomgate/telegram-state.json`; Telegram messages may remain externally visible but carry no secret or unredacted path. No schema migration, new dependency, webhook, or cloud resource is introduced.
+
+## Capability-use log
+
+| Semantic action | Mechanism selected | Identity, permissions, data, approval | Evidence |
+|---|---|---|---|
+| Inspect product and prior adapter | `rg`, PowerShell reads, Git, read-only PatchPilot checkout | Local filesystem read; no account mutation | Source inventory and baseline test output |
+| Validate protocol contract | Official Telegram Bot API documentation | Anonymous HTTPS read | Confirmed polling, offset, callback, HTML, and edit contracts |
+| Implement and test | `apply_patch`, TypeScript, Vitest | Workspace write under `MODIFY_LOCAL`; explicitly authorized | Diff, fixtures, test output |
+| Telegram live smoke | Direct Bot API HTTPS adapter using ignored env config | Configured bot plus allowlisted chats; explicitly conditional; no token output | Masked CLI transcript and sanitized public evidence |
+| Record work | Local Git commits | Existing Git identity; explicitly required | Atomic commit hashes |
+
+## Open decisions with defaults
+
+- **Multiple allowlisted chats:** send one independently tracked card per approval per allowlisted chat; the canonical store makes the first decision win.
+- **Missing configuration:** doctor reports `UNAVAILABLE`; watcher/test exits with a safe instruction; governed runs continue and retain CLI approval.
+- **Live interaction timing:** use a bounded proof window. If no allowlisted Details/Approve callbacks arrive, leave the live proof `PENDING` rather than fabricating a tap.
+- **Future npm release:** source/package versioning and publication are outside this task unless separately authorized; public docs will distinguish source availability from the already-published `0.1.0` when necessary.
