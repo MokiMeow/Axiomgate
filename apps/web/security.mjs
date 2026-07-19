@@ -22,6 +22,14 @@ export function resolveApprovalDirectory(missionsDir, missionId) {
   return isPathWithin(missionsDir, candidate) ? candidate : null;
 }
 
+export function resolveMissionDirectory(missionsDir, missionId) {
+  if (typeof missionId !== "string" || !MISSION_ID.test(missionId)) {
+    return null;
+  }
+  const candidate = join(missionsDir, missionId);
+  return isPathWithin(missionsDir, candidate) ? candidate : null;
+}
+
 export function validateApprovalIntent(body) {
   if (body === null || typeof body !== "object" || Array.isArray(body)) {
     return { ok: false, reason: "request body must be an object" };
@@ -59,4 +67,16 @@ export function isAllowedDashboardOrigin(origin, port) {
 export function existingApprovalDirectory(missionsDir, missionId) {
   const dir = resolveApprovalDirectory(missionsDir, missionId);
   return dir !== null && existsSync(dir) ? dir : null;
+}
+
+export function applyDashboardApproval(missionDir, intent, mutations) {
+  const options = { approver: "dashboard-user", surface: "dashboard" };
+  const result =
+    intent.decision === "approve"
+      ? mutations.approve(missionDir, intent.actionRequestId, options)
+      : mutations.deny(missionDir, intent.actionRequestId, options);
+  if (result.status === "REJECTED") {
+    return { ok: false, reason: result.reason };
+  }
+  return { ok: true, status: result.status, record: result.record };
 }

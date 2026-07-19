@@ -3,11 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "AxiomGate local dashboard — self-contained, zero runtime dependencies.",
+  "description": "AxiomGate local dashboard for governed mission state and approvals.",
   "bin": { "axiomgate-web": "server.mjs" },
   "scripts": {
     "dev": "node server.mjs",
     "start": "node server.mjs",
     "typecheck": "node --check server.mjs"
+  },
+  "dependencies": {
+    "@axiomgate/core": "workspace:*"
   }
 }

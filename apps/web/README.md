@@ -1,6 +1,6 @@
 # AxiomGate Dashboard
 
-A self-contained local dashboard for AxiomGate missions. **Zero runtime dependencies** — pure Node, reads mission state directly from a governed workspace's `.axiomgate/` directory. Falls back to a bundled sample mission so it renders on a clean clone.
+A local dashboard for AxiomGate missions. It uses Node's HTTP server plus the workspace's canonical `@axiomgate/core` approval store, reads mission state directly from a governed workspace's `.axiomgate/` directory, and falls back to a bundled sample mission on a clean clone.
 
 ## Run
 
@@ -35,5 +35,5 @@ Same visual family as PatchPilot Watch Commander (dark editorial theme): warm ne
 
 ## Notes
 
-- The dashboard is read-only over mission state except the web-approval endpoint, which records an auditable approval intent the hook/CLI consumes; the hook remains the enforcement point.
+- The dashboard is read-only over mission state except the web-approval endpoint, which mutates the same exact-hash, expiring, single-use approval record used by the CLI; the hook remains the enforcement point.
 - `LIVE` / `REPLAY` / `SAMPLE` labels are always shown so replayed or sample data is never presented as a live run.

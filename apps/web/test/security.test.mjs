@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  applyDashboardApproval,
   isAllowedDashboardOrigin,
   isPathWithin,
   resolveApprovalDirectory,
@@ -63,5 +64,52 @@ describe("local dashboard security boundaries", () => {
     expect(isAllowedDashboardOrigin("http://127.0.0.1:4319", 4319)).toBe(true);
     expect(isAllowedDashboardOrigin("https://attacker.example", 4319)).toBe(false);
     expect(isAllowedDashboardOrigin("http://localhost:9999", 4319)).toBe(false);
+  });
+
+  it("routes web decisions through the canonical approval mutations", () => {
+    const calls = [];
+    const mutations = {
+      approve: (...args) => {
+        calls.push(["approve", ...args]);
+        return { status: "APPROVED", record: { id: "apr_fixture" } };
+      },
+      deny: () => ({ status: "DENIED", record: { id: "apr_denied" } }),
+    };
+    expect(
+      applyDashboardApproval(
+        "C:/workspace/.axiomgate/missions/msn_fixture",
+        {
+          missionId: "msn_fixture",
+          actionRequestId: "act_fixture",
+          decision: "approve",
+        },
+        mutations,
+      ),
+    ).toMatchObject({ ok: true, status: "APPROVED" });
+    expect(calls).toEqual([
+      [
+        "approve",
+        "C:/workspace/.axiomgate/missions/msn_fixture",
+        "act_fixture",
+        { approver: "dashboard-user", surface: "dashboard" },
+      ],
+    ]);
+  });
+
+  it("does not report success when the canonical store rejects a request", () => {
+    expect(
+      applyDashboardApproval(
+        "C:/workspace/.axiomgate/missions/msn_fixture",
+        {
+          missionId: "msn_fixture",
+          actionRequestId: "act_fixture",
+          decision: "approve",
+        },
+        {
+          approve: () => ({ status: "REJECTED", reason: "approval request expired" }),
+          deny: () => ({ status: "REJECTED", reason: "unused" }),
+        },
+      ),
+    ).toEqual({ ok: false, reason: "approval request expired" });
   });
 });

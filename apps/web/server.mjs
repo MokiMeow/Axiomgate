@@ -7,13 +7,15 @@
 //   node apps/web/server.mjs [--workspace <path>] [--port 4319]
 //   AXIOMGATE_WORKSPACE=<path> node apps/web/server.mjs
 import { createServer } from "node:http";
-import { readFile, readdir, stat, writeFile } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import { existsSync, statSync } from "node:fs";
 import { join, extname, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { approve, deny } from "@axiomgate/core";
 import {
-  existingApprovalDirectory,
+  applyDashboardApproval,
   isAllowedDashboardOrigin,
+  resolveMissionDirectory,
   resolveStaticPath,
   validateApprovalIntent,
 } from "./security.mjs";
@@ -352,21 +354,21 @@ const server = createServer(async (req, res) => {
       }
       const parsed = validateApprovalIntent(await readBody(req));
       if (!parsed.ok) throw new Error(parsed.reason);
-      // The endpoint records an intent only; the hook remains the enforcement point.
-      const dir = existingApprovalDirectory(MISSIONS_DIR, parsed.value.missionId);
-      if (dir === null) throw new Error("mission not found");
-      const rec = {
-        id: `apr_web_${Date.now()}`,
-        actionRequestId: parsed.value.actionRequestId,
-        surface: "web",
-        approver: "web-user",
-        decision: parsed.value.decision === "deny" ? "DENY" : "APPROVE",
-        grantedAt: new Date().toISOString(),
-        singleUse: true,
-        note: "recorded via dashboard web approval",
-      };
-      await writeFile(join(dir, `${rec.id}.json`), JSON.stringify(rec, null, 2));
-      return json(res, 200, { ok: true, record: rec });
+      const missionDir = resolveMissionDirectory(
+        MISSIONS_DIR,
+        parsed.value.missionId,
+      );
+      if (missionDir === null || !existsSync(missionDir)) {
+        throw new Error("mission not found");
+      }
+      const mutation = applyDashboardApproval(missionDir, parsed.value, {
+        approve,
+        deny,
+      });
+      if (!mutation.ok) {
+        return json(res, 409, { ok: false, error: mutation.reason });
+      }
+      return json(res, 200, mutation);
     } catch (e) {
       return json(res, 400, { ok: false, error: String(e.message || e) });
     }
