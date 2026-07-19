@@ -8,7 +8,7 @@
       "name": "axiomgate",
       "source": {
         "source": "local",
-        "path": "./plugin/plugins/axiomgate"
+        "path": "./plugins/axiomgate"
       },
       "policy": {
         "installation": "AVAILABLE",

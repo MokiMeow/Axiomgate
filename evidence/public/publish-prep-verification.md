@@ -13,13 +13,13 @@ Observed `npm pack --json` projection:
 ```text
 name:          axiomgate
 version:       0.1.0
-tarball size:  132314 bytes
-unpacked:      786784 bytes
-shasum:        7a87e06a83991d2cf5a69de7779802efb353f563
-integrity:     sha512-DIPCSdhaMRACWTu7ukco0IIFn34WpHCpNJpuZvJVceW36RLYgxJIybkXdorjP9NdP3pWki+zhz5pZBizBCyCoQ==
+tarball size:  132309 bytes
+unpacked:      786766 bytes
+shasum:        894cfd6aa077c39d7dd7fbfb6a25814eff498138
+integrity:     sha512-YL+/J7/zpT6tLSZK4YsUE2lwW3PIGtgNYMiYDoO1HyhArG2sbTTM8LiLyom552czjnobuz/777IvWWxfwLJS0Q==
 
 README.md       848 bytes
-dist/index.js   785034 bytes
+dist/index.js   785016 bytes
 package.json    902 bytes
 entryCount:     3
 ```
@@ -105,7 +105,7 @@ process exit: 0
 
 ## Public-repository plugin preparation
 
-A repository-root `.agents/plugins/marketplace.json` points to the versioned plugin package. A real local add/install was run with an isolated `CODEX_HOME`:
+A repository-root `.agents/plugins/marketplace.json` points to the canonical `./plugins/axiomgate` package. The plugin-creator cachebuster helper updated the manifest and its validator passed. A real local add/install was run with an isolated `CODEX_HOME`:
 
 ```text
 codex plugin marketplace add . --json
@@ -114,7 +114,7 @@ alreadyAdded: false
 
 codex plugin add axiomgate@axiomgate-build-week --json
 pluginId: axiomgate@axiomgate-build-week
-version: 0.1.0+codex.20260719222315
+version: 0.1.0+codex.20260719170534
 
 codex plugin list --json
 installed: true
@@ -159,7 +159,7 @@ exit=0
 pnpm test
 Test Files  24 passed (24)
 Tests       239 passed | 1 skipped (240)
-Duration    2.10s
+Duration    2.05s
 exit=0
 
 pnpm build

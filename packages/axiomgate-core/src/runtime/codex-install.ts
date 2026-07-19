@@ -167,7 +167,7 @@ function pluginInstall(
   const sourceRoot = resolve(options.sourceRoot);
   const codexHome = resolve(options.codexHome);
   const dryRun = options.dryRun ?? false;
-  const marketplaceRoot = join(sourceRoot, "plugin");
+  const marketplaceRoot = sourceRoot;
   const marketplaceManifest = join(
     marketplaceRoot,
     ".agents",

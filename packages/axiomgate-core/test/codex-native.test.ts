@@ -138,17 +138,11 @@ describe("AxiomGate verifier agent", () => {
 
 describe("AxiomGate Codex plugin", () => {
   it("packages the skill, verifier, and MCP registration in a valid marketplace shape", () => {
-    const pluginRoot = resolve(repositoryRoot, "plugin/plugins/axiomgate");
+    const pluginRoot = resolve(repositoryRoot, "plugins/axiomgate");
     const manifest = JSON.parse(
       readFileSync(resolve(pluginRoot, ".codex-plugin/plugin.json"), "utf8"),
     ) as Record<string, unknown>;
     const marketplace = JSON.parse(
-      readFileSync(
-        resolve(repositoryRoot, "plugin/.agents/plugins/marketplace.json"),
-        "utf8",
-      ),
-    ) as { name: string; plugins: { name: string; source: { path: string } }[] };
-    const repositoryMarketplace = JSON.parse(
       readFileSync(
         resolve(repositoryRoot, ".agents/plugins/marketplace.json"),
         "utf8",
@@ -179,13 +173,6 @@ describe("AxiomGate Codex plugin", () => {
       command: "npx",
       args: ["-y", "axiomgate@latest", "mcp"],
     });
-    expect(repositoryMarketplace).toMatchObject({
-      name: "axiomgate-build-week",
-      plugins: [{
-        name: "axiomgate",
-        source: { path: "./plugin/plugins/axiomgate" },
-      }],
-    });
     expect(
       readFileSync(resolve(pluginRoot, "skills/axiomgate/SKILL.md"), "utf8"),
     ).toBe(
@@ -213,7 +200,7 @@ describe("AxiomGate Codex plugin", () => {
       } else if (key.includes("plugin marketplace list --json")) {
         stdout = JSON.stringify({
           marketplaces: marketplaceInstalled
-            ? [{ root: resolve(repositoryRoot, "plugin") }]
+            ? [{ root: repositoryRoot }]
             : [],
         });
       } else if (key.includes("plugin marketplace add")) {
