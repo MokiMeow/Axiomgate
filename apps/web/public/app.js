@@ -94,14 +94,22 @@ async function selectMission(id) {
   renderDetail(m);
 }
 
-/* ---------- verdict computation (mirror of the core rule, display only) ---------- */
-function criterionVerdict(c, evidence) {
+/* ---------- verdict computation (display only) ----------
+   Authoritative source: the CLI-generated receipt (core verdict engine).
+   Fallback mirror: latest admissible evidence per criterion decides — a
+   superseding passing rerun outranks an earlier failure (remediation flow). */
+function criterionVerdict(c, evidence, receipt) {
+  const rc = receipt && Array.isArray(receipt.criteria)
+    ? receipt.criteria.find((r) => r.id === c.id)
+    : null;
+  if (rc && rc.verdict) return rc.verdict;
   if (c.verdict && c.verdict !== "UNVERIFIED") return c.verdict;
-  const ev = evidence.filter((e) => e.criterionId === c.id && e.source && e.source !== "model");
+  const ev = evidence
+    .filter((e) => e.criterionId === c.id && e.source && e.source !== "model")
+    .sort((a, b) => String(a.capturedAt || a.ts || "").localeCompare(String(b.capturedAt || b.ts || "")));
   if (ev.length === 0) return "UNVERIFIED";
-  const anyFail = ev.some((e) => e.exitCode != null && e.exitCode !== 0);
-  if (anyFail) return "FAIL";
-  return ev.length >= 1 ? "PASS" : "UNVERIFIED";
+  const latest = ev[ev.length - 1];
+  return latest.exitCode != null && latest.exitCode !== 0 ? "FAIL" : "PASS";
 }
 
 function stageStatus(m) {
@@ -111,8 +119,10 @@ function stageStatus(m) {
   s.run = m.runs.length ? "done" : "";
   s.verify = m.verifications.length ? "done" : "";
   const crits = m.contract.acceptanceCriteria || [];
-  const verdicts = crits.map((c) => criterionVerdict(c, m.evidence));
-  const complete = crits.length && verdicts.every((v) => v === "PASS" || v === "WAIVED");
+  const verdicts = crits.map((c) => criterionVerdict(c, m.evidence, m.receipt));
+  const complete = m.receipt && m.receipt.outcome === "COMPLETE"
+    ? true
+    : crits.length && verdicts.every((v) => v === "PASS" || v === "WAIVED");
   s.prove = complete ? "done" : (m.receipt ? "active" : "");
   if (m.denials.length) s.guard = "blocked";
   return { s, verdicts, complete };
@@ -291,7 +301,8 @@ function blockMoment(m) {
   wrap.appendChild(el("div", "section-label", "The block moment · enforced, not suggested"));
   const term = el("div", "terminal");
   const lines = m.denials.slice(0, 3).map((d) => {
-    const cmd = d.command || (d.toolInput && d.toolInput.command) || d.semanticAction || "action";
+    const cmd = d.command || (d.toolInput && d.toolInput.command) ||
+      (d.commandHash ? `governed command · ${shortHash(d.commandHash)}` : d.semanticAction || "action");
     const reason = (d.reasons && d.reasons.join(" ")) || d.reason || "Blocked by mission policy";
     return (
       `<span class="t-dim">$</span> <span class="t-b">${esc(cmd)}</span>\n` +

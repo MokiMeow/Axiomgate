@@ -123,6 +123,24 @@ async function loadMission(dir, id) {
     (e) => e.decision === "DENY" || e.hookEvent === "PreToolUse" && e.decision === "DENY"
   );
 
+  // The authoritative completion projection is the CLI-generated receipt.
+  // The governed workspace sits one level above the missions dir:
+  // <workspace>/.axiomgate/missions/<id>  →  <workspace>/evidence/<id>-receipt.json
+  let receipt = contract.__receipt || null;
+  if (!receipt) {
+    const workspaceRoot = resolve(dir, "..", "..");
+    for (const cand of [
+      join(workspaceRoot, "evidence", `${id}-receipt.json`),
+      join(base, "receipt.json"),
+    ]) {
+      const parsed = await readJson(cand);
+      if (parsed && (parsed.criteria || parsed.outcome)) {
+        receipt = parsed;
+        break;
+      }
+    }
+  }
+
   return {
     id,
     contract,
@@ -138,7 +156,7 @@ async function loadMission(dir, id) {
       (a.startedAt || "").localeCompare(b.startedAt || "")
     ),
     approvals: approvals.filter((a) => !a.consumedAt),
-    receipt: contract.__receipt || null,
+    receipt,
     label: events.length || runs.length ? "LIVE" : "REPLAY",
   };
 }
