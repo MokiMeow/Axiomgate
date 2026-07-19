@@ -115,20 +115,9 @@ export function renderApprovalButtons(callbackRef: string): TelegramReplyMarkup 
 
 export function renderOutcomeButtons(
   callbackRef: string,
-  outcome: ApprovalOutcome,
 ): TelegramReplyMarkup {
-  const callbackVerb = outcome === "DENIED" ? "d" : "a";
-  const label =
-    outcome === "APPROVED"
-      ? "Approved once (tap for status)"
-      : outcome === "DENIED"
-        ? "Denied (tap for status)"
-        : outcome === "EXPIRED"
-          ? "Expired (tap for status)"
-          : "Consumed (tap for status)";
   return {
     inline_keyboard: [
-      [{ text: label, callback_data: `ag:${callbackRef}:${callbackVerb}` }],
       [{ text: "Details", callback_data: `ag:${callbackRef}:i` }],
     ],
   };

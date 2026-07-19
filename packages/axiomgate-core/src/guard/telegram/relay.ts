@@ -90,7 +90,7 @@ async function editCardsForRequest(
           chatId,
           card.messageId,
           renderApprovalOutcome(loaded.snapshot, record, outcome, detail),
-          renderOutcomeButtons(card.ref, outcome),
+          renderOutcomeButtons(card.ref),
         );
       }
     }

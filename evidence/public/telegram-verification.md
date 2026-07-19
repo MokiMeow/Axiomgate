@@ -40,7 +40,7 @@ Full repository gates:
 ```text
 pnpm typecheck  PASS
 pnpm test       28 files passed; 279 tests passed; 1 optional live identity test skipped
-pnpm build      PASS; bundled CLI dist/index.js 812.7kb
+pnpm build      PASS; bundled CLI dist/index.js 812.4kb
 ```
 
 ## Live Bot API proof
@@ -60,8 +60,8 @@ A disposable mission under ignored `.local/` produced a canonical pending `previ
 1. Sent one newly formatted approval card to the allowlisted chat.
 2. Received the **Details** callback and sent the full redacted details card.
 3. Received **Approve once** and wrote the canonical approval record.
-4. Edited the original card to the concise **Approved once** outcome while retaining an **Approved once (tap for status)** button.
-5. Received a repeated post-decision tap, returned the already-decided callback response, and did not grant again.
+4. Edited the original card to the concise **Approved once** outcome.
+5. Received a repeated post-decision callback, returned the already-decided response, and did not grant again.
 
 Sanitized stored result:
 
@@ -76,5 +76,7 @@ persisted chat identifier: sha256 hash only
 ```
 
 The update offset advanced across Details, approval, and repeated status callbacks, while exactly one approval decision event remained. No deploy command was executed. The disposable hook-generated attempt first failed closed because the shared runner could not resolve shell-only GitHub/Vercel commands in that workspace; the transport proof therefore created the pending request through the same exported canonical approval-store API and records this limitation rather than weakening identity enforcement.
+
+After the live re-tap proof, presenter feedback identified the visible approved-status button as confusing because it resembled a second approval action. The final UI keeps only **Details** on approved, denied, expired, and consumed cards. Stale, duplicated, or already-in-flight decision callbacks still follow the tested already-decided/expired path and cannot re-grant authority.
 
 No token, full chat ID, private path, raw environment value, or source payload is present in this evidence. G4 and the Environment Guard layer are now `VERIFIED`.

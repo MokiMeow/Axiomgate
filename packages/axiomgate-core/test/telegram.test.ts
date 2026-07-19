@@ -138,7 +138,7 @@ describe("Telegram approval relay", () => {
     expect(record?.approval).toMatchObject({ surface: "telegram", singleUse: true, boundCommandHash: HASH });
     expect(client.edits[0]?.text).toContain("Approved once");
     const outcomeMarkup = client.edits[0]?.markup as { inline_keyboard: Array<Array<{ text: string }>> };
-    expect(outcomeMarkup.inline_keyboard[0]?.[0]?.text).toContain("tap for status");
+    expect(outcomeMarkup.inline_keyboard.flat().map((button) => button.text)).toEqual(["Details"]);
     await processTelegramUpdate(projectPath, config(), client, callback, { now: () => new Date("2026-07-20T10:02:00.000Z") });
     expect(client.answers.at(-1)).toContain("already decided");
   });
