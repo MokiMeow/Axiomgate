@@ -12,6 +12,7 @@ import {
   renderApprovalCard,
   renderApprovalDetails,
   renderApprovalOutcome,
+  renderOutcomeButtons,
   type ApprovalOutcome,
 } from "./render.js";
 import {
@@ -81,7 +82,17 @@ async function editCardsForRequest(
     }
     const chatId = config.chatIds.find((candidate) => telegramChatKey(candidate) === card.chatKey);
     if (chatId !== undefined) {
-      await client.editMessageText(chatId, card.messageId, renderApprovalOutcome(card.cardText, outcome, detail));
+      const missionDir = join(resolve(projectPath), ".axiomgate", "missions", missionId);
+      const loaded = loadMissionSnapshot(missionDir);
+      const record = getApprovalRequest(missionDir, requestId);
+      if (loaded.status === "VALID" && record !== undefined) {
+        await client.editMessageText(
+          chatId,
+          card.messageId,
+          renderApprovalOutcome(loaded.snapshot, record, outcome, detail),
+          renderOutcomeButtons(card.ref, outcome),
+        );
+      }
     }
     updated.push({ ...card, outcome, updatedAt: new Date().toISOString() });
   }

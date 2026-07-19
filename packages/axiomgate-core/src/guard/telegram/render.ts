@@ -1,6 +1,6 @@
 import { redactSensitiveText } from "../../evidence/index.js";
-import type { MissionSnapshot } from "../hook/index.js";
 import type { ApprovalRequestRecord } from "../approval-store.js";
+import type { MissionSnapshot } from "../hook/index.js";
 
 const ACTION_LABELS: Readonly<Record<string, string>> = {
   "repository.read": "Read repository",
@@ -32,18 +32,27 @@ export function truncateTelegramText(value: string, limit: number): string {
 }
 
 function safe(value: string, limit: number): string {
-  return escapeTelegramHtml(truncateTelegramText(redactSensitiveText(value), limit));
+  return escapeTelegramHtml(
+    truncateTelegramText(redactSensitiveText(value), limit),
+  );
+}
+
+function workspaceLeaf(snapshot: MissionSnapshot): string {
+  return snapshot.contract.projectProfileId
+    .split(/[\\/]/u)
+    .filter(Boolean)
+    .at(-1) ?? snapshot.contract.projectProfileId;
 }
 
 function identity(snapshot: MissionSnapshot, action: string): string {
   if (action.includes("deploy")) {
     return snapshot.identity.vercelUser.status === "RESOLVED"
       ? `${snapshot.identity.vercelUser.value} (Vercel)`
-      : "UNAVAILABLE (Vercel)";
+      : "Unavailable (Vercel)";
   }
   return snapshot.identity.githubLogin.status === "RESOLVED"
     ? `${snapshot.identity.githubLogin.value} (GitHub)`
-    : "UNAVAILABLE (GitHub)";
+    : "Unavailable (GitHub)";
 }
 
 function target(record: ApprovalRequestRecord): string {
@@ -51,20 +60,77 @@ function target(record: ApprovalRequestRecord): string {
   return requestTarget.project ?? `${requestTarget.owner}/${requestTarget.repo}`;
 }
 
+function commandLabel(record: ApprovalRequestRecord): string {
+  const command =
+    record.displayCommand ??
+    "Command unavailable. The stored hash remains authoritative.";
+  const redacted = redactSensitiveText(command);
+  return redacted === command ? redacted : `[redacted] ${redacted}`;
+}
+
 function grantMinutes(record: ApprovalRequestRecord): number {
   return Math.max(
     0,
-    Math.ceil((Date.parse(record.expiresAt) - Date.parse(record.createdAt)) / 60_000),
+    Math.ceil(
+      (Date.parse(record.expiresAt) - Date.parse(record.createdAt)) / 60_000,
+    ),
   );
+}
+
+function reasonLines(record: ApprovalRequestRecord): string[] {
+  return record.reasons.map((reason) => `• ${safe(reason, 240)}`);
+}
+
+export interface TelegramInlineButton {
+  readonly text: string;
+  readonly callback_data: string;
+}
+
+export interface TelegramReplyMarkup {
+  readonly inline_keyboard: readonly (readonly TelegramInlineButton[])[];
 }
 
 export interface ApprovalCard {
   readonly text: string;
-  readonly replyMarkup: {
-    readonly inline_keyboard: readonly (readonly {
-      readonly text: string;
-      readonly callback_data: string;
-    }[])[];
+  readonly replyMarkup: TelegramReplyMarkup;
+}
+
+export type ApprovalOutcome =
+  | "APPROVED"
+  | "DENIED"
+  | "EXPIRED"
+  | "CONSUMED";
+
+export function renderApprovalButtons(callbackRef: string): TelegramReplyMarkup {
+  return {
+    inline_keyboard: [
+      [
+        { text: "Approve once", callback_data: `ag:${callbackRef}:a` },
+        { text: "Deny", callback_data: `ag:${callbackRef}:d` },
+      ],
+      [{ text: "Details", callback_data: `ag:${callbackRef}:i` }],
+    ],
+  };
+}
+
+export function renderOutcomeButtons(
+  callbackRef: string,
+  outcome: ApprovalOutcome,
+): TelegramReplyMarkup {
+  const callbackVerb = outcome === "DENIED" ? "d" : "a";
+  const label =
+    outcome === "APPROVED"
+      ? "Approved once (tap for status)"
+      : outcome === "DENIED"
+        ? "Denied (tap for status)"
+        : outcome === "EXPIRED"
+          ? "Expired (tap for status)"
+          : "Consumed (tap for status)";
+  return {
+    inline_keyboard: [
+      [{ text: label, callback_data: `ag:${callbackRef}:${callbackVerb}` }],
+      [{ text: "Details", callback_data: `ag:${callbackRef}:i` }],
+    ],
   };
 }
 
@@ -73,40 +139,41 @@ export function renderApprovalCard(
   record: ApprovalRequestRecord,
   callbackRef: string,
 ): ApprovalCard {
-  const command = record.displayCommand ?? "Command text unavailable; hash remains authoritative";
-  const redactedCommand = redactSensitiveText(command);
-  const commandLabel = redactedCommand === command
-    ? redactedCommand
-    : `[redacted] ${redactedCommand}`;
-  const workspace = snapshot.contract.projectProfileId
-    .split(/[\\/]/u)
-    .filter(Boolean)
-    .at(-1) ?? snapshot.contract.projectProfileId;
   const text = [
-    "🛡️ <b>AxiomGate — approval required</b>",
+    "🛡️ <b>Approval required</b>",
     "",
-    `<b>Mission</b>  <code>${safe(snapshot.contract.id, 40)}</code> — “${safe(snapshot.contract.objective, 80)}”`,
-    `<b>Action</b>   <code>${safe(record.request.semanticAction, 60)}</code> — ${safe(telegramActionLabel(record.request.semanticAction), 80)}`,
-    `<b>Target:</b> ${safe(target(record), 100)}`,
-    `<b>As:</b> ${safe(identity(snapshot, record.request.semanticAction), 80)}`,
-    `<b>Workspace:</b> ${safe(workspace, 100)}`,
-    `<b>Command:</b> <code>${escapeTelegramHtml(truncateTelegramText(commandLabel, 120))}</code>`,
-    `<b>Hash:</b> <code>${escapeTelegramHtml(record.request.rawCommandHash.slice(0, 19))}…</code> — approval binds to this exact command`,
-    `<b>Risk:</b> ${safe(record.request.risk, 20)} — ${safe(record.reasons.join("; "), 180)}`,
-    `<b>Grant:</b> single use — expires in ${grantMinutes(record)}m (${safe(new Date(record.expiresAt).toLocaleString(), 60)})`,
+    "<b>Mission</b>",
+    `<code>${safe(snapshot.contract.id, 40)}</code>`,
+    `"${safe(snapshot.contract.objective, 80)}"`,
+    "",
+    "<b>Action</b>",
+    safe(telegramActionLabel(record.request.semanticAction), 80),
+    `<code>${safe(record.request.semanticAction, 60)}</code>`,
+    "",
+    "<b>Target</b>",
+    safe(target(record), 100),
+    "",
+    "<b>Identity</b>",
+    safe(identity(snapshot, record.request.semanticAction), 80),
+    "",
+    "<b>Workspace</b>",
+    safe(workspaceLeaf(snapshot), 100),
+    "",
+    "<b>Command</b>",
+    `<code>${escapeTelegramHtml(truncateTelegramText(commandLabel(record), 120))}</code>`,
+    "",
+    "<b>Exact binding</b>",
+    `<code>${escapeTelegramHtml(record.request.rawCommandHash.slice(0, 19))}…</code>`,
+    "Approves only the command shown above.",
+    "",
+    `<b>Risk</b>  ${safe(record.request.risk.toUpperCase(), 20)}`,
+    ...reasonLines(record),
+    "",
+    "<b>Grant</b>",
+    `One use • expires in ${grantMinutes(record)} min`,
+    safe(new Date(record.expiresAt).toLocaleString(), 60),
   ].join("\n");
-  return {
-    text,
-    replyMarkup: {
-      inline_keyboard: [
-        [
-          { text: "Approve once", callback_data: `ag:${callbackRef}:a` },
-          { text: "Deny", callback_data: `ag:${callbackRef}:d` },
-        ],
-        [{ text: "Details", callback_data: `ag:${callbackRef}:i` }],
-      ],
-    },
-  };
+  return { text, replyMarkup: renderApprovalButtons(callbackRef) };
 }
 
 export function renderApprovalDetails(
@@ -114,24 +181,64 @@ export function renderApprovalDetails(
   record: ApprovalRequestRecord,
 ): string {
   return [
-    "🛡️ <b>AxiomGate — approval details</b>",
-    `<b>Request:</b> <code>${safe(record.request.id, 80)}</code>`,
-    `<b>Boundary:</b> ${safe(record.request.intentBoundaryRequired, 40)} (mission ${safe(snapshot.contract.intentBoundary, 40)})`,
-    `<b>Workspace:</b> ${safe(snapshot.contract.projectProfileId.split(/[\\/]/u).filter(Boolean).at(-1) ?? snapshot.contract.projectProfileId, 100)}`,
-    `<b>Requested:</b> ${safe(record.createdAt, 40)}`,
-    `<b>Command hash:</b> <code>${escapeTelegramHtml(record.request.rawCommandHash)}</code>`,
-    `<b>Evidence event:</b> <code>${safe(record.evidenceEventId ?? "UNAVAILABLE", 100)}</code>`,
-    `<b>Reasons:</b> ${safe(record.reasons.join("; "), 500)}`,
+    "🔎 <b>Approval details</b>",
+    "",
+    "<b>Mission</b>",
+    `<code>${safe(snapshot.contract.id, 40)}</code>`,
+    "",
+    "<b>Request</b>",
+    `<code>${safe(record.request.id, 80)}</code>`,
+    "",
+    "<b>Policy reasons</b>",
+    ...reasonLines(record),
+    "",
+    "<b>Requested</b>",
+    safe(record.createdAt, 40),
+    "",
+    "<b>Intent boundary</b>",
+    `Action: ${safe(record.request.intentBoundaryRequired, 40)}`,
+    `Mission: ${safe(snapshot.contract.intentBoundary, 40)}`,
+    "",
+    "<b>Workspace</b>",
+    safe(workspaceLeaf(snapshot), 100),
+    "",
+    "<b>Full command hash</b>",
+    `<code>${escapeTelegramHtml(record.request.rawCommandHash)}</code>`,
+    "",
+    "<b>Evidence event</b>",
+    `<code>${safe(record.evidenceEventId ?? "Unavailable", 100)}</code>`,
   ].join("\n");
 }
 
-export type ApprovalOutcome = "APPROVED" | "DENIED" | "EXPIRED" | "CONSUMED";
-
 export function renderApprovalOutcome(
-  originalText: string,
+  snapshot: MissionSnapshot,
+  record: ApprovalRequestRecord,
   outcome: ApprovalOutcome,
   detail: string,
 ): string {
-  const icon = outcome === "APPROVED" || outcome === "CONSUMED" ? "✅" : "⛔";
-  return `${originalText}\n\n${icon} <b>${outcome}</b> · ${safe(detail, 160)}`;
+  const presentation =
+    outcome === "APPROVED"
+      ? { icon: "✅", title: "Approved once" }
+      : outcome === "CONSUMED"
+        ? { icon: "✅", title: "Command consumed" }
+        : outcome === "DENIED"
+          ? { icon: "⛔", title: "Denied" }
+          : { icon: "⌛", title: "Expired" };
+  return [
+    `${presentation.icon} <b>${presentation.title}</b>`,
+    safe(detail, 180),
+    "",
+    "<b>Mission</b>",
+    `<code>${safe(snapshot.contract.id, 40)}</code>`,
+    safe(snapshot.contract.objective, 80),
+    "",
+    "<b>Action</b>",
+    `${safe(telegramActionLabel(record.request.semanticAction), 80)}  •  <code>${safe(record.request.semanticAction, 60)}</code>`,
+    "",
+    "<b>Target</b>",
+    safe(target(record), 100),
+    "",
+    "<b>Exact binding</b>",
+    `<code>${escapeTelegramHtml(record.request.rawCommandHash.slice(0, 19))}…</code>`,
+  ].join("\n");
 }

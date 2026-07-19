@@ -103,7 +103,7 @@ function config(chatIds: readonly string[] = [CHAT]): TelegramConfig {
 
 class FakeClient implements TelegramClient {
   readonly sent: Array<{ chatId: string; text: string; markup?: unknown; id: number }> = [];
-  readonly edits: Array<{ chatId: string; id: number; text: string }> = [];
+  readonly edits: Array<{ chatId: string; id: number; text: string; markup?: unknown }> = [];
   readonly answers: string[] = [];
   updates: readonly TelegramUpdate[] = [];
   failSend = false;
@@ -114,7 +114,9 @@ class FakeClient implements TelegramClient {
     this.sent.push({ chatId, text, ...(markup === undefined ? {} : { markup }), id });
     return { message_id: id };
   };
-  editMessageText = async (chatId: string, id: number, text: string) => { this.edits.push({ chatId, id, text }); };
+  editMessageText = async (chatId: string, id: number, text: string, markup?: unknown) => {
+    this.edits.push({ chatId, id, text, ...(markup === undefined ? {} : { markup }) });
+  };
   answerCallbackQuery = async (_id: string, text?: string) => { this.answers.push(text ?? ""); };
   getUpdates = async () => this.updates;
 }
@@ -134,7 +136,9 @@ describe("Telegram approval relay", () => {
     const record = getApprovalRequest(missionDir, "act_preview_0");
     expect(record?.status).toBe("APPROVED");
     expect(record?.approval).toMatchObject({ surface: "telegram", singleUse: true, boundCommandHash: HASH });
-    expect(client.edits[0]?.text).toContain("APPROVED");
+    expect(client.edits[0]?.text).toContain("Approved once");
+    const outcomeMarkup = client.edits[0]?.markup as { inline_keyboard: Array<Array<{ text: string }>> };
+    expect(outcomeMarkup.inline_keyboard[0]?.[0]?.text).toContain("tap for status");
     await processTelegramUpdate(projectPath, config(), client, callback, { now: () => new Date("2026-07-20T10:02:00.000Z") });
     expect(client.answers.at(-1)).toContain("already decided");
   });
@@ -147,7 +151,7 @@ describe("Telegram approval relay", () => {
     mkdirSync(join(missionDir, "runs"), { recursive: true });
     writeFileSync(join(missionDir, "runs", "run_fixture.json"), JSON.stringify({ id: "run_fixture", startedAt: "2026-07-20T10:01:30.000Z", endedAt: "2026-07-20T10:02:30.000Z" }));
     await reconcileApprovalCards(projectPath, config(), client, { now: () => new Date("2026-07-20T10:03:00.000Z") });
-    expect(client.edits.at(-1)?.text).toContain("CONSUMED");
+    expect(client.edits.at(-1)?.text).toContain("Command consumed");
     expect(client.edits.at(-1)?.text).toContain("run_fixture");
   });
 
@@ -163,9 +167,10 @@ describe("Telegram approval relay", () => {
     const { projectPath } = setup(); const client = new FakeClient();
     const { ref, callback } = await sentCard(projectPath, client);
     const card = client.sent[0]!;
-    for (const field of ["Mission", "msn_telegram", "Action", "preview.deploy", "Deploy preview", "Target", "preview", "As", "mokimeow (Vercel)", "Workspace", "target-app", "Command", "Hash", "approval binds to this exact command", "Risk", "Grant", "single use"]) {
+    for (const field of ["Mission", "msn_telegram", "Action", "preview.deploy", "Deploy preview", "Target", "preview", "Identity", "mokimeow (Vercel)", "Workspace", "target-app", "Command", "Exact binding", "Approves only the command shown above", "Risk", "Grant", "One use"]) {
       expect(card.text).toContain(field);
     }
+    expect(card.text).not.toContain("—");
     const markup = card.markup as { inline_keyboard: Array<Array<{ text: string }>> };
     expect(markup.inline_keyboard.flat().map((button) => button.text)).toEqual(["Approve once", "Deny", "Details"]);
     await processTelegramUpdate(projectPath, config(), client, { ...callback, callback_query: { ...callback.callback_query!, data: `ag:${ref}:i` } });
@@ -178,7 +183,7 @@ describe("Telegram approval relay", () => {
     const { callback } = await sentCard(projectPath, client);
     await processTelegramUpdate(projectPath, config(), client, callback, { now: () => new Date("2026-07-20T10:16:00.000Z") });
     expect(getApprovalRequest(missionDir, "act_preview_0")?.status).toBe("PENDING");
-    expect(client.edits[0]?.text).toContain("EXPIRED");
+    expect(client.edits[0]?.text).toContain("Expired");
   });
 
   it("sends and independently binds multiple pending approvals", async () => {
