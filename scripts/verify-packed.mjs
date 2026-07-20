@@ -63,7 +63,7 @@ try {
   );
   printResult("npm pack", packed);
   const pack = parsePackOutput(packed.stdout);
-  assert(pack.name === "axiomgate" && pack.version === "0.1.0", "unexpected package identity");
+  assert(pack.name === "axiomgate" && pack.version === "0.1.1", "unexpected package identity");
   const packedPaths = pack.files.map((file) => file.path).sort();
   assert(
     JSON.stringify(packedPaths) === JSON.stringify(["README.md", "dist/index.js", "package.json"]),
@@ -120,6 +120,20 @@ try {
   assert(doctor.stdout.includes("doctor") && doctor.stdout.includes("Node"), "doctor output was incomplete");
   printResult("installed axiomgate doctor", doctor);
 
+  const wrongTarget = requireSuccess(
+    "wrong-target replay",
+    runCommand(shim, ["replay", "wrong-target"], {
+      cwd: installDirectory,
+      env: environment,
+      timeoutMs: 30_000,
+    }),
+  );
+  assert(
+    wrongTarget.stdout.includes("EXISTS_NOT_OWNED") && wrongTarget.stdout.includes("PASS"),
+    "individual wrong-target replay did not pass",
+  );
+  printResult("installed replay wrong-target", wrongTarget);
+
   const copiedReceipt = join(installDirectory, "receipt.json");
   copyFileSync(fixturePath, copiedReceipt);
   const validReceipt = requireSuccess(
@@ -165,13 +179,13 @@ try {
   const initialized = responses.find((response) => response.id === 1);
   const tools = responses.find((response) => response.id === 2);
   const toolCall = responses.find((response) => response.id === 3);
-  assert(initialized?.result?.serverInfo?.version === "0.1.0", "MCP server version mismatch");
+  assert(initialized?.result?.serverInfo?.version === "0.1.1", "MCP server version mismatch");
   assert(tools?.result?.tools?.length === 6, "MCP tools/list did not return six tools");
   const toolPayload = JSON.parse(toolCall?.result?.content?.[0]?.text ?? "null");
   assert(toolPayload?.valid === true, "MCP receipt verification did not return valid=true");
   printResult("installed MCP initialize + tools/list + receipt call", mcp);
 
-  console.log("\nPASS packed distribution: clean tarball, installed shim, doctor/help, receipt tamper detection, and MCP stdio.");
+  console.log("\nPASS packed distribution: clean tarball, installed shim, individual replay, receipt tamper detection, and MCP stdio.");
 } finally {
   rmSync(temporaryRoot, { recursive: true, force: true });
 }

@@ -170,7 +170,7 @@ describe("AxiomGate Codex plugin", () => {
         logo: "./assets/axiomgate.svg",
       },
     });
-    expect(manifest.version).toMatch(/^0\.1\.0(?:\+codex\.[0-9A-Za-z.-]+)?$/u);
+    expect(manifest.version).toMatch(/^0\.1\.1(?:\+codex\.[0-9A-Za-z.-]+)?$/u);
     expect(existsSync(resolve(pluginRoot, "assets/axiomgate.svg"))).toBe(true);
     expect(marketplace).toMatchObject({
       name: "axiomgate-build-week",

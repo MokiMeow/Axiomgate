@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-20 - 0.1.1 release preparation
+
+- Bundled the verified source updates that postdate npm 0.1.0, including individual replay dispatch, Telegram lifecycle cards, current effort labels, and security hardening.
+- Curated the repository into design, engineering, submission, and build-log documentation groups with deterministic link and punctuation gates.
+- Strengthened and synchronized the native Codex skill against the shipped CLI help surface.
+- Added a clean-tarball smoke for the individual wrong-target replay and retained offline receipt PASS/tamper-FAIL verification.
+- Kept Git push and npm publish pending explicit user authorization and external cross-verification.
+
 ## 2026-07-19 - Publication preparation
 
 - Prepared the unscoped `axiomgate@0.1.0` npm package as a single Node 20 ESM bundle with no runtime workspace dependency.

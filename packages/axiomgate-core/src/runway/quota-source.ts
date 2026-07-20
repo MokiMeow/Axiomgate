@@ -232,7 +232,7 @@ export async function readCodexRateLimits(
             clientInfo: {
               name: "axiomgate",
               title: "AxiomGate",
-              version: "0.1.0",
+              version: "0.1.1",
             },
             capabilities: {
               experimentalApi: true,

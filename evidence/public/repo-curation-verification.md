@@ -93,6 +93,42 @@ pnpm check:punctuation  PASS
 pnpm check:skill        PASS
 ```
 
+The final post-version-bump integrity pass reported 81 relative Markdown targets across 82 tracked Markdown files and zero forbidden dash characters across 258 tracked text files.
+
 ## C6: release preflight
 
-Pending local 0.1.1 preparation at the time this section was created. It will be updated with the packed-tarball proof before any request for push or publish authority.
+Status: **LOCAL PASS; PUSH AND PUBLISH PENDING USER AUTHORIZATION**.
+
+The publishable CLI, bundled MCP version, package README, active quickstarts, plugin manifest, tests, changelog, and package verifier now identify 0.1.1. Historical 0.1.0 evidence remains unchanged because it describes the real prior release.
+
+`npm pack --dry-run --json`:
+
+```text
+name: axiomgate
+version: 0.1.1
+entryCount: 3
+files:
+  README.md
+  dist/index.js
+  package.json
+runtime dependencies: none
+```
+
+The tarball was installed into a new temporary project and invoked only through its installed command shim:
+
+```text
+installed axiomgate --help                 exit 0
+installed axiomgate doctor                 exit 0
+installed replay wrong-target              exit 0, EXISTS_NOT_OWNED, PASS
+installed receipt verify intact            exit 0, PASS
+installed receipt verify tampered          exit 1, FAIL
+installed MCP initialize/tools/call        exit 0, server version 0.1.1
+```
+
+Final line:
+
+```text
+PASS packed distribution: clean tarball, installed shim, individual replay, receipt tamper detection, and MCP stdio.
+```
+
+The post-publication script now requires exact registry version 0.1.1, a fresh pinned `npx` doctor, an individual evidence-gate replay, receipt PASS/tamper-FAIL, GitHub `main` matching local release HEAD, and a rendered README containing the 0.1.1 quickstart. Its `--dry-run` path was executed; the external checks were not.

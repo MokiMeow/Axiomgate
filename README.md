@@ -18,11 +18,11 @@ AxiomGate makes both failures testable: unsafe actions are denied at the hook bo
 
 ## 90-second quickstart
 
-Published package:
+Prepared 0.1.1 package. Publication is pending explicit user confirmation:
 
 ```powershell
-npx -y axiomgate@0.1.0 doctor
-npx -y axiomgate@0.1.0 replay all
+npx -y axiomgate@0.1.1 doctor
+npx -y axiomgate@0.1.1 replay all
 ```
 
 `replay all` needs no Codex login or cloud credentials. It executes three deterministic regressions through production logic: wrong-target ownership denial, exact-command approval binding, and missing-evidence completion blocking.
