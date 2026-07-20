@@ -32,7 +32,7 @@ The second command must report `FAIL · RECEIPT INTEGRITY` and return a non-zero
 
 ## Published-package path
 
-The 0.1.3 clean-machine path below becomes public after the pending user-authorized release:
+The published 0.1.3 clean-machine path is:
 
 ```powershell
 npx -y axiomgate@0.1.3 doctor

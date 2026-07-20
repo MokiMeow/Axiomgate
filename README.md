@@ -18,7 +18,7 @@ AxiomGate makes both failures testable: unsafe actions are denied at the hook bo
 
 ## 90-second quickstart
 
-Release 0.1.3 quickstart (publication pending user confirmation):
+Public package 0.1.3, registry-verified quickstart:
 
 ```powershell
 npx -y axiomgate@0.1.3 doctor

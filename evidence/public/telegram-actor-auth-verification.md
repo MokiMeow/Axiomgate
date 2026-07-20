@@ -113,9 +113,9 @@ actual launch failed before Node could run because the registered VHDX path
 was missing (`ERROR_PATH_NOT_FOUND`). No Linux command was run, no WSL repair
 was attempted, and the platform matrix remains unchanged.
 
-## npm 0.1.3 release-candidate proof
+## npm 0.1.3 release proof
 
-Publication status: `PENDING USER CONFIRMATION`.
+Publication status: `PUBLISHED AND REGISTRY-VERIFIED`.
 
 The bundled package was packed, installed into a fresh temporary directory,
 and exercised only through its installed command shim:
@@ -142,8 +142,34 @@ MCP initialize/tools/list/receipt call: PASS, server version 0.1.3
 
 The tarball verifier checked the live Telegram output against the ignored
 configuration values before printing it. No full token, chat ID, or user ID
-was present. At capture time this was `npm pack` plus a local install only; no
-npm publish or GitHub push had occurred.
+was present.
+
+The user explicitly authorized the external mutations. The package was
+published and GitHub `main` was synchronized. The registry returned:
+
+```text
+npm view axiomgate version: 0.1.3
+npm dist-tag latest: 0.1.3
+registry shasum: 784c60c9c634d57e61747aabbacf1b3ccee3dfb9
+registry unpacked size: 848312 bytes
+temporary npm auth files remaining: 0
+```
+
+`pnpm publish:verify` then ran from a fresh temporary directory and reported:
+
+```text
+registry exposes 0.1.3: PASS
+fresh npx doctor: PASS
+fresh npx evidence-gate replay: PASS
+intact receipt verification: PASS
+tampered receipt verification: expected FAIL
+GitHub main matches local release head: PASS
+GitHub README exposes the 0.1.3 quickstart: PASS
+```
+
+GitHub commit `fbf5faab5819332d010e6238b4ff4071614c393f` was the synchronized
+release source before this publication-evidence update. The final evidence
+commit is recorded in the accompanying local report.
 
 ## Straggler audit
 

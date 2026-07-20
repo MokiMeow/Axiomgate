@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026-07-20 - 0.1.3 release candidate
+## 2026-07-20 - 0.1.3
 
 - Added optional `TELEGRAM_USER_ID` actor allowlists for group and supergroup approval callbacks.
 - Made private-chat-only callback authorization the default when no actor allowlist is configured.
@@ -8,7 +8,7 @@
 - Added group, actor-mismatch, malformed-config, privacy, and live private-chat approval proof while preserving exact-command binding, expiry, and single use.
 - Rechecked submission statistics and LIVE/REPLAY labels; confirmed the landing source and screenshot use the cited UnderSpecBench range.
 - WSL verification remained unavailable because the registered Ubuntu VHDX path is missing; the platform matrix was not changed.
-- Prepared the current source revision and bundled public CLI as `axiomgate@0.1.3`; npm publication remains pending explicit user confirmation.
+- Published `axiomgate@0.1.3`, matched its registry shasum to the locally verified tarball, and passed the fresh `npx` doctor, replay, receipt integrity, GitHub head, and README checks.
 
 ## 2026-07-20 - 0.1.2
 
