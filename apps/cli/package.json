@@ -18,7 +18,7 @@
   "homepage": "https://github.com/mokimeow/axiomgate#readme",
   "type": "module",
   "bin": {
-    "axiomgate": "./dist/index.js"
+    "axiomgate": "dist/index.js"
   },
   "files": [
     "dist",

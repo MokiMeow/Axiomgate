@@ -21,7 +21,7 @@ const markdownFiles = tracked.stdout
   .filter((relativeFile) => existsSync(resolve(repositoryRoot, relativeFile)));
 const failures = [];
 const h1Optional = new Set([".github/pull_request_template.md"]);
-const mojibake = /\uFFFD|Â|â(?:€|†|”|–|—)|ðŸ|ï¸/u;
+const mojibake = /\uFFFD|\u00C2|\u00E2(?:\u20AC|\u2020|\u201D)|\u00F0\u0178|\u00EF\u00B8/u;
 
 function outsideFences(source) {
   let fenced = false;

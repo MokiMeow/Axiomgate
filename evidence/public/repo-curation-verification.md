@@ -6,7 +6,7 @@ Date: 2026-07-20 IST
 
 This record covers repository organization, exhaustive Markdown inventory, link integrity, punctuation policy, README discoverability, Codex skill accuracy, platform verification, the local 0.1.1 release preflight, and the separately authorized GitHub synchronization. It contains no credential, token, full private path, account secret, npm publish, or deployment action.
 
-The user explicitly authorized GitHub push and npm publication. GitHub synchronization succeeded. npm publication did not run because the existing registry session failed `npm whoami` with HTTP 401; no credential search, token reuse, or bypass was attempted.
+The user explicitly authorized GitHub push and npm publication. GitHub synchronization succeeded. After the documentation audit, `npm whoami` succeeded, but `npm publish` stopped before release with `EOTP`. Registry lookup then confirmed 0.1.1 was absent. No credential search, token reuse, OTP capture, or bypass was attempted.
 
 ## C1: repository organization
 
@@ -96,7 +96,7 @@ pnpm check:punctuation  PASS
 pnpm check:skill        PASS
 ```
 
-The Markdown-quality gate checks every tracked Markdown file for substantive content, a consistent top-level heading, replacement/mojibake text, tracked private `.local` content, and abandoned template paths. The final audit includes 77 substantive Markdown files, 111 checked relative targets, and zero forbidden dash characters across 252 tracked text files.
+The Markdown-quality gate checks every tracked Markdown file for substantive content, a consistent top-level heading, replacement/mojibake text, tracked private `.local` content, and abandoned template paths. The final audit includes 77 substantive Markdown files, 111 checked relative targets, and zero forbidden dash characters across 253 tracked text files.
 
 ## C6: exhaustive documentation truth audit
 
@@ -117,7 +117,7 @@ Corrections made from that audit:
 
 ## C7: release preflight
 
-Status: **LOCAL PACKAGE PASS; GITHUB PASS; NPM 0.1.1 BLOCKED BY REGISTRY AUTHENTICATION**.
+Status: **LOCAL PACKAGE PASS; GITHUB PASS; NPM 0.1.1 AWAITS USER TWO-FACTOR CONFIRMATION**.
 
 The publishable CLI, bundled MCP version, package README, active quickstarts, plugin manifest, tests, changelog, and package verifier now identify 0.1.1. Historical 0.1.0 evidence remains unchanged because it describes the real prior release.
 
@@ -161,4 +161,4 @@ GitHub API main:  7d478863112cbfe89c9644e6b47c8c41090b9453
 
 The final documentation-audit commit is synchronized and rechecked against the remote as the last repository step; its resulting head is recorded in the ignored full report rather than self-referenced inside its own commit.
 
-The post-publication script still requires exact registry version 0.1.1, a fresh pinned `npx` doctor, an individual evidence-gate replay, receipt PASS/tamper-FAIL, GitHub `main` matching local release HEAD, and a rendered current quickstart. It will run only after standard npm authentication and successful publication.
+The first authorized publish attempt built the exact three-file package but stopped with `EOTP`. A subsequent `npm view axiomgate@0.1.1 version` returned `E404`, confirming no partial release. The post-publication script still requires exact registry version 0.1.1, a fresh pinned `npx` doctor, an individual evidence-gate replay, receipt PASS/tamper-FAIL, GitHub `main` matching local release HEAD, and a rendered current quickstart. It will run only after user-owned two-factor confirmation and successful publication.

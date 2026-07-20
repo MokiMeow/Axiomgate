@@ -32,7 +32,7 @@ The second command must report `FAIL · RECEIPT INTEGRITY` and return a non-zero
 
 ## Published-package path
 
-The current registry-backed clean-machine path follows npm's `latest` tag. Source 0.1.1 is prepared and locally verified; until that version is published, `latest` remains the prior verified release:
+The current registry-backed clean-machine path follows npm's `latest` tag. Source 0.1.1 is prepared and locally verified; until its two-factor-confirmed publication completes, `latest` remains the prior verified release:
 
 ```powershell
 npx -y axiomgate@latest doctor
