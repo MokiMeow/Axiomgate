@@ -18,11 +18,11 @@ AxiomGate makes both failures testable: unsafe actions are denied at the hook bo
 
 ## 90-second quickstart
 
-The public package currently resolves through the `latest` tag. Source release 0.1.1 is locally verified and authorized for publication, but npm requires the account's two-factor confirmation before accepting it:
+Public package 0.1.1 is registry-verified:
 
 ```powershell
-npx -y axiomgate@latest doctor
-npx -y axiomgate@latest replay all
+npx -y axiomgate@0.1.1 doctor
+npx -y axiomgate@0.1.1 replay all
 ```
 
 `replay all` needs no Codex login or cloud credentials. It executes three deterministic regressions through production logic: wrong-target ownership denial, exact-command approval binding, and missing-evidence completion blocking.

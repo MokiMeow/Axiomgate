@@ -1,12 +1,12 @@
 # Changelog
 
-## 2026-07-20 - 0.1.1 release preparation
+## 2026-07-20 - 0.1.1
 
 - Bundled the verified source updates that postdate npm 0.1.0, including individual replay dispatch, Telegram lifecycle cards, current effort labels, and security hardening.
 - Curated the repository into design, engineering, submission, and build-log documentation groups with deterministic link and punctuation gates.
 - Strengthened and synchronized the native Codex skill against the shipped CLI help surface.
 - Added a clean-tarball smoke for the individual wrong-target replay and retained offline receipt PASS/tamper-FAIL verification.
-- Published the curated source to GitHub `main`. npm authentication now succeeds, but the registry rejected the 0.1.1 publish before release with `EOTP`; the user must confirm publication with their authenticator. No credential discovery, fallback token use, or OTP capture was attempted.
+- Published the curated source to GitHub `main` and the bundled CLI as public npm package `axiomgate@0.1.1`.
 - Normalized the package bin path to `dist/index.js` so the final npm publish does not need manifest auto-correction.
 - Removed unreferenced build-log templates and tracked `.local` scaffolding, then added a Markdown quality gate for private paths, sparse files, heading structure, and encoding corruption.
 - Reconciled active architecture, schema, runtime, dashboard, PatchPilot, and CLI documents with the shipped implementation while preserving dated evidence as historical fact.

@@ -1,6 +1,7 @@
 import {
   copyFileSync,
   mkdtempSync,
+  mkdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -20,8 +21,8 @@ const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const receiptFixture = join(repositoryRoot, "scripts", "fixtures", "publish-receipt.json");
 const npm = platformCommand("npm");
 const npx = platformCommand("npx");
-const gh = platformCommand("gh");
-const git = platformCommand("git");
+const gh = "gh";
+const git = "git";
 
 if (dryRun) {
   console.log("DRY RUN (no registry request)");
@@ -34,6 +35,8 @@ if (dryRun) {
 }
 
 const temporaryRoot = mkdtempSync(join(tmpdir(), "axiomgate-published-"));
+const temporaryCodexHome = join(temporaryRoot, "codex-home");
+mkdirSync(temporaryCodexHome, { recursive: true });
 let failed = false;
 
 function report(label, result, validate) {
@@ -68,7 +71,7 @@ try {
 
   const doctor = runCommand(npx, ["-y", `axiomgate@${expectedVersion}`, "doctor"], {
     cwd: temporaryRoot,
-    env: { ...process.env, CODEX_HOME: join(temporaryRoot, "codex-home"), FORCE_COLOR: "0", NO_COLOR: "1" },
+    env: { ...process.env, CODEX_HOME: temporaryCodexHome, FORCE_COLOR: "0", NO_COLOR: "1" },
     timeoutMs: 120_000,
   });
   report(
