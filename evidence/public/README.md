@@ -21,4 +21,5 @@ Raw evidence begins under `.local/` and is promoted only after review.
 - [`headline-run-verification.md`](headline-run-verification.md): actual live mission, with wrong-target Vercel work explicitly PENDING.
 - [`telegram-verification.md`](telegram-verification.md): historical 0.1.2 Telegram card and notification proof, retained with its superseded group-actor limitation.
 - [`telegram-actor-auth-verification.md`](telegram-actor-auth-verification.md): current private-default and explicit group-actor authorization proof for Telegram callbacks plus npm 0.1.3 publication and external cross-verification.
+- [`final-gate-verification.md`](final-gate-verification.md): final published-artifact, three-hero-moment, layer, and surface gate with remaining user-owned blockers.
 - [`full-matrix-verification.md`](full-matrix-verification.md): historical `bc012e8` / npm 0.1.0 matrix, retained for chronology rather than current release status.
