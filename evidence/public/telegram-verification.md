@@ -39,8 +39,8 @@ Full repository gates:
 
 ```text
 pnpm typecheck  PASS
-pnpm test       28 files passed; 279 tests passed; 1 optional live identity test skipped
-pnpm build      PASS; bundled CLI dist/index.js 812.4kb
+pnpm test       28 files passed; 286 tests passed; 1 optional live identity test skipped
+pnpm build      PASS; bundled CLI dist/index.js 819.3kb
 ```
 
 ## Live Bot API proof
@@ -80,3 +80,67 @@ The update offset advanced across Details, approval, and repeated status callbac
 After the live re-tap proof, presenter feedback identified the visible approved-status button as confusing because it resembled a second approval action. The final UI keeps only **Details** on approved, denied, expired, and consumed cards. Stale, duplicated, or already-in-flight decision callbacks still follow the tested already-decided/expired path and cannot re-grant authority.
 
 No token, full chat ID, private path, raw environment value, or source payload is present in this evidence. G4 and the Environment Guard layer are now `VERIFIED`.
+
+## Real-workspace lifecycle and message UX proof
+
+Status: **PASS** on 2026-07-20.
+
+The relay was exercised again against the real ignored demo workspace containing the governed brute-force-lockout diff. This was not a hand-authored message test. The product generated every card from stored mission, hook, run, verification, proof, approval, and live Codex-capacity records.
+
+The human-facing naming contract is now explicit:
+
+- **Mission** is the objective supplied to `axiomgate mission create --objective`.
+- **Workspace** is the governed project folder name.
+- Random mission/request IDs appear only under **Audit reference** in the expanded approval details.
+- SHA-256 values remain in canonical evidence and integrity records but are not rendered in normal Telegram cards.
+
+The live sequence was:
+
+1. Created a fresh `MODIFY_LOCAL` mission for the real lockout objective.
+2. Ran a governed Luna/Light inspection with hooks active.
+3. Submitted `git push origin main` to the hook only. It was classified as `pull_request.create`, denied because PUBLISH exceeds MODIFY_LOCAL, recorded, and delivered as **Action blocked**. The command was not executed.
+4. Ran `axiomgate mission verify`. The real diff, build, regression, lockout, dependency, and secret checks all passed.
+5. Ran the proof gate and generated the receipt. Five criteria were proven and the outcome was COMPLETE.
+6. Created a separate PUBLISH approval-review mission. The fixture's synthetic remote first produced the expected NOT_FOUND wrong-target denial. The local remote was then temporarily pointed at the user-owned public repository, the mission snapshot was refreshed, and the hook verified ownership through `gh api`. The synthetic remote was restored before the command exited.
+7. The exact `git push origin agent/telegram-ux-proof` request entered the canonical approval store and produced a Telegram card with **Approve once**, **Deny**, and **Details**. No push occurred.
+8. The presenter denied the request in Telegram. The original message was edited to the terminal denied card, the canonical store recorded `surface: telegram`, and the pending count returned to zero.
+
+The live watcher exit summary was:
+
+```text
+Telegram relay stopped: cards=1; notifications=7; failures=0
+```
+
+Representative live stage-card content:
+
+```text
+Run complete
+Mission: Validate the brute-force lockout implementation...
+Workspace: target-app-live
+Model: gpt-5.6-luna / Light
+Runway: 12% used, 88% remaining
+Reset: 25 Jul 2026 03:25 UTC
+Banked resets: 0
+Plan: pro
+Source: codex-app-server/high
+
+Verification complete
+Result: PASS
+Checks completed: 6
+Findings: 0
+Model: gpt-5.6-terra / High
+Meaning: Required evidence was evaluated against the current workspace revision.
+
+Proof receipt ready
+Outcome: COMPLETE
+Proof: 5 criteria proven
+Meaning: The receipt is ready for offline integrity verification.
+```
+
+The approval card named the objective and workspace, showed the exact redacted command, target, verified identity, policy reason, risk, one-use scope, and expiry. The expanded details added semantic action, mission/action authority, timing, and audit references. The denied outcome retained only the readable mission, workspace, decision, action, and target. No outcome card offered another approval action.
+
+One preliminary hook payload intentionally failed closed as malformed before the complete required payload was submitted. It produced a fail-closed notification and no command execution. The corrected payload produced the expected policy-specific denial recorded above.
+
+Privacy inspection found no Telegram token, full chat ID, source payload, command hash, evidence hash, receipt chain hash, or private filesystem path in any rendered card. All rendered message tests also assert that em dashes and en dashes are absent.
+
+No remediation card was generated during this live mission because verification produced zero findings. Its rendering remains fixture-verified; the live record does not claim a remediation that did not occur.
