@@ -360,6 +360,17 @@ async function runMissionInternal(
             source.limitId === "codex" && source.windowLabel === "weekly",
         ) ?? capacity.sources.find((source) => source.windowLabel === "weekly")
       : undefined;
+  const runwayEventFields = weekly === undefined
+    ? {}
+    : {
+        runwayUsedPercent: weekly.usedPercent,
+        runwayRemainingPercent: Math.max(0, 100 - weekly.usedPercent),
+        runwayResetsAt: weekly.resetsAt,
+        runwayPlanType: weekly.planType,
+        bankedResetCount:
+          capacity.status === "LIVE" ? capacity.availableResetCount : 0,
+        runwaySource: `${weekly.source}/${weekly.confidence}`,
+      };
   const reserve =
     weekly === undefined
       ? evaluateVerificationReserve({
@@ -524,6 +535,7 @@ async function runMissionInternal(
       outputTokens: typeof parsed.usages.at(-1)?.output_tokens === "number"
         ? parsed.usages.at(-1)!.output_tokens
         : 0,
+      ...runwayEventFields,
       message: `Governed run finished with ${record.status}`,
     })}\n`,
     "utf8",
@@ -548,7 +560,19 @@ async function runMissionInternal(
   if (weekly !== undefined) {
     appendFileSync(
       join(missionDir, "events.jsonl"),
-      `${JSON.stringify({ type: "runway.usage", ts: endedAt, missionId: id, usedPercent: weekly.usedPercent, message: `Weekly Codex usage is ${weekly.usedPercent}%` })}\n`,
+      `${JSON.stringify({
+        type: "runway.usage",
+        ts: endedAt,
+        missionId: id,
+        usedPercent: weekly.usedPercent,
+        remainingPercent: Math.max(0, 100 - weekly.usedPercent),
+        resetsAt: weekly.resetsAt,
+        planType: weekly.planType,
+        bankedResetCount:
+          capacity.status === "LIVE" ? capacity.availableResetCount : 0,
+        sourceLabel: `${weekly.source}/${weekly.confidence}`,
+        message: `Weekly Codex usage is ${weekly.usedPercent}%`,
+      })}\n`,
       "utf8",
     );
   }
@@ -562,7 +586,18 @@ async function runMissionInternal(
   if (initialRunway.reminder !== undefined) {
     appendFileSync(
       join(missionDir, "events.jsonl"),
-      `${JSON.stringify({ type: "runway.banked_reset.expiring", ts: endedAt, missionId: id, message: initialRunway.reminder })}\n`,
+      `${JSON.stringify({
+        type: "runway.banked_reset.expiring",
+        ts: endedAt,
+        missionId: id,
+        bankedResetCount:
+          capacity.status === "LIVE"
+            ? capacity.availableResetCount
+            : capacity.status === "MANUAL"
+              ? capacity.snapshot.resetsAvailable?.value
+              : undefined,
+        message: initialRunway.reminder,
+      })}\n`,
       "utf8",
     );
   }

@@ -279,7 +279,7 @@ export async function processTelegramUpdate(
     outcome,
     outcome === "APPROVED"
       ? `once by ${actor} at ${decidedAt.toLocaleString()}`
-      : `by ${actor} at ${decidedAt.toLocaleString()} — recorded as evidence`,
+      : `by ${actor} at ${decidedAt.toLocaleString()}. Recorded as evidence.`,
   );
   writeTelegramState(projectPath, state);
   appendRelayEvent(projectPath, {
@@ -310,8 +310,30 @@ export async function sendStageNotifications(
   let sent = 0;
   let suppressed = 0;
   for (const missionDir of missionDirectories(projectPath)) {
+    const loaded = loadMissionSnapshot(missionDir);
+    const context = loaded.status === "VALID"
+      ? {
+          objective: loaded.snapshot.contract.objective,
+          workspace:
+            loaded.snapshot.contract.projectProfileId
+              .split(/[\\/]/u)
+              .filter(Boolean)
+              .at(-1) ?? loaded.snapshot.contract.projectProfileId,
+          boundary: loaded.snapshot.contract.intentBoundary,
+          modelPlan: loaded.snapshot.contract.modelPlan.map((entry) => ({
+            phase: entry.phase,
+            model: entry.model,
+            effort: entry.effort,
+          })),
+        }
+      : undefined;
     for (const event of readEvents(missionDir)) {
-      const notification = stageNotificationFromEvent(event, config.notify, config.notifyUsagePercent);
+      const notification = stageNotificationFromEvent(
+        event,
+        config.notify,
+        config.notifyUsagePercent,
+        context,
+      );
       if (notification === undefined || state.notifiedKeys.includes(notification.key)) continue;
       if (sent >= limit) { suppressed += 1; continue; }
       for (const chatId of config.chatIds) await client.sendMessage(chatId, notification.text);

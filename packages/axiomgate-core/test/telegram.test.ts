@@ -71,7 +71,11 @@ function contract(objective = "Deploy a governed preview"): MissionContract {
     intentBoundary: "DEPLOY_PREVIEW" as const,
     acceptanceCriteria: [], constraints: [], nonGoals: [],
     actionPolicy: [{ action: "preview.deploy", decision: "REQUIRE_APPROVAL" as const }],
-    modelPlan: [{ phase: "build", model: "gpt-5.6-sol", effort: "high" as const, rationale: "fixture" }],
+    modelPlan: [
+      { phase: "build", model: "gpt-5.6-sol", effort: "high" as const, rationale: "fixture" },
+      { phase: "remediate", model: "gpt-5.6-terra", effort: "medium" as const, rationale: "fixture" },
+      { phase: "verify", model: "gpt-5.6-terra", effort: "high" as const, rationale: "fixture" },
+    ],
     budgetPolicy: { reservePercent: 20 }, status: "ACTIVE", createdAt: NOW, updatedAt: NOW,
   };
   return { ...draft, hash: hashContract(draft) };
@@ -137,6 +141,8 @@ describe("Telegram approval relay", () => {
     expect(record?.status).toBe("APPROVED");
     expect(record?.approval).toMatchObject({ surface: "telegram", singleUse: true, boundCommandHash: HASH });
     expect(client.edits[0]?.text).toContain("Approved once");
+    expect(client.edits[0]?.text).not.toContain("sha256:");
+    expect(client.edits[0]?.text).not.toMatch(/[—–]/u);
     const outcomeMarkup = client.edits[0]?.markup as { inline_keyboard: Array<Array<{ text: string }>> };
     expect(outcomeMarkup.inline_keyboard.flat().map((button) => button.text)).toEqual(["Details"]);
     await processTelegramUpdate(projectPath, config(), client, callback, { now: () => new Date("2026-07-20T10:02:00.000Z") });
@@ -153,6 +159,7 @@ describe("Telegram approval relay", () => {
     await reconcileApprovalCards(projectPath, config(), client, { now: () => new Date("2026-07-20T10:03:00.000Z") });
     expect(client.edits.at(-1)?.text).toContain("Command consumed");
     expect(client.edits.at(-1)?.text).toContain("run_fixture");
+    expect(client.edits.at(-1)?.text).not.toContain("sha256:");
   });
 
   it("denies through the canonical store", async () => {
@@ -167,15 +174,20 @@ describe("Telegram approval relay", () => {
     const { projectPath } = setup(); const client = new FakeClient();
     const { ref, callback } = await sentCard(projectPath, client);
     const card = client.sent[0]!;
-    for (const field of ["Mission", "msn_telegram", "Action", "preview.deploy", "Deploy preview", "Target", "preview", "Identity", "mokimeow (Vercel)", "Workspace", "target-app", "Command", "Exact binding", "Approves only the command shown above", "Risk", "Grant", "One use"]) {
+    for (const field of ["Approval needed", "Mission", "Deploy a governed preview", "Action", "Deploy preview", "Target", "preview", "Identity", "mokimeow (Vercel)", "Workspace", "target-app", "Command", "Why approval is needed", "Risk", "Approval", "One use only", "bound to the exact command"]) {
       expect(card.text).toContain(field);
     }
-    expect(card.text).not.toContain("—");
+    expect(card.text).not.toMatch(/[—–]/u);
+    expect(card.text).not.toContain("sha256:");
+    expect(card.text).not.toContain("msn_telegram");
     const markup = card.markup as { inline_keyboard: Array<Array<{ text: string }>> };
     expect(markup.inline_keyboard.flat().map((button) => button.text)).toEqual(["Approve once", "Deny", "Details"]);
     await processTelegramUpdate(projectPath, config(), client, { ...callback, callback_query: { ...callback.callback_query!, data: `ag:${ref}:i` } });
     const details = client.sent.at(-1)?.text ?? "";
-    for (const field of ["policy requires explicit approval", "Requested", "DEPLOY_PREVIEW", "target-app", HASH, "ev_act_preview_0"]) expect(details).toContain(field);
+    for (const field of ["Deploy a governed preview", "policy requires explicit approval", "Timing", "DEPLOY_PREVIEW", "target-app", "Audit reference", "msn_telegram", "act_preview_0"]) expect(details).toContain(field);
+    expect(details).not.toContain(HASH);
+    expect(details).not.toContain("sha256:");
+    expect(details).not.toMatch(/[—–]/u);
   });
 
   it("expires without granting authority", async () => {
@@ -299,6 +311,85 @@ describe("Telegram rendering, configuration, and notifications", () => {
     }
     expect(stageNotificationFromEvent({ type: "runway.usage", ts: NOW, missionId: "msn_telegram", usedPercent: 79 }, "all", 80)).toBeUndefined();
     expect(stageNotificationFromEvent({ type: "runway.usage", ts: NOW, missionId: "msn_telegram", usedPercent: 80 }, "all", 80)?.text).toContain("80%");
+  });
+
+  it("renders readable real-workspace stage cards without hashes or dash-separated prose", () => {
+    const context = {
+      objective: "Add brute-force lockout to the login endpoint",
+      workspace: "target-app-live",
+      boundary: "MODIFY_LOCAL",
+      modelPlan: contract().modelPlan,
+    };
+    const guard = stageNotificationFromEvent(
+      {
+        source: "hook",
+        decision: "DENY",
+        ts: NOW,
+        missionId: "msn_telegram",
+        semanticAction: "production.deploy",
+        toolName: "Bash",
+        commandHash: HASH,
+        reasons: ["Production deployment is outside the mission boundary"],
+      },
+      "all",
+      80,
+      context,
+    )!.text;
+    expect(guard).toContain("Action blocked");
+    expect(guard).toContain("Add brute-force lockout");
+    expect(guard).toContain("target-app-live");
+    expect(guard).toContain("Production deployment is outside");
+    expect(guard).not.toContain(HASH);
+
+    const verification = stageNotificationFromEvent(
+      { type: "verification.completed", ts: NOW, missionId: "msn_telegram", status: "PASS", checkCount: 4, findingCount: 0 },
+      "all",
+      80,
+      context,
+    )!.text;
+    expect(verification).toContain("Verification complete");
+    expect(verification).toContain("gpt-5.6-terra / High");
+    expect(verification).toContain("Required evidence was evaluated");
+
+    const proof = stageNotificationFromEvent(
+      { type: "proof.completed", ts: NOW, missionId: "msn_telegram", outcome: "COMPLETE", criteriaCount: 4, chainHead: HASH, outputRef: "C:/private/receipt.json" },
+      "all",
+      80,
+      context,
+    )!.text;
+    expect(proof).toContain("Proof receipt ready");
+    expect(proof).toContain("ready for offline integrity verification");
+    expect(proof).not.toContain(HASH);
+    expect(proof).not.toContain("C:/private");
+
+    const run = stageNotificationFromEvent(
+      {
+        type: "run.finished",
+        ts: NOW,
+        missionId: "msn_telegram",
+        status: "SUCCESS",
+        model: "gpt-5.6-luna",
+        effort: "light",
+        inputTokens: 100,
+        outputTokens: 5,
+        runwayUsedPercent: 12,
+        runwayRemainingPercent: 88,
+        runwayResetsAt: "2026-07-25T03:25:05.000Z",
+        runwayPlanType: "pro",
+        bankedResetCount: 0,
+        runwaySource: "codex-app-server/high",
+      },
+      "all",
+      80,
+      context,
+    )!.text;
+    for (const field of ["Run complete", "gpt-5.6-luna / light", "Used: <b>12%</b>", "Remaining: <b>88%</b>", "Banked resets: 0", "Plan: pro", "codex-app-server/high"]) {
+      expect(run).toContain(field);
+    }
+    for (const text of [guard, verification, proof, run]) {
+      expect(text).not.toMatch(/[—–]/u);
+      expect(text).not.toContain("sha256:");
+    }
   });
 
   it("deduplicates stage pushes and caps a watch-session batch at twenty", async () => {

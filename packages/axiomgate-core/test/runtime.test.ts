@@ -31,6 +31,26 @@ const unavailableRateLimits = async () => ({
   reason: "fixture does not call the live app-server",
 });
 
+const availableRateLimits = async () => ({
+  status: "AVAILABLE" as const,
+  sources: [
+    {
+      limitId: "codex",
+      windowLabel: "weekly",
+      usedPercent: 12,
+      resetsAt: "2026-07-25T03:25:05.000Z",
+      planType: "pro",
+      credits: { balance: "0", unlimited: false },
+      bankedResets: [],
+      source: "codex-app-server" as const,
+      confidence: "high" as const,
+      capturedAt: "2026-07-15T18:00:00.000Z",
+    },
+  ],
+  availableResetCount: 0,
+  rateLimitReachedType: null,
+});
+
 function runtimeIdentity(capturedAt: string): IdentityReport {
   return {
     githubLogin: {
@@ -438,7 +458,7 @@ describe("runMission", () => {
       );
       const seenLines: string[] = [];
       const result = await runMission(projectPath, "msn_run", {
-        readRateLimits: unavailableRateLimits,
+        readRateLimits: availableRateLimits,
         prompt: "Create hello.txt",
         runId: "run_fixture",
         timeoutMs: 5_000,
@@ -523,6 +543,23 @@ describe("runMission", () => {
         redacted: true,
       });
       expect(evidence.outputRef).toContain(result.record.hash);
+      const events = readFileSync(join(directory, "events.jsonl"), "utf8")
+        .trim()
+        .split(/\r?\n/u)
+        .map((line) => JSON.parse(line) as Record<string, unknown>);
+      expect(events.find((event) => event.type === "run.finished")).toMatchObject({
+        runwayUsedPercent: 12,
+        runwayRemainingPercent: 88,
+        runwayResetsAt: "2026-07-25T03:25:05.000Z",
+        runwayPlanType: "pro",
+        bankedResetCount: 0,
+        runwaySource: "codex-app-server/high",
+      });
+      expect(events.find((event) => event.type === "runway.usage")).toMatchObject({
+        usedPercent: 12,
+        remainingPercent: 88,
+        bankedResetCount: 0,
+      });
     } finally {
       rmSync(projectPath, { recursive: true, force: true });
     }

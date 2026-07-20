@@ -33,7 +33,10 @@ export function truncateTelegramText(value: string, limit: number): string {
 
 function safe(value: string, limit: number): string {
   return escapeTelegramHtml(
-    truncateTelegramText(redactSensitiveText(value), limit),
+    truncateTelegramText(
+      redactSensitiveText(value).replaceAll("—", ":").replaceAll("–", "-"),
+      limit,
+    ),
   );
 }
 
@@ -75,6 +78,16 @@ function grantMinutes(record: ApprovalRequestRecord): number {
       (Date.parse(record.expiresAt) - Date.parse(record.createdAt)) / 60_000,
     ),
   );
+}
+
+function timestamp(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Time unavailable";
+  return `${new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "UTC",
+  }).format(date)} UTC`;
 }
 
 function reasonLines(record: ApprovalRequestRecord): string[] {
@@ -129,38 +142,34 @@ export function renderApprovalCard(
   callbackRef: string,
 ): ApprovalCard {
   const text = [
-    "🛡️ <b>Approval required</b>",
+    "🛡️ <b>Approval needed</b>",
     "",
     "<b>Mission</b>",
-    `<code>${safe(snapshot.contract.id, 40)}</code>`,
-    `"${safe(snapshot.contract.objective, 80)}"`,
+    safe(snapshot.contract.objective, 120),
+    "",
+    "<b>Workspace</b>",
+    `<code>${safe(workspaceLeaf(snapshot), 100)}</code>`,
     "",
     "<b>Action</b>",
     safe(telegramActionLabel(record.request.semanticAction), 80),
-    `<code>${safe(record.request.semanticAction, 60)}</code>`,
     "",
     "<b>Target</b>",
     safe(target(record), 100),
     "",
-    "<b>Identity</b>",
-    safe(identity(snapshot, record.request.semanticAction), 80),
-    "",
-    "<b>Workspace</b>",
-    safe(workspaceLeaf(snapshot), 100),
-    "",
     "<b>Command</b>",
-    `<code>${escapeTelegramHtml(truncateTelegramText(commandLabel(record), 120))}</code>`,
+    `<code>${safe(commandLabel(record), 120)}</code>`,
     "",
-    "<b>Exact binding</b>",
-    `<code>${escapeTelegramHtml(record.request.rawCommandHash.slice(0, 19))}…</code>`,
-    "Approves only the command shown above.",
-    "",
-    `<b>Risk</b>  ${safe(record.request.risk.toUpperCase(), 20)}`,
+    "<b>Why approval is needed</b>",
     ...reasonLines(record),
     "",
-    "<b>Grant</b>",
-    `One use • expires in ${grantMinutes(record)} min`,
-    safe(new Date(record.expiresAt).toLocaleString(), 60),
+    "<b>Scope</b>",
+    `Risk: <b>${safe(record.request.risk.toUpperCase(), 20)}</b>`,
+    `Identity: ${safe(identity(snapshot, record.request.semanticAction), 80)}`,
+    "",
+    "<b>Approval</b>",
+    `One use only. Expires in ${grantMinutes(record)} min.`,
+    timestamp(record.expiresAt),
+    "The approval is bound to the exact command shown above.",
   ].join("\n");
   return { text, replyMarkup: renderApprovalButtons(callbackRef) };
 }
@@ -173,29 +182,34 @@ export function renderApprovalDetails(
     "🔎 <b>Approval details</b>",
     "",
     "<b>Mission</b>",
-    `<code>${safe(snapshot.contract.id, 40)}</code>`,
+    safe(snapshot.contract.objective, 160),
     "",
-    "<b>Request</b>",
-    `<code>${safe(record.request.id, 80)}</code>`,
+    "<b>Workspace</b>",
+    `<code>${safe(workspaceLeaf(snapshot), 100)}</code>`,
+    "",
+    "<b>Action</b>",
+    `${safe(telegramActionLabel(record.request.semanticAction), 80)} (${safe(record.request.semanticAction, 60)})`,
+    "",
+    "<b>Command</b>",
+    `<code>${safe(commandLabel(record), 500)}</code>`,
+    "",
+    "<b>Target and identity</b>",
+    safe(target(record), 120),
+    safe(identity(snapshot, record.request.semanticAction), 80),
     "",
     "<b>Policy reasons</b>",
     ...reasonLines(record),
     "",
-    "<b>Requested</b>",
-    safe(record.createdAt, 40),
-    "",
-    "<b>Intent boundary</b>",
+    "<b>Authority</b>",
     `Action: ${safe(record.request.intentBoundaryRequired, 40)}`,
     `Mission: ${safe(snapshot.contract.intentBoundary, 40)}`,
     "",
-    "<b>Workspace</b>",
-    safe(workspaceLeaf(snapshot), 100),
+    "<b>Timing</b>",
+    `Requested: ${timestamp(record.createdAt)}`,
+    `Expires: ${timestamp(record.expiresAt)}`,
     "",
-    "<b>Full command hash</b>",
-    `<code>${escapeTelegramHtml(record.request.rawCommandHash)}</code>`,
-    "",
-    "<b>Evidence event</b>",
-    `<code>${safe(record.evidenceEventId ?? "Unavailable", 100)}</code>`,
+    "<b>Audit reference</b>",
+    `<code>${safe(snapshot.contract.id, 40)} / ${safe(record.request.id, 80)}</code>`,
   ].join("\n");
 }
 
@@ -215,19 +229,18 @@ export function renderApprovalOutcome(
           : { icon: "⌛", title: "Expired" };
   return [
     `${presentation.icon} <b>${presentation.title}</b>`,
-    safe(detail, 180),
     "",
     "<b>Mission</b>",
-    `<code>${safe(snapshot.contract.id, 40)}</code>`,
-    safe(snapshot.contract.objective, 80),
+    safe(snapshot.contract.objective, 120),
+    "",
+    "<b>Workspace</b>",
+    `<code>${safe(workspaceLeaf(snapshot), 100)}</code>`,
+    "",
+    "<b>Decision</b>",
+    safe(detail, 180),
     "",
     "<b>Action</b>",
-    `${safe(telegramActionLabel(record.request.semanticAction), 80)}  •  <code>${safe(record.request.semanticAction, 60)}</code>`,
-    "",
-    "<b>Target</b>",
+    safe(telegramActionLabel(record.request.semanticAction), 80),
     safe(target(record), 100),
-    "",
-    "<b>Exact binding</b>",
-    `<code>${escapeTelegramHtml(record.request.rawCommandHash.slice(0, 19))}…</code>`,
   ].join("\n");
 }
