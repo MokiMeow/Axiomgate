@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { runSubmissionReplay } from "../src/index.js";
+import { runSubmissionReplay, selectSubmissionReplay } from "../src/index.js";
 
 describe("credential-free submission replay", () => {
   it("executes all three governance regressions through production logic", () => {
@@ -21,5 +21,20 @@ describe("credential-free submission replay", () => {
         observed: "INCOMPLETE / UNVERIFIED",
       }),
     ]);
+  });
+
+  it.each(["wrong-target", "approval-binding", "evidence-gate"])(
+    "selects the %s scenario independently",
+    (scenario) => {
+      expect(selectSubmissionReplay(scenario)).toEqual([
+        expect.objectContaining({ id: scenario, status: "PASS" }),
+      ]);
+    },
+  );
+
+  it("rejects an unknown replay scenario", () => {
+    expect(() => selectSubmissionReplay("unknown")).toThrow(
+      "replay scenario must be",
+    );
   });
 });

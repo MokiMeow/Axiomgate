@@ -26,4 +26,14 @@ describe("CLI argument handling", () => {
       friendlyMissionError(new Error("identity differs"), "msn_fixture", "."),
     ).toBe("identity differs");
   });
+
+  it("does not mislabel create-time file errors as missing mission ids", () => {
+    expect(
+      friendlyMissionError(
+        new Error("ENOENT: no such file or directory, open 'criteria.json'"),
+        undefined,
+        ".",
+      ),
+    ).toBe("Criteria file was not found or could not be read.");
+  });
 });

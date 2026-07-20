@@ -172,3 +172,17 @@ function missingEvidenceReplay(): ReplayResult {
 export function runSubmissionReplay(): readonly ReplayResult[] {
   return [wrongTargetReplay(), approvalMutationReplay(), missingEvidenceReplay()];
 }
+
+export function selectSubmissionReplay(
+  scenario: string,
+): readonly ReplayResult[] {
+  const results = runSubmissionReplay();
+  if (scenario === "all") return results;
+  const selected = results.filter((result) => result.id === scenario);
+  if (selected.length === 0) {
+    throw new Error(
+      "replay scenario must be all, wrong-target, approval-binding, or evidence-gate",
+    );
+  }
+  return selected;
+}

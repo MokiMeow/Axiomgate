@@ -32,7 +32,7 @@ import {
   remediateMission,
   resolveCodexLaunch,
   reviewMission,
-  runSubmissionReplay,
+  selectSubmissionReplay,
   resumeMission,
   runCommand as runExternalCommand,
   runHookEntry,
@@ -196,7 +196,7 @@ export async function runDoctor(): Promise<void> {
 function printUsage(): void {
   console.log("Native Codex: axiomgate install-codex [--dry-run]");
   console.log("Agent protocol: axiomgate mcp");
-  console.log("Credential-free proof: axiomgate replay all");
+  console.log("Credential-free proof: axiomgate replay all|wrong-target|approval-binding|evidence-gate");
   console.log("Runway: axiomgate runway status [--project <path>]");
   console.log("Telegram: axiomgate telegram watch [--project <path>] | axiomgate telegram test [--project <path>]");
   console.log(
@@ -749,9 +749,9 @@ function zEffort(value: string): ReasoningEffort {
   throw new Error("--effort must be light, medium, high, xhigh, or max");
 }
 
-function runReplayAll(): void {
-  const results = runSubmissionReplay();
-  printCommandHeader("replay all", "deterministic · no credentials");
+function runReplay(scenario = "all"): void {
+  const results = selectSubmissionReplay(scenario);
+  printCommandHeader(`replay ${scenario}`, "deterministic · no credentials");
   console.log(
     ui.table(
       ["Scenario", "Expected", "Observed", "Result"],
@@ -795,8 +795,13 @@ if (hasHelpFlag(process.argv.slice(2))) {
     console.error(ui.callout("failure", "TELEGRAM COMMAND FAILED", [errorMessage(error)]));
     process.exitCode = 1;
   }
-} else if (command === "replay" && process.argv[3] === "all") {
-  runReplayAll();
+} else if (command === "replay") {
+  try {
+    runReplay(process.argv[3]);
+  } catch (error) {
+    console.error(ui.callout("failure", "REPLAY FAILED", [errorMessage(error)]));
+    process.exitCode = 1;
+  }
 } else if (command === "verify-enforcement") {
   await runVerifyEnforcement();
 } else if (command === "runway" && process.argv[3] === "set") {
@@ -814,8 +819,8 @@ if (hasHelpFlag(process.argv.slice(2))) {
     process.exitCode = 1;
   }
 } else if (command === "mission") {
+  const missionCommand = process.argv[3];
   try {
-    const missionCommand = process.argv[3];
     if (missionCommand === "create") {
       runMissionCreate();
     } else if (missionCommand === "update") {
@@ -841,7 +846,11 @@ if (hasHelpFlag(process.argv.slice(2))) {
     }
   } catch (error) {
     console.error(ui.callout("failure", "MISSION COMMAND FAILED", [
-      friendlyMissionError(error, process.argv[4], projectPath()),
+      friendlyMissionError(
+        error,
+        missionCommand === "create" ? undefined : process.argv[4],
+        projectPath(),
+      ),
     ]));
     process.exitCode = 1;
   }

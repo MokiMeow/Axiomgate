@@ -11,6 +11,12 @@ export function friendlyMissionError(
 ): string {
   const message = error instanceof Error ? error.message : "unknown error";
   if (
+    missionId === undefined &&
+    /(?:enoent|no such file|read failure)/iu.test(message)
+  ) {
+    return "Criteria file was not found or could not be read.";
+  }
+  if (
     missionId !== undefined &&
     /(?:invalid mission id|enoent|no such file|read failure)/iu.test(message)
   ) {
