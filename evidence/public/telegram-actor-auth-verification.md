@@ -142,8 +142,8 @@ MCP initialize/tools/list/receipt call: PASS, server version 0.1.3
 
 The tarball verifier checked the live Telegram output against the ignored
 configuration values before printing it. No full token, chat ID, or user ID
-was present. This was `npm pack` plus a local install only; no npm publish or
-GitHub push occurred.
+was present. At capture time this was `npm pack` plus a local install only; no
+npm publish or GitHub push had occurred.
 
 ## Straggler audit
 

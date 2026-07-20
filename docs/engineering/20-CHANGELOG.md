@@ -8,7 +8,7 @@
 - Added group, actor-mismatch, malformed-config, privacy, and live private-chat approval proof while preserving exact-command binding, expiry, and single use.
 - Rechecked submission statistics and LIVE/REPLAY labels; confirmed the landing source and screenshot use the cited UnderSpecBench range.
 - WSL verification remained unavailable because the registered Ubuntu VHDX path is missing; the platform matrix was not changed.
-- Prepared the bundled public CLI as `axiomgate@0.1.3`; publication and GitHub push remain pending explicit user confirmation.
+- Prepared the current source revision and bundled public CLI as `axiomgate@0.1.3`; npm publication remains pending explicit user confirmation.
 
 ## 2026-07-20 - 0.1.2
 
