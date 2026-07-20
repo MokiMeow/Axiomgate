@@ -149,3 +149,44 @@ The smallest capability set is the existing CLI, `npx` against registry.npmjs.or
 8. Finish with typecheck, test, build, secret/path/identity review, public evidence, and an ignored detailed report.
 
 Rollback is deletion of disposable `.local/matrix*` state and commit-level revert for any fixes. External Telegram messages and isolated plugin downloads may remain, but no production or remote repository state will be changed.
+
+---
+
+# Validation Assessment — Telegram Real-Workspace UX
+
+**Date:** 2026-07-20
+
+**Starting checkpoint:** `b9c6b93` on clean `main`
+
+**Verdict:** Feasible as a presentation-layer correction plus a bounded live lifecycle on the existing ignored demo workspace. No authority or approval schema change is required.
+
+## Product truth and authority
+
+The current Telegram stage notifications compress multiple facts onto one em-dash-separated line, display only the random mission ID, and expose hashes that are valuable to the enforcement store but not to a human approver. That makes real events hard to interpret even though the underlying records are correct.
+
+The human mission label is the contract objective supplied by `axiomgate mission create --objective`; the workspace label is the governed folder/profile name. Internal mission, request, event, receipt-chain, and command hashes remain necessary for offline integrity and exact approval binding, but they should not dominate the Telegram surface. The approval card will show the redacted exact command and explain that the grant is command-bound; internal references remain available only in Details.
+
+The active intent boundary is `MODIFY_LOCAL`. Source, tests, local docs/evidence, ignored demo mission state, bounded Codex/verification calls, and Telegram messages to the configured allowlist are authorized. Git push, npm publish, preview/production deploy, webhook setup, remote model switching, and fabricated quota/reset values are not authorized.
+
+## Planned change and proof
+
+1. Replace compact stage lines with HTML-safe sections for Mission, Workspace, result-specific facts, model/effort where relevant, and time.
+2. Remove static em/en dashes from every Telegram renderer and normalize user/event text so those glyphs cannot re-enter the cards.
+3. Remove SHA-256 values from pending/outcome/stage messages and from approval Details; preserve exact hashes unchanged in canonical records and evidence.
+4. Enrich real Runway events with observed remaining percentage, reset time, plan, banked-reset count, and source/confidence. Render these only when the event actually contains them; otherwise show `UNKNOWN` rather than inventing values.
+5. Use the contract model plan to label verification and remediation notifications, and use actual run model/effort for governed-run notifications. No Telegram action will change models.
+6. Add regression tests for mission objective/workspace provenance, structured layouts, no dashes/hashes/private paths, model labels, verification/proof meaning, guard reasons, and full Runway fields.
+7. Build the CLI and run a real lifecycle against the existing ignored desktop demo workspace: create a new read-only validation mission, run it, verify target tests/build/security/secret checks, inspect proof status, generate a receipt if the gate legitimately passes, and run the Telegram watcher. Existing events are not rewritten merely to resend cards.
+8. Run targeted/full tests, typecheck, build, privacy scans, inspect the diff, write sanitized evidence plus an ignored report, and commit atomically.
+
+## Capability-use log
+
+| Semantic action | Mechanism selected | Identity, access, approval | Evidence |
+|---|---|---|---|
+| Inspect message pipeline | `rg`, PowerShell reads, Git | Local read-only access | Source and event-shape inventory |
+| Change presentation and event projection | `apply_patch`, TypeScript, Vitest | Repository write under `MODIFY_LOCAL` | Diff and regression tests |
+| Governed demo validation | Existing AxiomGate CLI and timeout runner | Local demo workspace plus configured Codex account; no publish/deploy | Run, ledger, verification, status, receipt records |
+| Telegram live validation | Existing Bot API long-poll adapter | Configured bot and allowlisted chat; no credential output | Sanitized card/state counts and live transcript |
+| Security/privacy verification | Repository tests and token/path scans | Local read-only | No secret, full chat ID, or private path in committed proof |
+
+Rollback is commit-level revert. Ignored test missions and Telegram state can be deleted locally; already-sent Telegram messages may remain but contain only redacted project data.
