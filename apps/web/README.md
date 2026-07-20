@@ -22,15 +22,17 @@ Open `http://localhost:4319`.
 
 ## What it shows
 
-- **Mission spine** - the five governed stages: Plan → Guard → Run → Verify → Prove.
+- **Mission spine** - the five governed stages: Plan to Guard to Run to Verify to Prove.
 - **The block moment** - actions denied at the Codex hook, with the exact command and reason (identity / ownership / policy).
 - **Model plan** - per-phase GPT-5.6 tier and reasoning effort.
 - **Token ledger** - real Codex usage from the mission ledger; Builder / Verifier sessions.
-- **Proof table** - each acceptance criterion → verdict → the machine evidence backing it. Model-sourced "evidence" is flagged inadmissible.
+- **Proof table** - each acceptance criterion, verdict, and the machine evidence backing it. Model-sourced "evidence" is flagged inadmissible.
 - **Completion gate** - COMPLETE only when every required criterion is PASS or WAIVED.
 - **Build Receipt** - contract hash, commit, evidence chain head, and an in-page verify readout (the authoritative check is the CLI `axiomgate receipt verify`).
 - **Web approval** - approve or deny a pending action from the same machine through the loopback-only dashboard. Telegram is the supported remote phone channel.
 - **Live capacity** - real weekly usage and plan from the Codex app-server, top-right.
+- **Workspace views** - Mission Control, Approval Queue, Blast Radius, Audit Receipts, Runway, and Settings share the same canonical API records.
+- **Live refresh** - local mission and approval state refreshes without flicker; capacity refreshes separately at a lower rate.
 
 ## Design
 
@@ -43,7 +45,7 @@ Same visual family as PatchPilot Watch Commander (dark editorial theme): warm ne
 
 ## Vercel hosted demo
 
-The root `vercel.json` publishes `apps/web/public` and the read-only functions in `api/`. The hosted API always returns the curated synthetic mission and SAMPLE capacity. It does not read a Vercel account, a Codex account, or a governed workspace. Hosted approval requests return a friendly local-only response and never write serverless state.
+The root `vercel.json` publishes `apps/web/public` and the read-only functions in `api/`. The hosted API returns eight curated synthetic missions spanning complete, blocked, denied, remediated, waived, and awaiting-approval states, plus SAMPLE capacity. It does not read a Vercel account, a Codex account, or a governed workspace. Hosted approval requests return a friendly local-only response and never write serverless state.
 
 From the repository root, the user deploys with their own Vercel account:
 

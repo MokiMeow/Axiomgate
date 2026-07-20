@@ -159,6 +159,18 @@ select {
 .nav {
   display: grid;
   gap: 2px;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 4px;
+}
+
+.nav::-webkit-scrollbar {
+  width: 5px;
+}
+
+.nav::-webkit-scrollbar-thumb {
+  background: var(--hairline-strong);
+  border-radius: 999px;
 }
 
 .nav button {
@@ -497,6 +509,14 @@ th {
 
 td:first-child {
   color: var(--text);
+}
+
+.waiver-note {
+  display: block;
+  margin-top: 5px;
+  color: var(--warn);
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 td.risk {

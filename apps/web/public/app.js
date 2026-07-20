@@ -1,4 +1,9 @@
 // AxiomGate dashboard - renders real .axiomgate mission state.
+import {
+  contentChanged,
+  resolvePollInterval,
+} from "./refresh.mjs";
+
 const $ = (s, r = document) => r.querySelector(s);
 const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
@@ -20,25 +25,105 @@ const STAGES = [
   { key: "prove", name: "Prove", desc: "Completion gated on evidence · receipt" },
 ];
 
-let STATE = { missions: [], current: null, capacity: null, demo: false };
+let STATE = {
+  missions: [],
+  current: null,
+  capacity: null,
+  demo: false,
+  missionsHash: "",
+  detailHash: "",
+};
+let statePollTimer;
+let capacityPollTimer;
+let refreshing = false;
 
 async function api(path, opts) {
-  const r = await fetch(path, opts);
+  const r = await fetch(path, { cache: "no-store", ...opts });
   return r.json();
 }
 
 /* ---------- boot ---------- */
 async function boot() {
-  loadCapacity();
-  const data = await api("/api/missions");
-  STATE.missions = data.missions || [];
-  STATE.demo = !!data.demo;
-  $("#workspaceLabel").textContent = data.workspace || "";
-  renderMissionList();
-  if (STATE.missions[0]) selectMission(STATE.missions[0].id);
-  else $("#detail").innerHTML =
+  await Promise.all([loadCapacity(), refreshDashboard({ initial: true })]);
+  schedulePolling();
+}
+
+function renderEmptyState() {
+  $("#detail").innerHTML =
     '<div class="empty-state"><strong>No governed missions yet.</strong><span>Run <code>axiomgate mission run</code> in this workspace, or <code>npx axiomgate replay all</code> to see enforcement with no setup.</span></div>';
 }
+
+async function refreshDashboard({ initial = false, forceCurrent = false } = {}) {
+  if (refreshing || document.hidden) return;
+  refreshing = true;
+  try {
+    const data = await api("/api/missions");
+    const nextList = {
+      missions: data.missions || [],
+      demo: !!data.demo,
+      workspace: data.workspace || "",
+    };
+    const listChange = contentChanged(STATE.missionsHash, nextList);
+    if (listChange.changed) {
+      STATE.missionsHash = listChange.hash;
+      STATE.missions = nextList.missions;
+      STATE.demo = nextList.demo;
+      $("#workspaceLabel").textContent = nextList.workspace;
+      renderMissionList();
+    }
+
+    const selectedId = STATE.current?.id;
+    const selectedStillExists = STATE.missions.some((mission) => mission.id === selectedId);
+    const targetId = selectedStillExists ? selectedId : STATE.missions[0]?.id;
+    if (targetId) {
+      await selectMission(targetId, {
+        force: forceCurrent || (initial && STATE.current === null),
+        preserveScroll: !initial,
+      });
+    } else if (initial || listChange.changed) {
+      STATE.current = null;
+      STATE.detailHash = "";
+      renderEmptyState();
+    }
+  } finally {
+    refreshing = false;
+  }
+}
+
+function configuredPollMs() {
+  return window.AXIOMGATE_POLL_MS ?? new URLSearchParams(window.location.search).get("poll");
+}
+
+function scheduleStatePoll() {
+  clearTimeout(statePollTimer);
+  if (document.hidden) return;
+  statePollTimer = setTimeout(async () => {
+    await refreshDashboard();
+    scheduleStatePoll();
+  }, resolvePollInterval(configuredPollMs(), STATE.demo));
+}
+
+function scheduleCapacityPoll() {
+  clearTimeout(capacityPollTimer);
+  if (document.hidden) return;
+  capacityPollTimer = setTimeout(async () => {
+    await loadCapacity();
+    scheduleCapacityPoll();
+  }, 60_000);
+}
+
+function schedulePolling() {
+  scheduleStatePoll();
+  scheduleCapacityPoll();
+}
+
+document.addEventListener("visibilitychange", () => {
+  clearTimeout(statePollTimer);
+  clearTimeout(capacityPollTimer);
+  if (!document.hidden) {
+    refreshDashboard().finally(schedulePolling);
+  }
+});
 
 async function loadCapacity() {
   try {
@@ -92,17 +177,26 @@ function renderMissionList() {
     item.title = m.objective || m.id;
     item.innerHTML = `
       <span class="m-obj">${esc(m.objective || m.id)}</span>
-      <span class="m-meta">${esc((m.label || "live").toLowerCase())} · ${esc(m.intentBoundary || "Unknown")}${m.denials ? ` · <span class="flag">${m.denials} blocked</span>` : ""}</span>`;
-    item.addEventListener("click", () => selectMission(m.id));
+      <span class="m-meta">${esc((m.label || "live").toLowerCase())} · ${esc(m.status || "Unknown")} · ${esc(m.intentBoundary || "Unknown")}${m.denials ? ` · <span class="flag">${m.denials} blocked</span>` : ""}</span>`;
+    item.classList.toggle("active", STATE.current?.id === m.id);
+    item.addEventListener("click", () => selectMission(m.id, { force: true }));
     list.appendChild(item);
   });
 }
 
-async function selectMission(id) {
+async function selectMission(id, { force = false, preserveScroll = false } = {}) {
   document.querySelectorAll("#missionList button").forEach((c) => c.classList.toggle("active", c.dataset.id === id));
   const m = await api("/api/mission/" + encodeURIComponent(id));
+  const detailChange = contentChanged(STATE.detailHash, m);
   STATE.current = m;
-  renderDetail(m);
+  STATE.detailHash = detailChange.hash;
+  if (force || detailChange.changed) {
+    const scrollPosition = preserveScroll ? window.scrollY : null;
+    renderDetail(m);
+    if (scrollPosition !== null) {
+      requestAnimationFrame(() => window.scrollTo({ top: scrollPosition }));
+    }
+  }
 }
 
 /* ---------- verdict computation (display only) ----------
@@ -203,7 +297,10 @@ function pageHead(m, complete) {
 }
 
 function approvalBanner(m, a) {
-  const cmd = a.command || a.semanticAction || a.actionRequestId || "action";
+  const request = a.request || a;
+  const actionRequestId = request.id || a.actionRequestId;
+  const semanticAction = request.semanticAction || a.semanticAction;
+  const cmd = a.displayCommand || a.command || semanticAction || actionRequestId || "action";
   const banner = el("div", "approval-banner");
   banner.innerHTML = `
     <div class="ap-main">
@@ -211,7 +308,7 @@ function approvalBanner(m, a) {
       <div>
         <div class="ap-title">Approval required</div>
         <div class="ap-cmd">${esc(cmd)}</div>
-        <div class="ap-meta">${a.semanticAction ? esc(a.semanticAction) + " · " : ""}bound to command hash · single-use · expires ${fmtTime(a.expiresAt)}</div>
+        <div class="ap-meta">${semanticAction ? esc(semanticAction) + " · " : ""}bound to command hash · single-use · expires ${fmtTime(a.expiresAt)}</div>
       </div>
     </div>
     <div class="ap-actions">
@@ -219,8 +316,12 @@ function approvalBanner(m, a) {
       <button class="button secondary deny">Deny</button>
     </div>`;
   const post = async (decision) => {
-    await api("/api/approve", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ missionId: m.id, actionRequestId: a.actionRequestId, decision }) });
-    selectMission(m.id);
+    const result = await api("/api/approve", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ missionId: m.id, actionRequestId, decision }) });
+    if (result.ok === false) {
+      banner.querySelector(".ap-meta").textContent = result.error || "Approval update was not accepted";
+      return;
+    }
+    await refreshDashboard({ forceCurrent: true });
   };
   banner.querySelector(".approve").addEventListener("click", () => post("approve"));
   banner.querySelector(".deny").addEventListener("click", () => post("deny"));
@@ -380,14 +481,15 @@ function proofPanel(m, verdicts, complete) {
   const tbody = el("tbody");
   crits.forEach((c, i) => {
     const v = verdicts[i];
-    const cls = v === "PASS" ? "pass" : v === "FAIL" ? "fail" : "unverified";
+    const cls = v === "PASS" ? "pass" : v === "WAIVED" ? "complete" : v === "FAIL" ? "fail" : "unverified";
+    const waiver = (m.receipt?.waivers || []).find((entry) => entry.criterionId === c.id);
     const ev = m.evidence.filter((e) => e.criterionId === c.id);
     const tags = ev.slice(0, 4).map((e) =>
       `<span class="evtag ${e.source === "model" ? "src-model" : ""}" ${e.source === "model" ? 'title="Model-sourced - inadmissible as evidence"' : ""}>${esc(e.source)}:${esc((e.id || "").slice(0, 8))}</span>`
     ).join("");
     const tr = el("tr");
     tr.innerHTML = `
-      <td>${esc(c.statement)}</td>
+      <td>${esc(c.statement)}${waiver ? `<span class="waiver-note">Waiver: ${esc(waiver.reason)} Risk accepted: ${esc(waiver.riskAccepted)}</span>` : ""}</td>
       <td class="risk ${esc(c.risk || "")}">${esc(c.risk || "Unknown")}</td>
       <td>${tags || '<span class="evtag none">none yet</span>'}</td>
       <td><span class="status-badge ${cls}">${esc(v)}</span></td>`;
