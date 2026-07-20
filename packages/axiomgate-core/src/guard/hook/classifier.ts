@@ -1,5 +1,6 @@
 import type { IntentBoundary } from "../../mission/index.js";
 import type { ActionRequest } from "../action-request.js";
+import { isDemonstrablyReadOnlyShellCommand } from "./authority.js";
 
 export interface HookToolPayload {
   readonly tool_name: string;
@@ -166,22 +167,6 @@ export function classifyHookPayload(
     );
   }
 
-  const unknownStateChanging =
-    /(?:^|[;&|]\s*)(?:rm|del|rmdir|remove-item|git\s+(?:commit|reset|rebase|merge|tag)|gh\s+(?:repo|release)|curl\b[^\r\n]*\|\s*(?:sh|bash|pwsh|powershell)|invoke-expression)\b/u.test(
-      normalized,
-    );
-  if (unknownStateChanging) {
-    return classification(
-      command,
-      "UNKNOWN",
-      "unclassified",
-      "MODIFY_LOCAL",
-      "high",
-      "no verified rollback available",
-      true,
-    );
-  }
-
   if (toolName !== "bash" && toolName !== "apply_patch") {
     return classification(
       command,
@@ -194,13 +179,25 @@ export function classifyHookPayload(
     );
   }
 
+  if (isDemonstrablyReadOnlyShellCommand(command)) {
+    return classification(
+      command,
+      "repository.read",
+      "shell_cli",
+      "OBSERVE",
+      "low",
+      "no state change expected",
+      false,
+    );
+  }
+
   return classification(
     command,
-    "repository.read",
-    "shell_cli",
-    "OBSERVE",
-    "low",
-    "no state change expected",
-    false,
+    "UNKNOWN",
+    "unclassified",
+    "MODIFY_LOCAL",
+    "high",
+    "no verified rollback available",
+    true,
   );
 }

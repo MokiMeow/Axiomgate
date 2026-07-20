@@ -17,6 +17,7 @@ import {
 } from "../approval-store.js";
 import { evaluatePolicy } from "../policy/index.js";
 import { classifyHookPayload } from "./classifier.js";
+import { checkGovernedStateWrite } from "./authority.js";
 import type { HookConfigOptions } from "./config.js";
 import {
   appendHookEvent,
@@ -326,6 +327,17 @@ export function processHookInvocation(
     }
 
     missionId = verified.snapshot.contract.id;
+    const governedStateWrite = checkGovernedStateWrite(
+      payload,
+      missionDir,
+      payload.cwd,
+    );
+    if (governedStateWrite.blocked) {
+      throw new HookRefusal(
+        governedStateWrite.reason ??
+          "fail-closed: governed AxiomGate state write rejected",
+      );
+    }
     const now = (options.now ?? (() => new Date()))();
     timestamp = now.toISOString();
     request = actionRequest(verified.snapshot, payload, classified, now);

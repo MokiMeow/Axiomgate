@@ -1,3 +1,4 @@
+export * from "./authority.js";
 export * from "./classifier.js";
 export * from "./config.js";
 export * from "./decision.js";
