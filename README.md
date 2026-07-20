@@ -122,7 +122,7 @@ This table is the one-hop entry point for reviewers, AI analysis, and contributo
 
 ## Product surfaces
 
-The local dashboard is empty on a fresh clone and renders real `.axiomgate` state when pointed at a governed workspace. Set `AXIOMGATE_DEMO=true` only when you intentionally want the eight curated synthetic SAMPLE missions used by the publicly hostable Vercel surface. They demonstrate complete, blocked, denied, remediated, waived, and awaiting-approval states. Hosted capacity and mission data are visibly labelled SAMPLE; they never claim to be a live account or workspace. To host it, set `AXIOMGATE_DEMO=true` in Vercel and run `vercel --prod` from the repository root. See [dashboard hosting notes](apps/web/README.md#vercel-hosted-demo).
+The local dashboard is empty on a fresh clone and renders real `.axiomgate` state when pointed at a governed workspace. The [hosted dashboard demo](https://axiomgate-eta.vercel.app/dashboard) uses eight curated synthetic SAMPLE missions demonstrating complete, blocked, denied, remediated, waived, and awaiting-approval states. Hosted capacity and mission data are visibly labelled SAMPLE; they never claim to be a live account or workspace. Set `AXIOMGATE_DEMO=true` only when you intentionally want this sample dataset. To host it, set that value in Vercel and run `vercel --prod` from the repository root. See [dashboard hosting notes](apps/web/README.md#vercel-hosted-demo).
 
 ![AxiomGate landing page: proof-carrying missions for Codex](docs/assets/axiomgate-landing.png)
 

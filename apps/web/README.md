@@ -47,6 +47,8 @@ Same visual family as PatchPilot Watch Commander (dark editorial theme): warm ne
 
 The root `vercel.json` publishes `apps/web/public` and the read-only functions in `api/`. The hosted API returns eight curated synthetic missions spanning complete, blocked, denied, remediated, waived, and awaiting-approval states, plus SAMPLE capacity. It does not read a Vercel account, a Codex account, or a governed workspace. Hosted approval requests return a friendly local-only response and never write serverless state.
 
+Public demo: [axiomgate-eta.vercel.app](https://axiomgate-eta.vercel.app/)
+
 From the repository root, the user deploys with their own Vercel account:
 
 ```powershell

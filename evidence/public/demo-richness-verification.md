@@ -65,3 +65,12 @@ punctuation: PASS, 0 em dashes and 0 en dashes across 270 tracked text files
 Markdown quality: PASS, 81 substantive tracked files
 Markdown links: PASS, 130 relative targets across 81 tracked Markdown files
 ```
+
+## Hosted deployment
+
+The verified web commit was deployed to Vercel production through the authenticated CLI. Vercel reported deployment `dpl_Dqe57KgMBs3TAg6Gf7KcCDNGE5XE` as `READY`, with four Node functions for approvals, capacity, mission detail, and mission summaries.
+
+- Production demo: [axiomgate-eta.vercel.app](https://axiomgate-eta.vercel.app/)
+- Dashboard: [axiomgate-eta.vercel.app/dashboard](https://axiomgate-eta.vercel.app/dashboard)
+
+The shorter requested alias `axiomgate.vercel.app` was unavailable because Vercel reported that it was already in use. No claim is made over that alias.
