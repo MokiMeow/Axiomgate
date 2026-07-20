@@ -92,7 +92,7 @@ Post-hackathon (see "Post-hackathon scope"): full multi-source quota normalizati
 
 Responsibilities:
 
-- enforce policy through the verified Codex `PreToolUse` and `PermissionRequest` hooks plus sandbox and permission-profile configuration, never through prompt-level requests alone; the hook always returns machine JSON because bare exit-code denial failed open in the recorded compatibility probe;
+- enforce policy through the live-proven Codex `PreToolUse` machine-JSON deny plus sandbox and permission-profile configuration, never through prompt-level requests alone; `PermissionRequest` shares the fixture-tested entry but is not claimed live for non-interactive `codex exec` because it did not fire under effective `Never` in the recorded probe; bare exit-code denial failed open and is never used;
 - refuse to start a mission when the enforcement configuration cannot be verified (fail closed);
 - inspect only the execution mechanisms required by the demo action set (general capability discovery: post-hackathon);
 - verify that every publish or deploy target exists and is owned by the profile's account before the action executes (GitHub/Vercel API resolution);

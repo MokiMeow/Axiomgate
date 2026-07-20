@@ -25,7 +25,7 @@ The optional Devpost Hackathons plugin is a helper, not the official source of t
 - Internal submission target: at least **one hour before the official deadline**.
 - Free Codex credit request deadline: **July 17, 2026 at 12:00 PM Pacific Time**.
 - India equivalent: **July 18, 2026 at 12:30 AM IST**.
-- Granted hackathon Codex credits must be used by **July 31, 2026**.
+- Granted hackathon Codex credits must be used by **July 21, 2026 at 5:00 PM Pacific Time**, matching the current Official Rules deadline.
 - Winners are expected on or around **August 12, 2026**.
 
 Public pages currently show inconsistent judging-end dates. Keep the project, test path, credentials, sandbox, and public video available through at least **August 12, 2026**, unless Devpost announces a later date.

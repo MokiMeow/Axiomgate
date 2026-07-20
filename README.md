@@ -12,7 +12,7 @@ AxiomGate lets Codex act only within explicit authority enforced at the Codex ho
 
 ## Why this exists
 
-Coding agents can be confident and wrong. A 2026 practitioner study reported that agents marked 100 tasks complete while only 42 actually worked; an independent academic study measured false-success behavior in 44-52% of observed failures ([BSWEN analysis](https://docs.bswen.com/blog/2026-03-12-ai-agent-self-verification/), [arXiv:2606.09863](https://arxiv.org/abs/2606.09863)). In a separate deployment incident, an agent fabricated a repository identifier and deployed the wrong code because it never verified target ownership ([incident report](https://awesomeagents.ai/news/openclaw-opus-hallucinated-repo-id-vercel-deploy/)). OpenAI Codex issue [#16798](https://github.com/openai/codex/issues/16798) records the broader failure mode: an agent can ignore repository governance unless enforcement sits outside model narration.
+Coding agents can be confident and wrong. Across 2,208 prompt variants, [UnderSpecBench](https://arxiv.org/abs/2607.02294) reported action-boundary violation rates of 55.8-67.8%, including deterministic Wrong Target and OverScope oracles. In a separate deployment incident, an agent fabricated a repository identifier and deployed the wrong code because it never verified target ownership ([secondary incident report](https://awesomeagents.ai/news/openclaw-opus-hallucinated-repo-id-vercel-deploy/)). OpenAI Codex issue [#16798](https://github.com/openai/codex/issues/16798) is the primary record for the broader failure mode: an agent can ignore repository governance unless enforcement sits outside model narration.
 
 AxiomGate makes both failures testable: unsafe actions are denied at the hook boundary, and unsupported completion claims remain blocked at the evidence gate.
 
@@ -50,6 +50,7 @@ The final command must print `FAIL` and exit non-zero. See [JUDGE-QUICKSTART.md]
 | Identity and target | Resolves GitHub/Vercel identity and proves that a publish/deploy target exists and is owned before use. |
 | Intent boundary | Maps `OBSERVE` through `DEPLOY_PRODUCTION` to sandbox/network authority; production deploy is refused in this Build Week release. |
 | Semantic policy | Classifies commands and MCP tools into actions, then applies deterministic `ALLOW`, `DENY`, or `REQUIRE_APPROVAL` policy. Unknown state-changing actions fail closed. |
+| Governed state | Rejects model-visible writes into `.axiomgate` before policy evaluation, including `apply_patch`, shell, traversal, and structured MCP paths. Moving authority outside the writable workspace remains the stronger long-term design. |
 | Approval binding | Binds a single-use, expiring approval to the exact command hash. Mutation or reuse is denied. |
 | Telegram approvals and stage notifications | Long-polls Telegram for allowlisted, exact-command approvals plus readable Guard, Run, Verify, Remediate, Prove, and Runway updates. No webhook or public URL is required. [Live evidence](evidence/public/telegram-verification.md). |
 | Completion gate | Accepts only fresh `command`, `api`, or `hook` evidence. Model prose is advisory and cannot make a criterion pass. |
@@ -59,7 +60,7 @@ The final command must print `FAIL` and exit non-zero. See [JUDGE-QUICKSTART.md]
 
 AxiomGate is built around native Codex surfaces rather than prompt-only conventions:
 
-- `PreToolUse` and `PermissionRequest` hooks enforce decisions with machine JSON and persist each outcome.
+- `PreToolUse` machine-JSON denial is the live-proven `codex exec` enforcement path on Codex 0.144.6. `PermissionRequest` uses the same fixture-tested policy entry, but it did not fire in the recorded non-interactive on-request probe under effective `Never`, so AxiomGate does not claim live PermissionRequest enforcement there.
 - `codex exec --json` provides governed Builder and fresh, read-only Verifier sessions, event streams, command executions, and token actuals.
 - the Codex App Server method `account/rateLimits/read` supplies real usage-window percentage, reset time, plan type, and banked reset metadata; failures render `UNKNOWN` rather than invented capacity;
 - a repository Codex [skill](.agents/skills/axiomgate/SKILL.md), a read-only [custom verifier agent](.agents/agents/axiomgate-verifier.toml), an [MCP server](apps/cli/src/mcp.ts), and a [plugin marketplace manifest](.agents/plugins/marketplace.json) make governance discoverable through native integration points.
@@ -145,7 +146,7 @@ The optional live path requires the judge's own Codex authentication. GitHub and
 - External commands use the shared timeout runner. Hook stdout stays machine-JSON only; internal failures deny rather than silently fail open.
 - Persisted command, verifier, verification, and deploy-target diagnostics pass through centralized credential redaction before hashing or storage.
 - `.local/`, `.axiomgate/`, `.vercel/`, dependency trees, build output, environment files, tarballs, and raw run logs are excluded from Git.
-- Optional Telegram approvals read `TELEGRAM_BOT_TOKEN` and the comma-separated `TELEGRAM_CHAT_ID` allowlist only from the process environment or ignored `.local/telegram.env`. Run `axiomgate telegram test`, then `axiomgate telegram watch --project <path>`; persisted relay state contains hashed chat identifiers, never the token or full chat ID.
+- Optional Telegram approvals read `TELEGRAM_BOT_TOKEN` and the comma-separated `TELEGRAM_CHAT_ID` allowlist only from the process environment or ignored `.local/telegram.env`. Use a private one-to-one bot chat in this release: group callbacks are allowlisted by chat, not independently authorized by clicking user. Stage notifications send the mission objective, workspace label, action, target, and a best-effort redacted command to Telegram, so project metadata leaves the local machine. Run `axiomgate telegram test`, then `axiomgate telegram watch --project <path>`; persisted relay state contains hashed chat identifiers, never the token or full chat ID.
 - Demo users, IDs, tokens, and wrong-target profiles are synthetic. Presenter substitutions are explicitly labelled in [demo/DEMO-RUNBOOK.md](demo/DEMO-RUNBOOK.md).
 
 See the [threat model](docs/design/10-SECURITY-THREAT-MODEL.md), [negative guard suite](packages/axiomgate-core/test/negative-guard.test.ts), and [public evidence index](evidence/public/README.md).

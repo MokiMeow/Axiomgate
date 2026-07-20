@@ -15,31 +15,31 @@ Developer Tools.
 Use the stricter Official Rules requirement: a public YouTube video **less than three minutes**, with audio explaining the working project, Codex usage, and GPT-5.6 usage. Target 2:45-2:55.
 
 
-### 0:00-0:20 - Problem (told with a real incident)
+### 0:00-0:20 - Problem and measured failure mode
 
-"This spring, an AI agent invented a repository ID and deployed a stranger's code to a customer's server. Coding agents are brilliant - they just carry no ID card and no proof." One developer, multiple accounts, unreliable "done" claims.
+Across 2,208 prompt variants, [UnderSpecBench](https://arxiv.org/abs/2607.02294) measured 55.8-67.8% action-boundary violations, including Wrong Target and OverScope cases. AxiomGate turns those failure modes into enforceable, inspectable decisions.
 
-### 0:20-0:45 - Mission (Plan)
+### 0:20-0:40 - Mission (Plan)
 
-`axiomgate mission create`: one-line objective becomes a contract - 4 acceptance criteria, PUBLISH boundary, and the GPT-5.6 model plan (Luna scout, Sol high-effort build, Terra remediation) with recorded rationale.
+`axiomgate mission create`: one objective becomes a hashed contract with five criteria, a MODIFY_LOCAL boundary, and a GPT-5.6 model plan with recorded rationale.
 
-### 0:45-1:10 - The block (Guard) - THE MOMENT
+### 0:40-1:10 - Live authority blocks (Guard)
 
-Codex attempts `preview.deploy`. Environment Guard blocks it live: the Vercel target belongs to the wrong team (staged second profile). The hook denial appears in the timeline as evidence. Re-target to the correct project, approve once on Telegram - approval bound to the exact command hash - deploy proceeds.
+Show the verified outside-workspace command denial, then the Codex 0.144.6 `.axiomgate` write denial. The outside sentinel remains and no governed-state file is created. If the wrong-target Vercel replay is shown, keep an on-screen `REPLAY` label; no live `EXISTS_NOT_OWNED` evidence has been captured.
 
-### 1:10-1:50 - Codex builds, PatchPilot verifies (Run → Verify)
+### 1:10-1:55 - Codex builds and the independent verifier challenges it
 
-Genuine implementation progress (no dead time; time-lapse). PatchPilot runs the repo's real test suite plus scanners; one genuine finding; Codex remediates it; rerun passes.
+Time-lapse the real Sol/High lockout implementation and machine checks. Then show the fresh Terra/High verifier catching the inherited-property bug (`constructor`, `toString`, `__proto__`) and the governed Terra/Medium fix using `Object.hasOwn` plus a regression test.
 
-### 1:50-2:20 - Completion is earned, not claimed (Prove)
+### 1:55-2:25 - Completion is earned, not claimed (Prove)
 
-Criterion table fills from machine evidence only. One criterion deliberately shows UNKNOWN - completion is **blocked** until the user waives it with a visible reason. "The agent cannot say done. The evidence says done."
+The proof table fills only from fresh command evidence. Show the intact receipt passing offline, change one evidence hash, and show the tampered receipt fail loudly.
 
-### 2:20-2:50 - Outcome
+### 2:25-2:50 - Human control and outcome
 
-Correct PR, preview on the correct account, token actuals versus plan, and the Build Receipt - then `axiomgate receipt verify` proves the evidence chain in one command. Closing line: "Codex did the work. AxiomGate carries the proof."
+Use a private one-to-one Telegram chat for the clean Approval needed card and one-use outcome, without executing a push or deploy. Close with the real session/token ledger and: "Codex did the work. AxiomGate carries the proof."
 
-Label every segment LIVE / REPLAY accurately. Show Codex visibly on screen and name Codex and GPT-5.6 in the narration (required by the rules; also criterion 1).
+Label every segment LIVE / REPLAY accurately. The wrong-target Vercel scene and correct preview deploy remain PENDING unless separately staged and captured with real provider evidence. Show Codex visibly on screen and name Codex and GPT-5.6 in the narration (required by the rules; also criterion 1).
 
 ## Distribution and real-usage evidence (impact multiplier)
 

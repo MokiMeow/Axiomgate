@@ -2,6 +2,12 @@
 
 Date: 2026-07-20 IST
 
+> Current safety limitation: use approvals only in a private one-to-one bot
+> chat. This release allowlists callback chats but does not independently
+> authorize the clicking user inside a group. Stage notifications send the
+> objective, workspace label, action, target, and a best-effort redacted
+> command to Telegram, so that project metadata leaves the local machine.
+
 ## Scope and protocol
 
 AxiomGate implements the optional Telegram surface with the Bot API `getUpdates` long-polling method. It does not configure a webhook or expose a listener. Inline callback payloads contain only a deterministic short local approval reference and one verb; tests enforce Telegram's 64-byte limit. The relay calls `answerCallbackQuery` for authorized taps and edits the original message for terminal outcomes.

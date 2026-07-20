@@ -445,10 +445,10 @@
             <b>done</b> only with a tamper-evident Build Receipt anyone can verify offline.
           </p>
           <div class="hook">
-            <div class="stat"><b>42/100</b><span>tasks actually worked</span></div>
+            <div class="stat"><b>55.8-67.8%</b><span>action-boundary violations</span></div>
             <p>
-              In one 2026 practitioner study, agents claimed 100 tasks complete but only 42 worked. Agents have also deployed to the
-              <b>wrong account</b> and <b>ignored their own governance files</b>.
+              Across 2,208 prompt variants, <a href="https://arxiv.org/abs/2607.02294"><b>UnderSpecBench</b></a> measured action-boundary violation rates of 55.8-67.8%, including
+              <b>Wrong Target</b> and <b>OverScope</b> cases.
               AxiomGate is the layer that stops that.
             </p>
           </div>
@@ -467,7 +467,7 @@
           <div class="term-bar">
             <span class="lights"><i></i><i></i><i></i></span>
             <span class="term-title">axiomgate · governed mission</span>
-            <span class="term-tag">1 denied</span>
+            <span class="term-tag">replay · 1 denied</span>
           </div>
           <pre class="term-body"><span class="tl"><span class="t-dim">$</span> <span class="t-b">axiomgate mission run</span></span><span class="tl"><span class="t-acc">◆</span> contract <span class="t-b">msn_lockout</span> <span class="t-dim">· sha256:d5548d7d9c…</span></span><span class="tl">
 <span class="t-red">✕ DENY</span>  <span class="t-acc">preview.deploy</span> <span class="t-dim">· PreToolUse</span></span><span class="tl">        <span class="t-mut">'acme-staging' is not owned by mokimeow</span></span><span class="tl">        <span class="t-dim">EXISTS_NOT_OWNED · recorded as evidence</span></span><span class="tl">
@@ -547,7 +547,7 @@
                   <path d="M5 29 V15 C5 8.9 9.9 4 16 4 s11 4.9 11 11 v14 z" fill="currentColor" mask="url(#agm-rcpt)" />
                 </svg>
                 <div class="rt">AXIOMGATE</div>
-                <div class="rs">BUILD RECEIPT · NON-REPUDIABLE</div>
+                <div class="rs">BUILD RECEIPT · TAMPER-EVIDENT</div>
               </div>
               <div class="rcpt-rows">
                 <div class="rrow"><span class="rk">Mission</span><span class="dots"></span><span class="rv hi">msn_lockout · v2</span></div>

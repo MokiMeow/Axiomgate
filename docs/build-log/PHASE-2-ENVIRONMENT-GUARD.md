@@ -13,7 +13,7 @@ Only correctly targeted and explicitly authorized semantic actions can be execut
 - Resolve identity: gh identity, git remote, Vercel project/team; block ambiguity or mismatch (G1).
 - Verify deploy-target existence and ownership via GitHub/Vercel API before any publish/deploy action; capture the proof as evidence (G1).
 - Implement the mission allow/deny/approval policy over the demo action set: `repository.read`, `file.modify`, `branch.create`, `pull_request.create`, `preview.deploy`, `production.deploy`, `verification.run` (G2).
-- Integrate `PreToolUse`/`PermissionRequest` hooks with the policy engine: deny-wins, fail-closed config-hash check at mission start, every decision persisted as evidence (G3).
+- Integrate the live-proven `PreToolUse` machine-JSON deny and the fixture-tested `PermissionRequest` entry with the policy engine: deny-wins, fail-closed config-hash check at mission start, every received decision persisted as evidence (G3). The non-interactive PermissionRequest limitation is recorded in the compatibility document.
 - Implement approval binding: exact command/argument hash, expiry, single-use; dashboard + CLI surfaces; Telegram extended from PatchPilot `telegram`/`approval` modules (G4).
 - Store and resolve credential handles outside model context; redact secret-bearing output (G4).
 - Enforce intent boundaries: a proposed action above the current level becomes an approval request, never an automatic operation (G3).

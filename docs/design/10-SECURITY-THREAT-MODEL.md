@@ -55,6 +55,12 @@ A process continues using tools or connected accounts without visible mission ow
 
 The agent fabricates, reuses, or modifies test/security evidence.
 
+### Governance-state self-tampering
+
+The model uses writable workspace authority to change its own mission snapshot,
+policy, approvals, or events and recomputes unkeyed integrity hashes before a
+consequential action.
+
 ### Quota abuse
 
 Loops, repeated agents, or model escalation consume unexpected capacity.
@@ -80,6 +86,9 @@ A dependency, installer, script, binary, or external capability is malicious.
 - integrity metadata when available;
 - process ownership and stop controls;
 - evidence hashing and freshness;
+- a hook-level hard deny for model-visible writes into `.axiomgate`, evaluated
+  before normal mission policy, plus deny-by-default for shell commands not on
+  the demonstrably read-only allowlist;
 - local redaction;
 - loop detection and user ceilings;
 - dependency and secret scans;
@@ -91,4 +100,4 @@ Create negative tests for each authority level and external adapter. Test malici
 
 ## Non-claims
 
-AxiomGate does not claim to prove that all third-party code is safe, that prompts cannot influence a model, or that every provider exposes enforceable permissions. It must identify unsupported boundaries and fail closed where authority or identity cannot be verified.
+AxiomGate does not claim to prove that all third-party code is safe, that prompts cannot influence a model, or that every provider exposes enforceable permissions. The Build Week release hard-denies observed `.axiomgate` write mechanisms, but moving authoritative state fully outside the model-writable workspace remains the stronger long-term boundary. It must identify unsupported boundaries and fail closed where authority or identity cannot be verified.

@@ -1,5 +1,16 @@
 # Full-system validation matrix
 
+> Historical snapshot and supersession: this matrix records source revision
+> `bc012e8` against npm `0.1.0` and is intentionally not rewritten as current
+> state. For the latest release/publication proof use
+> [`repo-curation-verification.md`](repo-curation-verification.md); for the
+> actual headline run use
+> [`headline-run-verification.md`](headline-run-verification.md); for the
+> completed Telegram surface use
+> [`telegram-verification.md`](telegram-verification.md); and for the latest
+> authority mitigation and 309-test result use
+> [`authority-hardening-verification.md`](authority-hardening-verification.md).
+
 Date: 2026-07-20 IST  
 Source revision: `bc012e8`  
 Published package tested: `axiomgate@0.1.0`  

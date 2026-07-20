@@ -50,6 +50,13 @@ Codex exposes several official integration interfaces. AxiomGate's shipped subse
 - Codex auto-updated 0.144.4 → 0.144.6. Per the ops rule, `axiomgate verify-enforcement` was run: **PASS LIVE** - real session `019f7ab8-43d3-79d2-b71f-7ea96fe36a91`, gated command denied at the hook, zero command executions, version + timestamp recorded to `enforcement-verified.json`. Hook semantics unchanged from 0.144.4.
 - Reminder: do not `codex update` between final verification and the demo recording; re-run `verify-enforcement` after any update.
 
+### Governed-state write denial - codex-cli 0.144.6, 2026-07-20 (VERIFIED)
+
+- A real `apply_patch` call carries its patch text in `tool_input.command` on this version. The fixture-compatible `tool_input.patch` shape is also accepted by the adapter.
+- The hook denied a live attempt to add `.axiomgate/probe.txt` with the reason `writes to governed AxiomGate state are forbidden`; no file or command-execution item was created.
+- This hard deny runs before mission policy and covers resolved `apply_patch`, shell, traversal/mixed-case, and structured MCP write paths. Unrecognized shell commands now become state-changing `UNKNOWN` unless every segment is on the explicit read-only allowlist.
+- This is a defense-in-depth mitigation around workspace-local authority. Moving authoritative policy and approvals outside the model-writable workspace remains the stronger long-term design. Evidence: `evidence/public/authority-hardening-verification.md`.
+
 ### MCP and plugin packaging - codex-cli 0.144.6, 2026-07-19 (VERIFIED)
 
 - Stdio MCP registration is native: `codex mcp add <name> -- <command>...`. AxiomGate registered `node <built-cli> mcp`; `codex mcp get axiomgate` reported an enabled stdio server. Direct JSON-RPC and a real read-only Luna `codex exec` both completed `axiomgate_mission_status` and `axiomgate_receipt_verify`; the latter returned gate `COMPLETE` and receipt `valid: true`.

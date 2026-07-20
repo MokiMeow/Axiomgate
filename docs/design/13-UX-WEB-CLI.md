@@ -95,4 +95,4 @@ CLI and dashboard must call the same application services.
 
 ## Telegram
 
-Use for concise, evidence-aware approvals and alerts. Do not attempt to reproduce the full dashboard.
+Use for concise, evidence-aware approvals and alerts. Do not attempt to reproduce the full dashboard. This release supports approvals only in a private one-to-one bot chat: chat IDs are allowlisted, but group callback actors are not independently authorized. Stage notifications send the mission objective, workspace label, action, target, and a best-effort redacted command to Telegram, so this project metadata leaves the local machine.

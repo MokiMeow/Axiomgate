@@ -84,7 +84,7 @@ An action may be implemented by a native Codex tool, CLI, API adapter, browser w
 
 Policy is enforced at official Codex extension points, not through prompt instructions:
 
-- **Codex hooks** - `PreToolUse` and `PermissionRequest` call the local AxiomGate policy engine before matching tool calls or approval-worthy actions execute. A machine-JSON deny blocks the action. AxiomGate records each decision itself; `PostToolUse`, `PreCompact`, and `PostCompact` are not part of the shipped hook configuration.
+- **Codex hooks** - `PreToolUse` calls the local AxiomGate policy engine before matching tool calls execute; its machine-JSON deny is live-proven on `codex exec` 0.144.6. `PermissionRequest` is configured and fixture-tested through the same policy entry, but did not fire in the recorded non-interactive on-request probe under effective `Never`. AxiomGate records each decision it receives; `PostToolUse`, `PreCompact`, and `PostCompact` are not part of the shipped hook configuration.
 - **Sandbox and permission profiles** - the mission intent boundary maps to concrete Codex sandbox flags and permission-profile settings at session launch (for example, `MODIFY_LOCAL` → `--sandbox workspace-write`, network off).
 - **Codex execution and App Server** - `codex exec --json` launches and observes governed sessions and supplies ledger events and token usage. A separate short-lived App Server process supplies `account/rateLimits/read` capacity data. No TypeScript SDK dependency is shipped.
 - **Fail closed** - a mission refuses to start if the hook configuration hash does not match the mission policy, if the installed Codex version does not support the required hooks, or if hook failure semantics cannot be verified.

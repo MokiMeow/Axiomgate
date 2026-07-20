@@ -10,11 +10,14 @@ Environment Guard is a policy and identity layer. It is not a skill installer, M
 
 Environment Guard enforces policy through official Codex extension points. This is the layer's spine; without it every table below is decorative.
 
-1. **Hook integration.** AxiomGate manages the Codex hook configuration for the mission. `PreToolUse` and `PermissionRequest` invoke the local policy engine with the tool name, input, and working directory. The hook always returns a machine-JSON allow or deny. A policy result of `REQUIRE_APPROVAL` denies with a pending request until an exact matching approval exists. Bare exit-code denial is never used because it failed open in the recorded compatibility probe.
+1. **Hook integration.** AxiomGate manages the Codex hook configuration for the mission. `PreToolUse` invokes the local policy engine with the tool name, input, and working directory; its machine-JSON deny is live-proven for non-interactive `codex exec` on 0.144.6. `PermissionRequest` uses the same fixture-tested entry, but did not fire in the recorded on-request `codex exec` probe under effective `Never`; it is not claimed as live enforcement on that path. Bare exit-code denial is never used because it failed open in the recorded compatibility probe.
 2. **Approval binding.** When the decision is escalate, the approval record binds the exact command/argument hash observed by the hook, the target, the identity, an expiry, and a single-use flag. If the command, arguments, target, or identity change, the approval is void and the hook denies.
 3. **Sandbox mapping.** Intent boundary → sandbox/permission-profile flags at session launch. The runtime may never widen these mid-mission without a new authorization event.
 4. **Fail closed.** Missing or mismatched mission snapshots/configuration refuse mission start, and hook parsing/internal errors return JSON deny. `axiomgate verify-enforcement` performs the live installed-version probe; doctor warns after version drift. The compatibility record distinguishes this operational probe from per-mission hash verification.
 5. **Evidence.** Every hook decision is persisted as an evidence event and appears in the Build Receipt, including denials - a blocked action is proof the gate works.
+6. **Governed-state isolation.** Before normal policy evaluation, the hook rejects model-visible writes whose resolved target is under `.axiomgate`. The check covers observed `apply_patch` payload shapes, common shell write/move/delete mechanisms, traversal and mixed-case paths, and structured MCP file-write paths. No `ALLOW` policy can override it. Unknown shell commands are state-changing `UNKNOWN` unless every segment matches the demonstrably read-only allowlist.
+
+The shipped protection is defense in depth around workspace-local state. Moving authoritative policy and approvals outside the model-writable workspace is the stronger long-term design and remains an explicit limitation rather than a cryptographic claim.
 
 ## Capability discovery
 

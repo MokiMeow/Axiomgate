@@ -69,7 +69,7 @@ The hackathon flow stops at PR and preview deployment.
 
 **Date:** 2026-07-14 · **Status:** Accepted
 
-Environment Guard enforces policy through official Codex hooks (`PreToolUse`/`PermissionRequest`, deny-wins), sandbox/permission-profile mapping, and the App Server/SDK for session control. Prompt-level instructions are never the enforcement mechanism. Missions fail closed when hook configuration cannot be verified.
+Environment Guard enforces policy through the official Codex `PreToolUse` machine-JSON deny, sandbox/permission-profile mapping, and App Server/CLI session control. `PermissionRequest` remains configured and fixture-tested but is not a live non-interactive enforcement claim because it did not fire under effective `Never` in the recorded 0.144.4 probe. Prompt-level instructions are never the enforcement mechanism. Missions fail closed when hook configuration cannot be verified.
 
 **Evidence:** official Codex hooks and SDK/App Server documentation; independent pre-implementation review.
 

@@ -66,7 +66,7 @@ node apps/cli/dist/index.js telegram test
 node apps/cli/dist/index.js telegram watch --project <governed-workspace>
 ```
 
-The relay uses Bot API long polling only: it opens no webhook or public listener. Approval cards bind to the existing exact command hash and canonical single-use store. `TELEGRAM_NOTIFY=approvals` suppresses stage notifications; `TELEGRAM_NOTIFY=off` disables the surface; the default is `all` when configured.
+The relay uses Bot API long polling only: it opens no webhook or public listener. Use a private one-to-one bot chat in this release; group callbacks are allowlisted by chat and are not independently authorized by clicking user. Approval cards bind to the existing exact command hash and canonical single-use store. Stage notifications send objective, workspace, action, target, and a best-effort redacted command to Telegram. `TELEGRAM_NOTIFY=approvals` suppresses stage notifications; `TELEGRAM_NOTIFY=off` disables the surface; the default is `all` when configured.
 
 ## Labels and limitations
 
