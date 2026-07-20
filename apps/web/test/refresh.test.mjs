@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   contentChanged,
   contentHash,
+  isCacheFresh,
   resolvePollInterval,
 } from "../public/refresh.mjs";
 
@@ -23,5 +24,12 @@ describe("dashboard live refresh", () => {
     expect(resolvePollInterval("1500", false)).toBe(1_500);
     expect(resolvePollInterval("100", false)).toBe(3_000);
     expect(resolvePollInterval("120000", false)).toBe(60_000);
+  });
+
+  it("reuses only populated resources inside their cache window", () => {
+    expect(isCacheFresh(1_000, 2_200, 3_199)).toBe(true);
+    expect(isCacheFresh(1_000, 2_200, 3_200)).toBe(false);
+    expect(isCacheFresh(0, 2_200, 1_000)).toBe(false);
+    expect(isCacheFresh(1_000, 0, 1_001)).toBe(false);
   });
 });

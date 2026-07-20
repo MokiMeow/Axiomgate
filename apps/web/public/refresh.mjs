@@ -25,6 +25,10 @@ export function contentChanged(previousHash, nextValue) {
   };
 }
 
+export function isCacheFresh(capturedAt, ttlMs, now = Date.now()) {
+  return capturedAt > 0 && ttlMs > 0 && now - capturedAt < ttlMs;
+}
+
 export function resolvePollInterval(configuredValue, demo = false) {
   const configured = Number(configuredValue);
   if (Number.isFinite(configured) && configured >= 1_000) {

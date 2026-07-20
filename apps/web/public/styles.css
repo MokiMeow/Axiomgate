@@ -1226,6 +1226,64 @@ td.risk {
   color: var(--body);
 }
 
+/* ----- Section loading ----- */
+.view-loading {
+  max-width: 760px;
+  padding: 2px 0;
+}
+
+.loading-kicker {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+}
+
+.loading-title {
+  margin-top: 10px;
+  color: var(--text);
+  font-size: 25px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.loading-copy {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.loading-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.loading-grid span {
+  height: 116px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.035) 48%, transparent 66%)
+      180% 0 / 220% 100%,
+    var(--surface);
+  animation: loading-sweep 1.35s ease-in-out infinite;
+}
+
+.capacity-card.is-loading .metric-value {
+  color: var(--muted);
+  font-size: 20px;
+  letter-spacing: 0;
+}
+
+@keyframes loading-sweep {
+  to {
+    background-position: -120% 0;
+  }
+}
+
 /* ----- Responsive ----- */
 @media (max-width: 1120px) {
   .metrics {
@@ -1236,31 +1294,49 @@ td.risk {
 @media (max-width: 980px) {
   .shell {
     grid-template-columns: 1fr;
+    grid-template-rows: max-content 1fr;
   }
   .side {
-    position: static;
+    position: sticky;
+    z-index: 20;
+    top: 0;
+    align-self: start;
+    width: 100%;
     height: auto;
     border-right: none;
     border-bottom: 1px solid var(--hairline);
-    padding: 16px;
+    padding: 14px 16px 11px;
+    background: color-mix(in srgb, var(--bg-soft) 94%, transparent);
+    backdrop-filter: blur(14px);
+  }
+  .brand {
+    margin: 0 0 3px;
   }
   .brand-sub {
-    margin-bottom: 14px;
+    margin: 0 0 11px 30px;
   }
-  /* Compact horizontal mission nav on mobile so it doesn't eat the first screen. */
+  /* Mission selector stays to one scrollable row under Mission Control. */
   .side-label {
-    margin-bottom: 8px;
+    margin: 10px 0 7px;
   }
   .nav {
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
+    flex-wrap: nowrap;
+    gap: 7px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    padding: 0;
+  }
+  .nav::-webkit-scrollbar {
+    display: none;
   }
   .nav button {
     width: auto;
-    max-width: 100%;
-    padding: 7px 11px;
-    font-size: 13px;
+    max-width: 74vw;
+    flex: 0 0 auto;
+    padding: 8px 11px;
+    font-size: 12.5px;
     border: 1px solid var(--hairline);
     background: var(--surface);
   }
@@ -1278,7 +1354,7 @@ td.risk {
     display: none;
   }
   .main {
-    padding: 24px 16px;
+    padding: 24px 16px 40px;
   }
   h1 {
     font-size: 28px;
@@ -1298,10 +1374,102 @@ td.risk {
 }
 
 @media (max-width: 640px) {
+  .brand-sub {
+    display: none;
+  }
+
+  .side {
+    padding-block: 12px 10px;
+  }
+
+  .brand {
+    margin-bottom: 10px;
+  }
+
+  .loading-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .loading-grid span {
+    height: 92px;
+  }
+
   /* Keep proof-table columns readable - the wrapper scrolls instead of
      crushing the criterion column into single-word shards. */
   .table-scroll table {
     min-width: 540px;
+  }
+
+  /* Audit receipts become labelled cards instead of a clipped desktop table. */
+  .table-scroll .receipt-table {
+    min-width: 0;
+  }
+
+  .receipt-table thead {
+    display: none;
+  }
+
+  .receipt-table tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .receipt-table tr.receipt-record {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 12px;
+    padding: 8px;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+    background: var(--bg-soft);
+  }
+
+  .receipt-table tr.receipt-record td {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    padding: 8px;
+    border: 0;
+  }
+
+  .receipt-table tr.receipt-record td::before {
+    content: attr(data-label);
+    color: var(--muted-soft);
+    font-family: var(--sans);
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+  }
+
+  .receipt-table .receipt-mission,
+  .receipt-table .receipt-contract,
+  .receipt-table .receipt-evidence,
+  .receipt-table .receipt-action {
+    grid-column: 1 / -1;
+  }
+
+  .receipt-table .receipt-mission {
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .receipt-table .receipt-action .button {
+    width: 100%;
+  }
+
+  .receipt-table tr.receipt-output {
+    display: block;
+    margin-top: -12px;
+  }
+
+  .receipt-table tr.receipt-output td {
+    display: block;
+    padding: 0;
+    border: 0;
   }
 
   .verification-row {
@@ -1344,5 +1512,11 @@ td.risk {
   .term-body {
     font-size: 12px;
     padding: 14px 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-grid span {
+    animation: none;
   }
 }

@@ -1,5 +1,6 @@
 import {
   contentChanged,
+  isCacheFresh,
   resolvePollInterval,
 } from "./refresh.mjs";
 
@@ -161,16 +162,18 @@ import {
       .set-links a:hover { color: var(--text); border-color: var(--muted); }
       .set-links svg { width: 15px; height: 15px; }
 
-      /* Mobile: match the sidebar-collapse breakpoints from styles.css so the
-         section nav becomes horizontal chips instead of eating the first screen. */
-      @media (max-width: 980px) {
-        .sect-nav { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
-        .sect-group, .sect-sep { display: none; }
-        .sect { width: auto; padding: 7px 11px; font-size: 13px;
-          border: 1px solid var(--hairline); background: var(--surface); border-radius: 999px; }
-        .sect.active { box-shadow: none; border-color: var(--primary); color: var(--text); }
-        .sect .sect-name { flex: 0 1 auto; }
-        .sect svg { width: 15px; height: 15px; }
+       /* Mobile: a single scrollable control strip keeps the app header compact. */
+       @media (max-width: 980px) {
+         .sect-nav { display: flex; flex-wrap: nowrap; gap: 7px; margin: 0;
+           overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: none;
+           scroll-snap-type: inline proximity; }
+         .sect-nav::-webkit-scrollbar { display: none; }
+         .sect-group, .sect-sep { display: none; }
+         .sect { width: auto; flex: 0 0 auto; padding: 8px 11px; font-size: 12.5px;
+           border: 1px solid var(--hairline); background: var(--surface); border-radius: 999px; }
+         .sect.active { box-shadow: none; border-color: var(--primary); color: var(--text); }
+         .sect .sect-name { flex: 0 1 auto; }
+         .sect svg { width: 15px; height: 15px; }
         .view-head { margin-bottom: 18px; }
         .view-head h1 { font-size: 23px; }
         .view-head p { font-size: 13px; }
@@ -189,34 +192,51 @@ import {
   }
 
   /* ---------- data ---------- */
+  const DATA_CACHE_MS = 3_000;
+  const CAPACITY_CACHE_MS = 60_000;
   let cache = { at: 0, full: [], summaries: [], meta: {}, hash: "", changed: true };
+  let capacityCache = { at: 0, value: null };
+  let loadPromise = null;
   async function loadAll(force) {
     const now = Date.now();
-    if (!force && cache.at && now - cache.at < 2200) return cache;
-    const list = await getJSON("/api/missions");
-    const summaries = (list && list.missions) || [];
-    const full = (
-      await Promise.all(
-        summaries.map((s) => getJSON("/api/mission/" + encodeURIComponent(s.id)))
-      )
-    ).filter(Boolean);
-    const next = {
-      at: now,
-      full,
-      summaries,
-      meta: {
-        workspace: (list && list.workspace) || "",
-        demo: !!(list && list.demo),
-        count: (list && list.count) || summaries.length,
-      },
-    };
-    const change = contentChanged(cache.hash, {
-      full: next.full,
-      summaries: next.summaries,
-      meta: next.meta,
+    if (!force && isCacheFresh(cache.at, DATA_CACHE_MS, now)) return cache;
+    if (loadPromise) return loadPromise;
+    loadPromise = (async () => {
+      const list = await getJSON("/api/missions");
+      const summaries = (list && list.missions) || [];
+      const full = (
+        await Promise.all(
+          summaries.map((s) => getJSON("/api/mission/" + encodeURIComponent(s.id)))
+        )
+      ).filter(Boolean);
+      const next = {
+        at: Date.now(),
+        full,
+        summaries,
+        meta: {
+          workspace: (list && list.workspace) || "",
+          demo: !!(list && list.demo),
+          count: (list && list.count) || summaries.length,
+        },
+      };
+      const change = contentChanged(cache.hash, {
+        full: next.full,
+        summaries: next.summaries,
+        meta: next.meta,
+      });
+      cache = { ...next, hash: change.hash, changed: change.changed };
+      return cache;
+    })().finally(() => {
+      loadPromise = null;
     });
-    cache = { ...next, hash: change.hash, changed: change.changed };
-    return cache;
+    return loadPromise;
+  }
+
+  async function loadCapacity() {
+    if (isCacheFresh(capacityCache.at, CAPACITY_CACHE_MS)) return capacityCache.value;
+    const value = await getJSON("/api/capacity");
+    capacityCache = { at: Date.now(), value };
+    return value;
   }
 
   /* ---------- shell wiring ---------- */
@@ -268,6 +288,21 @@ import {
     });
   }
 
+  function renderLoading(view, key) {
+    if (!view || view.childElementCount > 0) return;
+    const section = SECTIONS.find((candidate) => candidate.key === key);
+    view.setAttribute("aria-busy", "true");
+    view.innerHTML = `
+      <div class="view-loading" role="status" aria-live="polite">
+        <div class="loading-kicker">Governance</div>
+        <div class="loading-title">${H(section?.name || "Loading")}</div>
+        <div class="loading-copy">Reading current workspace evidence</div>
+        <div class="loading-grid" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+      </div>`;
+  }
+
   function show(key) {
     current = key;
     try {
@@ -279,7 +314,9 @@ import {
     if (missionsLabel) missionsLabel.classList.toggle("ag-hide", !isMission);
     if (missionListEl) missionListEl.classList.toggle("ag-hide", !isMission);
     views.forEach((v, k) => v.classList.toggle("ag-hide", k !== key));
-    renderActive(true, false);
+    const view = views.get(key);
+    renderLoading(view, key);
+    renderActive(false, false);
   }
 
   function viewHead(topline, title, sub) {
@@ -472,7 +509,7 @@ import {
     const panel = E("div", "panel");
     panel.appendChild(E("div", "section-label", "Build receipts · offline-verifiable proofs"));
     const scroll = E("div", "table-scroll");
-    const table = E("table");
+    const table = E("table", "receipt-table");
     table.innerHTML =
       "<thead><tr><th>Mission</th><th>Outcome</th><th>Criteria</th><th>Contract</th><th>Evidence chain</th><th></th></tr></thead>";
     const tbody = E("tbody");
@@ -480,21 +517,21 @@ import {
       const r = m.receipt || {};
       const outcome = r.outcome || "DRAFT";
       const cls = outcome === "COMPLETE" ? "complete" : outcome === "BLOCKED" ? "blocked" : "unverified";
-      const tr = E("tr");
+      const tr = E("tr", "receipt-record");
       tr.innerHTML = `
-        <td>${H(m.contract?.objective || m.id)}</td>
-        <td><span class="status-badge ${cls}">${H(outcome)}</span></td>
-        <td class="mono">${(m.contract?.acceptanceCriteria || []).length}</td>
-        <td class="mono">${short(m.contract?.hash)}</td>
-        <td class="mono">${short(r.evidenceChainHead)}</td>
-        <td></td>`;
+        <td class="receipt-mission" data-label="Mission">${H(m.contract?.objective || m.id)}</td>
+        <td data-label="Outcome"><span class="status-badge ${cls}">${H(outcome)}</span></td>
+        <td class="mono" data-label="Criteria">${(m.contract?.acceptanceCriteria || []).length}</td>
+        <td class="mono receipt-contract" data-label="Contract">${short(m.contract?.hash)}</td>
+        <td class="mono receipt-evidence" data-label="Evidence chain">${short(r.evidenceChainHead)}</td>
+        <td class="receipt-action" data-label="Integrity"></td>`;
       const btn = E("button", "button secondary", "▶ verify");
       const cell = tr.lastElementChild;
       const out = E("pre", "verify-out");
       btn.addEventListener("click", () => verifyReceipt(m, out));
       cell.appendChild(btn);
       tbody.appendChild(tr);
-      const outRow = E("tr");
+      const outRow = E("tr", "receipt-output");
       const outCell = E("td");
       outCell.colSpan = 6;
       outCell.appendChild(out);
@@ -530,7 +567,7 @@ import {
     }, 600);
   }
 
-  async function renderRunway(v, data) {
+  function renderRunway(v, data) {
     const totals = data.full.reduce(
       (a, m) => {
         (m.ledger || []).forEach((l) => {
@@ -543,8 +580,6 @@ import {
       },
       { in: 0, out: 0, runs: 0 }
     );
-    const cap = await getJSON("/api/capacity");
-    const capView = capacityView(cap);
     const root = E("div");
     root.innerHTML = viewHead(
       "Governance",
@@ -552,12 +587,15 @@ import {
       "Codex account capacity and the token spend across governed missions. Usage is read from the Codex app-server, never estimated by the model."
     );
     const band = E("section", "grid metrics");
-    band.appendChild(kpi(capView.label, capView.value, capView.foot, capView.tone));
+    const capacityCard = kpi("Capacity", "checking", "reading Codex app-server", "");
+    capacityCard.classList.add("capacity-card", "is-loading");
+    band.appendChild(capacityCard);
     band.appendChild(kpi("Tokens in", num(totals.in), "prompt tokens across missions", ""));
     band.appendChild(kpi("Tokens out", num(totals.out), "completion tokens across missions", ""));
     band.appendChild(kpi("Codex runs", String(totals.runs), "governed exec sessions", ""));
     root.appendChild(band);
-    root.appendChild(E("div", "rw-note", capView.note));
+    const capacityNote = E("div", "rw-note", "Capacity is loading; mission totals are already available.");
+    root.appendChild(capacityNote);
 
     if (data.full.length) {
       const panel = E("div", "panel");
@@ -590,6 +628,16 @@ import {
     }
     v.innerHTML = "";
     v.appendChild(root);
+    v.removeAttribute("aria-busy");
+
+    loadCapacity().then((capacity) => {
+      if (!capacityCard.isConnected) return;
+      const capView = capacityView(capacity);
+      const nextCard = kpi(capView.label, capView.value, capView.foot, capView.tone);
+      nextCard.classList.add("capacity-card");
+      capacityCard.replaceWith(nextCard);
+      capacityNote.textContent = capView.note;
+    });
   }
 
   function capacityView(c) {
@@ -696,7 +744,10 @@ import {
     const fn = RENDERERS[current];
     if (fn) {
       const v = views.get(current);
-      if (v) await fn(v, data);
+      if (v) {
+        await fn(v, data);
+        v.removeAttribute("aria-busy");
+      }
     }
   }
 

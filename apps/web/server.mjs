@@ -11,7 +11,7 @@ import { readFile, readdir, stat } from "node:fs/promises";
 import { existsSync, statSync } from "node:fs";
 import { join, extname, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { approve, deny } from "@axiomgate/core";
+import { approve, deny, readCodexRateLimits } from "@axiomgate/core";
 import {
   applyDashboardApproval,
   isAllowedDashboardOrigin,
@@ -185,67 +185,25 @@ async function loadDashboardData() {
   });
 }
 
-// Live Codex account capacity via the app-server (best-effort, read-only).
-function readCapacity() {
-  return new Promise((resolvep) => {
-    import("node:child_process")
-      .then(({ spawn }) => {
-        let out = "";
-        let done = false;
-        const finish = (val) => {
-          if (!done) {
-            done = true;
-            resolvep(val);
-          }
-        };
-        let p;
-        try {
-          p = spawn("codex.cmd app-server", {
-            stdio: ["pipe", "pipe", "ignore"],
-            shell: true,
-          });
-        } catch {
-          return finish(null);
-        }
-        p.on("error", () => finish(null));
-        p.stdout.on("data", (d) => (out += d.toString()));
-        const send = (o) => {
-          try {
-            p.stdin.write(JSON.stringify(o) + "\n");
-          } catch {}
-        };
-        send({
-          method: "initialize",
-          id: 0,
-          params: {
-            clientInfo: { name: "axiomgate-web", title: "AxiomGate", version: "0.1.0" },
-            capabilities: { experimentalApi: true, optOutNotificationMethods: [] },
-          },
-        });
-        setTimeout(() => send({ method: "initialized", params: {} }), 600);
-        setTimeout(
-          () => send({ method: "account/rateLimits/read", id: 1, params: {} }),
-          1200
-        );
-        setTimeout(() => {
-          try {
-            p.kill();
-          } catch {}
-          const line = out
-            .split(/\r?\n/)
-            .map((l) => {
-              try {
-                return JSON.parse(l);
-              } catch {
-                return null;
-              }
-            })
-            .find((o) => o && o.id === 1 && o.result);
-          finish(line ? line.result : null);
-        }, 5000);
-      })
-      .catch(() => resolvep(null));
-  });
+// Live Codex account capacity via the shared, timeout-bounded app-server probe.
+// The core probe completes as soon as the JSON-RPC response arrives and caches
+// it for 60 seconds, so opening Runway never pays an artificial fixed delay.
+async function readCapacity() {
+  const result = await readCodexRateLimits({ timeoutMs: 5_000 });
+  if (result.status !== "AVAILABLE") return null;
+  const primary =
+    result.sources.find((source) => source.windowLabel === "weekly") ||
+    result.sources[0];
+  if (!primary) return null;
+  return {
+    rateLimits: {
+      planType: primary.planType,
+      primary: {
+        usedPercent: primary.usedPercent,
+        resetsAt: Math.floor(new Date(primary.resetsAt).getTime() / 1_000),
+      },
+    },
+  };
 }
 
 // ---------- http ----------
