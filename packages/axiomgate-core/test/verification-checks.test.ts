@@ -81,7 +81,7 @@ describe("parsePatchPilotOutput", () => {
         dependencyType: "direct",
         reachability: "reachable",
         reachabilityNote:
-          "Imported in first-party source — treat as reachable.",
+          "Imported in first-party source - treat as reachable.",
       });
     }
   });

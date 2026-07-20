@@ -61,8 +61,8 @@ function optionalNumber(
 
 function clean(value: string, limit = 300): string {
   const normalized = redactSensitiveText(value)
-    .replaceAll("—", ":")
-    .replaceAll("–", "-");
+    .replaceAll("\u2014", ":")
+    .replaceAll("\u2013", "-");
   const characters = [...normalized];
   const bounded = characters.length <= limit
     ? normalized

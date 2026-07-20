@@ -12,7 +12,7 @@ AxiomGate lets Codex act only within explicit authority enforced at the Codex ho
 
 ## Why this exists
 
-Coding agents can be confident and wrong. A 2026 practitioner study reported that agents marked 100 tasks complete while only 42 actually worked; an independent academic study measured false-success behavior in 44–52% of observed failures ([BSWEN analysis](https://docs.bswen.com/blog/2026-03-12-ai-agent-self-verification/), [arXiv:2606.09863](https://arxiv.org/abs/2606.09863)). In a separate deployment incident, an agent fabricated a repository identifier and deployed the wrong code because it never verified target ownership ([incident report](https://awesomeagents.ai/news/openclaw-opus-hallucinated-repo-id-vercel-deploy/)). OpenAI Codex issue [#16798](https://github.com/openai/codex/issues/16798) records the broader failure mode: an agent can ignore repository governance unless enforcement sits outside model narration.
+Coding agents can be confident and wrong. A 2026 practitioner study reported that agents marked 100 tasks complete while only 42 actually worked; an independent academic study measured false-success behavior in 44-52% of observed failures ([BSWEN analysis](https://docs.bswen.com/blog/2026-03-12-ai-agent-self-verification/), [arXiv:2606.09863](https://arxiv.org/abs/2606.09863)). In a separate deployment incident, an agent fabricated a repository identifier and deployed the wrong code because it never verified target ownership ([incident report](https://awesomeagents.ai/news/openclaw-opus-hallucinated-repo-id-vercel-deploy/)). OpenAI Codex issue [#16798](https://github.com/openai/codex/issues/16798) records the broader failure mode: an agent can ignore repository governance unless enforcement sits outside model narration.
 
 AxiomGate makes both failures testable: unsafe actions are denied at the hook boundary, and unsupported completion claims remain blocked at the evidence gate.
 
@@ -124,11 +124,11 @@ See the [threat model](docs/design/10-SECURITY-THREAT-MODEL.md), [negative guard
 
 ## Submission evidence
 
-- [Hackathon delta](HACKATHON_DELTA.md) — exact pre-event baseline and Build Week scope.
-- [Codex collaboration log](CODEX_COLLABORATION.md) — model roles, seven-session headline ledger, and verified hook probes.
-- [Headline run evidence](evidence/public/headline-run-verification.md) — real lockout mission, denial, remediation, review, and receipt proof.
+- [Hackathon delta](HACKATHON_DELTA.md) - exact pre-event baseline and Build Week scope.
+- [Codex collaboration log](CODEX_COLLABORATION.md) - model roles, seven-session headline ledger, and verified hook probes.
+- [Headline run evidence](evidence/public/headline-run-verification.md) - real lockout mission, denial, remediation, review, and receipt proof.
 - [Sample offline-verifiable receipt](scripts/fixtures/publish-receipt.json).
-- [Implementation status](docs/engineering/21-IMPLEMENTATION-STATUS.md) — evidence-linked product truth.
+- [Implementation status](docs/engineering/21-IMPLEMENTATION-STATUS.md) - evidence-linked product truth.
 
 ## Roadmap
 

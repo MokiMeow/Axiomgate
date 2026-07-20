@@ -1,6 +1,6 @@
 # PatchPilot Core Reuse Map
 
-PatchPilot is the pre-existing Verification Engine foundation at `../patchpilot/packages/core`. AxiomGate will consume its exported contracts in V1–V4; F3/F4 do not copy or modify PatchPilot code.
+PatchPilot is the pre-existing Verification Engine foundation at `../patchpilot/packages/core`. AxiomGate will consume its exported contracts in V1-V4; F3/F4 do not copy or modify PatchPilot code.
 
 | PatchPilot export | Existing responsibility | Planned AxiomGate consumer |
 |---|---|---|

@@ -1,12 +1,12 @@
-# Phase 2 — Environment Guard
+# Phase 2 - Environment Guard
 
-Aligned to board tasks **G1–G5** (core) and **X4–X5** (stretch). Capability-discovery generalization is post-hackathon; the core supports only the execution mechanisms required by the demo mission.
+Aligned to board tasks **G1-G5** (core) and **X4-X5** (stretch). Capability-discovery generalization is post-hackathon; the core supports only the execution mechanisms required by the demo mission.
 
 ## Outcome
 
 Only correctly targeted and explicitly authorized semantic actions can be executed during a mission, enforced at the Codex hook boundary.
 
-## Core subtasks (G1–G5)
+## Core subtasks (G1-G5)
 
 - Resolve identity: gh identity, git remote, Vercel project/team; block ambiguity or mismatch (G1).
 - Verify deploy-target existence and ownership via GitHub/Vercel API before any publish/deploy action; capture the proof as evidence (G1).
@@ -15,16 +15,16 @@ Only correctly targeted and explicitly authorized semantic actions can be execut
 - Implement approval binding: exact command/argument hash, expiry, single-use; dashboard + CLI surfaces; Telegram extended from PatchPilot `telegram`/`approval` modules (G4).
 - Store and resolve credential handles outside model context; redact secret-bearing output (G4).
 - Enforce intent boundaries: a proposed action above the current level becomes an approval request, never an automatic operation (G3).
-- Negative test suite (G5) — see Tests.
+- Negative test suite (G5) - see Tests.
 
-## Stretch subtasks (X4–X5 — only after G1–G5 are verified)
+## Stretch subtasks (X4-X5 - only after G1-G5 are verified)
 
 - X4: equivalent semantic action through shell CLI and MCP tool fixture receives the identical policy verdict at the hook.
 - X5: MCP tool descriptions pass through the existing PatchPilot `promptInjection`/`mcpToolGuard` modules before a mechanism becomes eligible for a semantic action.
 
 ## Explicit non-work
 
-Do not build: a skill installer or migration tool; duplicate-skill detection; a central MCP registry; provider configuration generators; an MCP broker or gateway; plugin conversion or marketplace functionality; general trust/risk static analysis of scripts and executables (post-hackathon — see `docs/05`).
+Do not build: a skill installer or migration tool; duplicate-skill detection; a central MCP registry; provider configuration generators; an MCP broker or gateway; plugin conversion or marketplace functionality; general trust/risk static analysis of scripts and executables (post-hackathon - see `docs/05`).
 
 ## Core tests (G5)
 

@@ -142,7 +142,7 @@ describe("Telegram approval relay", () => {
     expect(record?.approval).toMatchObject({ surface: "telegram", singleUse: true, boundCommandHash: HASH });
     expect(client.edits[0]?.text).toContain("Approved once");
     expect(client.edits[0]?.text).not.toContain("sha256:");
-    expect(client.edits[0]?.text).not.toMatch(/[—–]/u);
+    expect(client.edits[0]?.text).not.toMatch(/[\u2014\u2013]/u);
     const outcomeMarkup = client.edits[0]?.markup as { inline_keyboard: Array<Array<{ text: string }>> };
     expect(outcomeMarkup.inline_keyboard.flat().map((button) => button.text)).toEqual(["Details"]);
     await processTelegramUpdate(projectPath, config(), client, callback, { now: () => new Date("2026-07-20T10:02:00.000Z") });
@@ -177,7 +177,7 @@ describe("Telegram approval relay", () => {
     for (const field of ["Approval needed", "Mission", "Deploy a governed preview", "Action", "Deploy preview", "Target", "preview", "Identity", "mokimeow (Vercel)", "Workspace", "target-app", "Command", "Why approval is needed", "Risk", "Approval", "One use only", "bound to the exact command"]) {
       expect(card.text).toContain(field);
     }
-    expect(card.text).not.toMatch(/[—–]/u);
+    expect(card.text).not.toMatch(/[\u2014\u2013]/u);
     expect(card.text).not.toContain("sha256:");
     expect(card.text).not.toContain("msn_telegram");
     const markup = card.markup as { inline_keyboard: Array<Array<{ text: string }>> };
@@ -187,7 +187,7 @@ describe("Telegram approval relay", () => {
     for (const field of ["Deploy a governed preview", "policy requires explicit approval", "Timing", "DEPLOY_PREVIEW", "target-app", "Audit reference", "msn_telegram", "act_preview_0"]) expect(details).toContain(field);
     expect(details).not.toContain(HASH);
     expect(details).not.toContain("sha256:");
-    expect(details).not.toMatch(/[—–]/u);
+    expect(details).not.toMatch(/[\u2014\u2013]/u);
   });
 
   it("expires without granting authority", async () => {
@@ -387,7 +387,7 @@ describe("Telegram rendering, configuration, and notifications", () => {
       expect(run).toContain(field);
     }
     for (const text of [guard, verification, proof, run]) {
-      expect(text).not.toMatch(/[—–]/u);
+      expect(text).not.toMatch(/[\u2014\u2013]/u);
       expect(text).not.toContain("sha256:");
     }
   });

@@ -21,16 +21,16 @@ Convert an informal request into a stable, testable mission without over-constra
 The Build Week compiler is a schema and an editor, not an NLP system:
 
 1. read the objective;
-2. create 3–6 acceptance criteria;
+2. create 3-6 acceptance criteria;
 3. select evidence types per criterion;
 4. set the intent boundary;
 5. apply the action-policy template from the project profile;
 6. detect one direct policy conflict (objective vs. profile policy) and surface it;
 7. hash and version the accepted contract.
 
-## Instruction compilation (post-hackathon — do not implement for Build Week)
+## Instruction compilation (post-hackathon - do not implement for Build Week)
 
-Full discovery and classification of user/project/repository/provider/external/untrusted instruction sources, duplicate-rule and stale-path detection, unsupported-directive analysis, and compiler-side prompt-injection classification. (Prompt-injection scanning of untrusted content is Environment Guard's job — `docs/05`.)
+Full discovery and classification of user/project/repository/provider/external/untrusted instruction sources, duplicate-rule and stale-path detection, unsupported-directive analysis, and compiler-side prompt-injection classification. (Prompt-injection scanning of untrusted content is Environment Guard's job - `docs/05`.)
 
 ## Output contract
 

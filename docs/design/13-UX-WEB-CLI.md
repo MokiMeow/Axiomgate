@@ -1,6 +1,6 @@
 # Web Dashboard and CLI Experience
 
-For Build Week the product surface is a **local web dashboard** (extending the existing PatchPilot Next.js app) plus a CLI. There is no desktop (Electron/Tauri) app — ADR-009. "Desktop" below means the local web dashboard.
+For Build Week the product surface is a **local web dashboard** (extending the existing PatchPilot Next.js app) plus a CLI. There is no desktop (Electron/Tauri) app - ADR-009. "Desktop" below means the local web dashboard.
 
 ## Product experience
 
@@ -11,7 +11,7 @@ Plan → Guard → Run → Verify → Prove
 (Draft → Planned → Authorized → Running → Verifying → Awaiting Approval → Completed)
 ```
 
-Do not surface the internal vocabulary (Mission Compiler, Runway, Environment Guard, Evidence Gate, Proof Graph, Human Review Map, Model Director) as primary UI labels — eleven proper nouns is a comprehension tax. One mission timeline, five stages.
+Do not surface the internal vocabulary (Mission Compiler, Runway, Environment Guard, Evidence Gate, Proof Graph, Human Review Map, Model Director) as primary UI labels - eleven proper nouns is a comprehension tax. One mission timeline, five stages.
 
 ## First-run rule
 

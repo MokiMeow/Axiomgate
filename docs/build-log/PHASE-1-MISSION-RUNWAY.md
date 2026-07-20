@@ -1,4 +1,4 @@
-# Phase 1 — Mission Contract and Runway Lite
+# Phase 1 - Mission Contract and Runway Lite
 
 Aligned to board tasks **F6** and **R3** (ADR-008). Deferred items live in `docs/design/MASTER_BUILD_CONTRACT.md` "Post-hackathon scope".
 
@@ -9,7 +9,7 @@ A user can turn a one-line objective into a versioned, hashed mission contract w
 ## Subtasks
 
 - Mission schema, validation, versioning, and hash (from `docs/02` canonical schemas).
-- Contract creation with safe defaults: 3–6 acceptance criteria with evidence types, intent boundary, action policy template.
+- Contract creation with safe defaults: 3-6 acceptance criteria with evidence types, intent boundary, action policy template.
 - Detect one direct policy conflict (objective vs. profile policy) and surface it; full instruction discovery is deferred.
 - Intent boundary → sandbox/permission-profile mapping.
 - Model Director: phase → GPT-5.6 tier (Sol/Terra/Luna) + reasoning effort with recorded rationale.

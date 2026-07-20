@@ -1,4 +1,4 @@
-# AGENTS.md — Engineering Instructions for All Coding Agents
+# AGENTS.md - Engineering Instructions for All Coding Agents
 
 ## Scope
 

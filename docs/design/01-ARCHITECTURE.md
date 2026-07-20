@@ -50,7 +50,7 @@ It does not become a package manager. It discovers existing execution mechanisms
 
 ### Execution service
 
-Owns Codex sessions (SDK / `exec --json`), sandbox mapping, and canonical mission state with stop/resume. (Process supervision breadth, worktree and environment leases: post-hackathon — native Codex worktrees suffice.)
+Owns Codex sessions (SDK / `exec --json`), sandbox mapping, and canonical mission state with stop/resume. (Process supervision breadth, worktree and environment leases: post-hackathon - native Codex worktrees suffice.)
 
 ### Verification service
 
@@ -84,10 +84,10 @@ An action may be implemented by a native Codex tool, CLI, API adapter, browser w
 
 Policy is enforced at official Codex extension points, not through prompt instructions:
 
-- **Codex hooks** — `PreToolUse` and `PermissionRequest` hooks call the local AxiomGate policy engine before any tool call or approval-worthy action executes. Deny-wins semantics; a hook decision of deny blocks the action. `PostToolUse` records observed results. `PreCompact`/`PostCompact` record context events.
-- **Sandbox and permission profiles** — the mission intent boundary maps to concrete Codex sandbox flags and permission-profile settings at session launch (for example, `MODIFY_LOCAL` → `--sandbox workspace-write`, network off).
-- **App Server / SDK** — sessions are launched and observed through the Codex App Server JSON-RPC protocol or the official TypeScript SDK; `codex exec --json` supplies the event stream and token usage for the ledger.
-- **Fail closed** — a mission refuses to start if the hook configuration hash does not match the mission policy, if the installed Codex version does not support the required hooks, or if hook failure semantics cannot be verified.
+- **Codex hooks** - `PreToolUse` and `PermissionRequest` hooks call the local AxiomGate policy engine before any tool call or approval-worthy action executes. Deny-wins semantics; a hook decision of deny blocks the action. `PostToolUse` records observed results. `PreCompact`/`PostCompact` record context events.
+- **Sandbox and permission profiles** - the mission intent boundary maps to concrete Codex sandbox flags and permission-profile settings at session launch (for example, `MODIFY_LOCAL` → `--sandbox workspace-write`, network off).
+- **App Server / SDK** - sessions are launched and observed through the Codex App Server JSON-RPC protocol or the official TypeScript SDK; `codex exec --json` supplies the event stream and token usage for the ledger.
+- **Fail closed** - a mission refuses to start if the hook configuration hash does not match the mission policy, if the installed Codex version does not support the required hooks, or if hook failure semantics cannot be verified.
 
 Every hook decision (allow, deny, escalate) is persisted as a mission evidence event.
 
@@ -154,7 +154,7 @@ Do not collapse all failures into generic exceptions or success booleans.
 
 For the hackathon:
 
-- local web dashboard and CLI (no desktop app — ADR-009);
+- local web dashboard and CLI (no desktop app - ADR-009);
 - local engine/daemon only when needed;
 - GitHub and Vercel preview integrations;
 - no required cloud control plane;

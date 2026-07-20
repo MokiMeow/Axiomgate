@@ -14,7 +14,7 @@ Environment Guard enforces policy through official Codex extension points. This 
 2. **Approval binding.** When the decision is escalate, the approval record binds the exact command/argument hash observed by the hook, the target, the identity, an expiry, and a single-use flag. If the command, arguments, target, or identity change, the approval is void and the hook denies.
 3. **Sandbox mapping.** Intent boundary → sandbox/permission-profile flags at session launch. The runtime may never widen these mid-mission without a new authorization event.
 4. **Fail closed.** If hooks are unavailable, unverifiable, or fail open on the installed Codex version, the mission does not start. Phase 0 must empirically verify hook failure semantics and record them in the compatibility matrix with version numbers.
-5. **Evidence.** Every hook decision is persisted as an evidence event and appears in the Build Receipt, including denials — a blocked action is proof the gate works.
+5. **Evidence.** Every hook decision is persisted as an evidence event and appears in the Build Receipt, including denials - a blocked action is proof the gate works.
 
 ## Capability discovery
 
@@ -46,7 +46,7 @@ Playwright browser flow        -> browser.verify
 PatchPilot verification run    -> verification.run
 ```
 
-Policy is evaluated against the semantic action, target, identity, and side effects—not against a fashionable protocol name.
+Policy is evaluated against the semantic action, target, identity, and side effects - not against a fashionable protocol name.
 
 ## Capability descriptor
 
@@ -122,7 +122,7 @@ Block ambiguity or mismatch by default.
 
 ## Deploy-target existence and ownership proof
 
-Before any `pull_request.create`, `preview.deploy`, or `production.deploy`, resolve the target repository or project through the GitHub/Vercel API and verify that it exists **and** is owned by the account in the project profile. An agent-invented or coincidentally valid target ID must be blocked. (Motivated by the publicly documented 2026 incident in which an agent invented a repository ID and unrelated code was deployed to a customer project.) The verification result — target ID, owner, API response hash — is attached to the action's evidence.
+Before any `pull_request.create`, `preview.deploy`, or `production.deploy`, resolve the target repository or project through the GitHub/Vercel API and verify that it exists **and** is owned by the account in the project profile. An agent-invented or coincidentally valid target ID must be blocked. (Motivated by the publicly documented 2026 incident in which an agent invented a repository ID and unrelated code was deployed to a customer project.) The verification result - target ID, owner, API response hash - is attached to the action's evidence.
 
 ## Intent boundary
 

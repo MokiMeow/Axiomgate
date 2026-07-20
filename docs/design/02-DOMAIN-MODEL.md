@@ -241,7 +241,7 @@ Implementations must start from these shapes so parallel agents do not invent di
 // Evidence v1
 {
   "id": "ev_...", "missionId": "msn_...", "criterionId": "ac1",
-  "source": "command",                   // command|api|hook — NEVER "model"
+  "source": "command",                   // command|api|hook - NEVER "model"
   "command": "npm test", "exitCode": 0,
   "outputHash": "sha256:...", "outputRef": ".local/evidence/ev_....log",
   "capturedAt": "...", "freshForCommit": "abc123",
@@ -251,7 +251,7 @@ Implementations must start from these shapes so parallel agents do not invent di
 ```
 
 ```jsonc
-// BuildReceipt v1 (projection only — derived from stored events)
+// BuildReceipt v1 (projection only - derived from stored events)
 {
   "missionId": "msn_...", "contractHash": "sha256:...",
   "repo": { "remote": "...", "branch": "...", "commit": "..." },

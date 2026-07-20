@@ -65,7 +65,7 @@ Relevant real JSONL:
 There was no `command_execution` item. More importantly, stderr reported:
 
 ```text
-approval policy is Never; reject command — you should not ask for escalated permissions if the approval policy is Never
+approval policy is Never; reject command - you should not ask for escalated permissions if the approval policy is Never
 ```
 
 No hook-capture file and no AxiomGate hook event were produced. Therefore, on installed 0.144.4, non-interactive `codex exec` accepts the global on-request option syntactically but handles the escalated request with effective policy `Never` before `PermissionRequest` dispatch. There is no live payload shape to report for this surface. This is a verified compatibility limitation, not a successful PermissionRequest enforcement claim. The already verified `PreToolUse` JSON deny remains the mandatory enforcement path for governed non-interactive runs.

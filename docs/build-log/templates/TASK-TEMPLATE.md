@@ -1,4 +1,4 @@
-# TASK-ID — Title
+# TASK-ID - Title
 
 ## Status
 

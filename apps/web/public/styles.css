@@ -1,5 +1,5 @@
 /*
- * AxiomGate Mission Control — dark editorial theme.
+ * AxiomGate Mission Control - dark editorial theme.
  * Same visual family as PatchPilot Watch Commander: a single Cursor-Orange
  * accent used sparingly, hairline-only depth (no heavy shadows), editorial
  * type with negative tracking on display, and JetBrains Mono on every
@@ -98,7 +98,7 @@ select {
 }
 
 /* Premium surface treatment: faint top-light gradient + inner hairline
-   highlight. Still hairline depth — no drop shadows on panels. */
+   highlight. Still hairline depth - no drop shadows on panels. */
 .card,
 .panel,
 .step {
@@ -1250,7 +1250,7 @@ td.risk {
 }
 
 @media (max-width: 640px) {
-  /* Keep proof-table columns readable — the wrapper scrolls instead of
+  /* Keep proof-table columns readable - the wrapper scrolls instead of
      crushing the criterion column into single-word shards. */
   .table-scroll table {
     min-width: 540px;

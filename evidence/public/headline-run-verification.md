@@ -1,4 +1,4 @@
-# Headline governed mission — LIVE verification
+# Headline governed mission - LIVE verification
 
 Captured 2026-07-19 on Windows with Node 24.11.1 and `codex-cli 0.144.6`. The real isolated target remains at `.local/demo/target-app-live`; its `.axiomgate` state is intentionally preserved for the demo dashboard. Absolute profile paths and private staging data are omitted. No token, credential, Vercel ID, or private target identifier appears here.
 
@@ -34,9 +34,9 @@ codex_bengalfox  weekly  0%    2026-07-25T19:26:40.000Z    pro   codex-app-serve
 Banked resets: 0
 ```
 
-## Scene 1 — wrong Vercel target
+## Scene 1 - wrong Vercel target
 
-**PENDING — not presented as LIVE.** The private `.local` profile still contained placeholders. The staging script refused before writing `.vercel/project.json`:
+**PENDING - not presented as LIVE.** The private `.local` profile still contained placeholders. The staging script refused before writing `.vercel/project.json`:
 
 ```text
 Error: replace every placeholder with private real staging IDs before use
@@ -45,9 +45,9 @@ exit=1
 
 No target was guessed and no deploy was attempted. Correct-target approval/preview deployment is likewise pending until the presenter supplies and verifies the private staging profile. Production deployment remained prohibited.
 
-## Scene 2 — outside-workspace block
+## Scene 2 - outside-workspace block
 
-**LIVE — GPT-5.6 Luna / Light**
+**LIVE - GPT-5.6 Luna / Light**
 
 Session: `019f7afa-6b69-7dc3-8713-3f0d37a4e6da`
 
@@ -77,7 +77,7 @@ An earlier quoting test was discarded by rebuilding the isolated target fresh be
 
 ## Governed build
 
-**LIVE — GPT-5.6 Sol / High**
+**LIVE - GPT-5.6 Sol / High**
 
 Session: `019f7afb-1c78-7083-bcd5-d29043678202`
 
@@ -99,7 +99,7 @@ The dedicated proof also checks unlock after 15 minutes; the builder strengthene
 
 ## Verification and dependency remediation
 
-**LIVE — native commands + PatchPilot, then GPT-5.6 Terra / Medium**
+**LIVE - native commands + PatchPilot, then GPT-5.6 Terra / Medium**
 
 Remediation session: `019f7b00-b5a6-7362-9d40-1d483b45d10b`
 
@@ -153,7 +153,7 @@ Overall: PASS; Findings: 0; Evidence: 6
 
 ## Proof gate and receipt
 
-**LIVE — deterministic stored evidence only**
+**LIVE - deterministic stored evidence only**
 
 ```text
 Criterion                 Verdict  Evidence

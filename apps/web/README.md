@@ -19,15 +19,15 @@ Open `http://localhost:4319`.
 
 ## What it shows
 
-- **Mission spine** — the five governed stages: Plan → Guard → Run → Verify → Prove.
-- **The block moment** — actions denied at the Codex hook, with the exact command and reason (identity / ownership / policy).
-- **Model plan** — per-phase GPT-5.6 tier and reasoning effort.
-- **Token ledger** — real Codex usage from the mission ledger; Builder / Verifier sessions.
-- **Proof table** — each acceptance criterion → verdict → the machine evidence backing it. Model-sourced "evidence" is flagged inadmissible.
-- **Completion gate** — COMPLETE only when every required criterion is PASS or WAIVED.
-- **Build Receipt** — contract hash, commit, evidence chain head, and an in-page verify readout (the authoritative check is the CLI `axiomgate receipt verify`).
-- **Web approval** — approve/deny a pending action from any device's browser (the phone channel for a headless runtime).
-- **Live capacity** — real weekly usage and plan from the Codex app-server, top-right.
+- **Mission spine** - the five governed stages: Plan → Guard → Run → Verify → Prove.
+- **The block moment** - actions denied at the Codex hook, with the exact command and reason (identity / ownership / policy).
+- **Model plan** - per-phase GPT-5.6 tier and reasoning effort.
+- **Token ledger** - real Codex usage from the mission ledger; Builder / Verifier sessions.
+- **Proof table** - each acceptance criterion → verdict → the machine evidence backing it. Model-sourced "evidence" is flagged inadmissible.
+- **Completion gate** - COMPLETE only when every required criterion is PASS or WAIVED.
+- **Build Receipt** - contract hash, commit, evidence chain head, and an in-page verify readout (the authoritative check is the CLI `axiomgate receipt verify`).
+- **Web approval** - approve/deny a pending action from any device's browser (the phone channel for a headless runtime).
+- **Live capacity** - real weekly usage and plan from the Codex app-server, top-right.
 
 ## Design
 

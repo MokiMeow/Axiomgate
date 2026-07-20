@@ -1,4 +1,4 @@
-# `.local/` — Private Local Workspace
+# `.local/` - Private Local Workspace
 
 Everything in this directory except this README and `.gitkeep` is ignored by Git.
 

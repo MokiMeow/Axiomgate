@@ -1,6 +1,6 @@
-# Phase 5 — Evidence Gate and Approvals
+# Phase 5 - Evidence Gate and Approvals
 
-Aligned to board tasks **E1–E2** and **G4** (ADR-008). Telegram and redaction/hashing extend existing PatchPilot modules — do not rebuild.
+Aligned to board tasks **E1-E2** and **G4** (ADR-008). Telegram and redaction/hashing extend existing PatchPilot modules - do not rebuild.
 
 ## Outcome
 

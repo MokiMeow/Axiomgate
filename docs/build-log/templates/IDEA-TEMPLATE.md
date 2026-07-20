@@ -1,4 +1,4 @@
-# Idea — Title
+# Idea - Title
 
 ## Evidence/source
 

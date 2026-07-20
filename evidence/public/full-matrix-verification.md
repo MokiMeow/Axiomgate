@@ -13,15 +13,15 @@ This matrix distinguishes current source, the already-published npm artifact, de
 |---|---|---|---|---|---|
 | Published doctor | npm / CLI | Fresh consumer returned Node, Codex, Git, quota, and native-integration status with exit 0 | Unavailable capacity is rendered explicitly in isolated Codex home | No credentials printed | PASS |
 | Published help | npm / CLI | `npx -y axiomgate@0.1.0 --help` returned exit 0 | Unknown command returns usage and non-zero | Windows command shim worked | PASS |
-| Published replay all | npm / CLI | All three governance scenarios returned PASS | N/A — aggregate command has no malformed payload | Credential-free and deterministic | PASS |
-| Published individual replays | npm / CLI | N/A — `0.1.0` does not dispatch individual scenarios | Each documented scenario returned usage and exit 1 | Current source now supports all three; release still required | FAIL (published), PASS (source) |
+| Published replay all | npm / CLI | All three governance scenarios returned PASS | N/A - aggregate command has no malformed payload | Credential-free and deterministic | PASS |
+| Published individual replays | npm / CLI | N/A - `0.1.0` does not dispatch individual scenarios | Each documented scenario returned usage and exit 1 | Current source now supports all three; release still required | FAIL (published), PASS (source) |
 | Published receipt verify | npm / CLI | Valid fixture returned exit 0 | One-byte/hash tamper returned exit 1 | Offline and account-free | PASS |
-| Public npm metadata | npm registry | Version, bin, Node engine, description, README quickstart, and proof pitch present | N/A — registry metadata read succeeded | npm web page returned HTTP 403 to the browsing environment; registry API remained readable | PARTIAL |
+| Public npm metadata | npm registry | Version, bin, Node engine, description, README quickstart, and proof pitch present | N/A - registry metadata read succeeded | npm web page returned HTTP 403 to the browsing environment; registry API remained readable | PARTIAL |
 | Public GitHub repository | GitHub | Repository and README render publicly; badges and screenshots resolve | Public branch predates the validated matrix source | Public README still describes Telegram as unfinished | FAIL (publication drift) |
 | Plugin marketplace install | Codex plugin / isolated home | Marketplace add, plugin add, list, MCP registration, skill, and verifier all passed | Invalid global local snapshot is reported rather than silently loaded | Isolated home has no account quota until user login | PASS (public plugin), local drift noted |
-| MCP through Codex | Codex + MCP | Authenticated Luna called mission-list and receipt-verify successfully | N/A — malformed calls covered by direct stdio row | Fresh isolated home installation was inspected without copying private auth | PASS |
+| MCP through Codex | Codex + MCP | Authenticated Luna called mission-list and receipt-verify successfully | N/A - malformed calls covered by direct stdio row | Fresh isolated home installation was inspected without copying private auth | PASS |
 | Dashboard real mode | Web | Real mission workspace returned `demo:false` | Missing mission returned 404 | Resolved approvals no longer appear pending | PASS |
-| Dashboard demo mode | Web | Clean workspace returned bundled sample and `demo:true` | N/A — explicit demo fallback is intended | Banner code and SAMPLE label present | PASS |
+| Dashboard demo mode | Web | Clean workspace returned bundled sample and `demo:true` | N/A - explicit demo fallback is intended | Banner code and SAMPLE label present | PASS |
 | Dashboard approve | Web / canonical store | Approve persisted `surface:dashboard` | Cross-origin and invalid body fixtures reject | Approved request disappears from pending list | PASS |
 | Dashboard deny | Web / canonical store | Deny persisted `deniedSurface:dashboard` | Canonical rejection returns conflict, not success | Denied request disappears from pending list | PASS |
 | Luna / Light | Governed runtime | Fresh session, exit 0, actual usage stored | Shared publish probe denied by hook | Run record stores display `light` and wire `low` | PASS |
@@ -29,7 +29,7 @@ This matrix distinguishes current source, the already-published npm artifact, de
 | Sol / High | Governed runtime | Fresh session, exit 0, actual usage stored | Shared publish probe denied by hook | No-progress advisory appeared without blocking | PASS |
 | Luna / Xhigh | Governed runtime | Fresh session, exit 0, actual usage stored | Shared publish probe denied by hook | Run permitted because weekly usage was below 50% | PASS |
 | Luna / Max | Governed runtime | Fresh session, exit 0, actual usage stored | Shared publish probe denied by hook | Run permitted because weekly usage was below 50% | PASS |
-| Shared model enforcement | Hook | N/A — probe intentionally requested `git push` | JSON deny emitted and hook evidence appended | Disposable workspace lacked Git identity, so denial was fail-closed | PASS |
+| Shared model enforcement | Hook | N/A - probe intentionally requested `git push` | JSON deny emitted and hook evidence appended | Disposable workspace lacked Git identity, so denial was fail-closed | PASS |
 | Mission create | PLAN / CLI | Default mission and production-conflict mission created | Bad boundary returned non-zero with accepted values | Production objective emitted explicit conflict, not silent widening | PASS |
 | Criteria input | PLAN / CLI | Valid criteria covered by `demo:check` | Missing file returned non-zero | Current source now uses a readable criteria-file error instead of a false mission-ID error | PASS |
 | Mission update | PLAN / CLI | Version 1 to 2, contract re-hashed, snapshot regenerated | Invalid/missing mission returns non-zero | Legacy effort migration covered by fixtures | PASS |
@@ -41,7 +41,7 @@ This matrix distinguishes current source, the already-published npm artifact, de
 | Hook contract | GUARD / Codex | Allow emits JSON allow and event | Deny/malformed/internal error emit JSON deny and event | Never relies on exit code 2 alone | PASS |
 | Enforcement install check | GUARD / live Codex | Live probe returned PASS on Codex 0.144.6 | Offline/config and drift cases covered by fixtures | Verification record updated for installed version | PASS |
 | PermissionRequest reviewer | GUARD / fixture + prior live evidence | User reviewer delegates to AxiomGate policy | Unknown reviewer fails safe | Guardian reviewer defers without double prompt | PASS |
-| Negative threat suite | GUARD / tests | N/A — suite is intentionally adversarial | 15 named threats denied or flagged with evidence | Secret output is redacted | PASS |
+| Negative threat suite | GUARD / tests | N/A - suite is intentionally adversarial | 15 named threats denied or flagged with evidence | Secret output is redacted | PASS |
 | Governed run | RUN / live Codex | Five model runs succeeded with sessions and usage | Invalid mission returned non-zero | Runway loop advisory did not fake failure | PASS |
 | Checkpoint and resume | RUN / fixtures + prior evidence | Resume args preserve governance | Missing/truncated stream checkpoints | Rate-limit reset UNKNOWN stays explicit | PASS |
 | Independent verifier | RUN / prior live evidence | Fresh verifier session produced advisory findings | Malformed output becomes UNKNOWN | Findings do not mutate criterion verdicts | PASS |
@@ -54,22 +54,22 @@ This matrix distinguishes current source, the already-published npm artifact, de
 | Criterion verdicts | PROVE / CLI/core | Fresh admissible evidence produces PASS | Missing, stale, model, FAIL, BLOCKED, UNKNOWN prevent PASS | Explicit waiver remains visible | PASS |
 | Completion gate | PROVE / CLI | Complete receipt fixture verifies | Incomplete matrix mission exits non-zero with exact blockers | Permission-quad mismatch is visible | PASS |
 | Waiver | PROVE / CLI | Attributed waiver persisted and rendered | Unwaived criteria still block | Waiver does not fabricate evidence | PASS |
-| Receipt generation | PROVE / CLI | Complete headline receipt regenerated from stored evidence | N/A — incomplete generation behavior covered by fixtures | Evidence chain head emitted | PASS |
+| Receipt generation | PROVE / CLI | Complete headline receipt regenerated from stored evidence | N/A - incomplete generation behavior covered by fixtures | Evidence chain head emitted | PASS |
 | Receipt tamper detection | PROVE / CLI/MCP | Valid receipt passes | Tampered evidence hash fails loudly and non-zero | Reordering/model/stale claims covered by tests | PASS |
 | Live quota | RUNWAY / CLI/MCP | Weekly 12%, reset time, pro plan, and source/confidence shown | Malformed/unavailable fixture renders UNKNOWN | No message counts invented | PASS |
 | Verification reserve | RUNWAY / tests | Under/at/over math passes | Reserve breach warns without blocking | Real percentage source is preferred | PASS |
 | Loop detection | RUNWAY / live + tests | Healthy fixture stays quiet | Repeated no-progress prompts emitted recommendation | Advisory only | PASS |
 | Rate-limit recovery | RUNWAY / tests | Checkpoint and resume command generated | Unparseable reset remains UNKNOWN | Banked-reset hint only appears from recorded data | PASS |
 | MCP tool discovery | MCP / stdio | Initialize and tools/list returned all six tools | Unknown method returned `-32601` | Five tools read-only; approval tool mutating | PASS |
-| MCP mission list | MCP / stdio + Codex | Returned two governed missions | N/A — empty-project behavior covered by fixtures | No model prose used | PASS |
+| MCP mission list | MCP / stdio + Codex | Returned two governed missions | N/A - empty-project behavior covered by fixtures | No model prose used | PASS |
 | MCP mission status | MCP / stdio | Returned proof table and blockers | Missing missionId returned `isError:true` | Current revision included | PASS |
 | MCP receipt verify | MCP / stdio + Codex | Valid receipt returned true | Tamper behavior shared with CLI verifier | Offline | PASS |
 | MCP runway status | MCP / stdio | Live app-server capacity returned | Unavailable path is typed | No invented fields | PASS |
 | MCP approvals list | MCP / stdio | Two pending canonical records returned | Expired/resolved records excluded by store | Read-only annotation true | PASS |
 | MCP approve/deny | MCP / stdio | Approval persisted `surface:mcp` | Invalid decision rejected | Consumed approval reuse returned REJECTED | PASS |
-| MCP protocol errors | MCP / stdio | N/A — intentionally invalid | Malformed JSON `-32700`; unknown tool `isError:true` | Server stayed alive for later messages | PASS |
+| MCP protocol errors | MCP / stdio | N/A - intentionally invalid | Malformed JSON `-32700`; unknown tool `isError:true` | Server stayed alive for later messages | PASS |
 | Telegram auth | Telegram / live Bot API | Safe test authenticated configured bot | Invalid/missing configuration fixtures return UNAVAILABLE | Token and full chat ID never printed | PASS |
-| Telegram pending cards | Telegram / live | Four distinct live pending cards sent | N/A — invalid records are not sent | Multiple requests remained independently addressable | PASS |
+| Telegram pending cards | Telegram / live | Four distinct live pending cards sent | N/A - invalid records are not sent | Multiple requests remained independently addressable | PASS |
 | Telegram approve | Telegram / live | User tap persisted one Telegram single-use approval | Duplicate decision fixture cannot re-grant | Card changed to Approved, then Consumed | PASS |
 | Telegram deny | Telegram / live | User tap persisted Telegram denial | Later approval cannot override denial | Denied terminal card rendered | PASS |
 | Telegram expiry | Telegram / live + fixture | Untouched live card changed to Expired | Expired mutation rejects | Post-expiry callback toast is fixture-verified because terminal UI intentionally removes decision buttons | PARTIAL |
@@ -78,10 +78,10 @@ This matrix distinguishes current source, the already-published npm artifact, de
 | Telegram unauthorized chat | Telegram / fixture | Allowlisted callback works | Non-allowlisted callback ignored and only hashed identity persists | A second real chat was unavailable | PARTIAL |
 | Telegram resilience | Telegram / live + tests | Restart retained offset/dedupe state; notification count stayed 7 | Retry exhaustion is non-blocking in fixtures | Duplicate updates do not duplicate decisions | PASS |
 | Telegram stage notifications | Telegram / live + tests | One real GUARD, five real VERIFY, and one real PROVE notification delivered; restart did not duplicate | Suppressed modes/thresholds stay quiet | RUN/remediation/RUNWAY renderers are fixture-verified; real Runway 12% correctly stayed below threshold | PARTIAL |
-| Telegram privacy | Git/state scan | Zero tracked token/full-chat hits | N/A — intentional leak fixtures are redacted | State uses `sha256:` chat keys and masked approvers | PASS |
-| Production dependency audit | pnpm audit | No known vulnerabilities | N/A — no finding remains | Runtime package unaffected by dev-tool patch | PASS |
+| Telegram privacy | Git/state scan | Zero tracked token/full-chat hits | N/A - intentional leak fixtures are redacted | State uses `sha256:` chat keys and masked approvers | PASS |
+| Production dependency audit | pnpm audit | No known vulnerabilities | N/A - no finding remains | Runtime package unaffected by dev-tool patch | PASS |
 | Full dependency scan | PatchPilot/OSV | No known vulnerable dependencies after fix | Initial reachable critical Vitest finding reproduced | Pin updated from 3.2.4 to 3.2.6 | PASS |
-| Full repository gates | pnpm | Typecheck, 28 test files, 285 tests, and build passed | N/A — optional live identity smoke remains skipped by design | Demo baseline lockout proof intentionally fails closed and `demo:check` passes | PASS |
+| Full repository gates | pnpm | Typecheck, 28 test files, 285 tests, and build passed | N/A - optional live identity smoke remains skipped by design | Demo baseline lockout proof intentionally fails closed and `demo:check` passes | PASS |
 
 ## Live model usage
 
@@ -122,10 +122,10 @@ The one skipped test is the opt-in live identity smoke (`AXIOM_LIVE_SMOKE=1`); i
 
 ## Fixes made from matrix findings
 
-- `d21506b` — resolved dashboard approvals no longer remain in the pending UI.
-- `6440948` — run records now expose the verified display-to-wire effort mapping.
-- `e1f8962` — individual replay scenarios work in source and missing criteria no longer masquerades as a missing mission ID.
-- `bc012e8` — Vitest is pinned to 3.2.6, closing GHSA-5xrq-8626-4rwp.
+- `d21506b` - resolved dashboard approvals no longer remain in the pending UI.
+- `6440948` - run records now expose the verified display-to-wire effort mapping.
+- `e1f8962` - individual replay scenarios work in source and missing criteria no longer masquerades as a missing mission ID.
+- `bc012e8` - Vitest is pinned to 3.2.6, closing GHSA-5xrq-8626-4rwp.
 
 ## Remaining publication and live-proof gaps
 

@@ -1,6 +1,6 @@
-# Phase 6 — Web Dashboard and CLI
+# Phase 6 - Web Dashboard and CLI
 
-(“Desktop” in older references means the local web dashboard — ADR-009. No Electron/Tauri work.)
+(“Desktop” in older references means the local web dashboard - ADR-009. No Electron/Tauri work.)
 
 ## Outcome
 

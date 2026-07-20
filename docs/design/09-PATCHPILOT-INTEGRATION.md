@@ -8,11 +8,11 @@ Integrate PatchPilot as the Verification Engine inside the AxiomGate mission lif
 
 A pnpm monorepo at the local PatchPilot path, built and live-verified in May 2026:
 
-- `apps/web` — Next.js 15 dashboard and API (hosted demo exists).
-- `apps/worker` — scan/remediation worker (inline default; opt-in Redis/BullMQ).
-- `apps/cli` — published npm CLI (`patchpilot-cli`).
-- `apps/mcp` — stdio MCP server (22 tools).
-- `packages/core` — ~40 modules including `osv`, `scanners`, `secrets`, `risk`, `reachability`, `validation`, `codex`, `gitOps`, `github`, `telegram`, `approval`, `audit` (hash chains), `attestation`, `redaction`, `promptInjection`, `mcpToolGuard`, `llmOutputGuard`, `workspace`, `pathSafety`, `queue`, `postgresStore`.
+- `apps/web` - Next.js 15 dashboard and API (hosted demo exists).
+- `apps/worker` - scan/remediation worker (inline default; opt-in Redis/BullMQ).
+- `apps/cli` - published npm CLI (`patchpilot-cli`).
+- `apps/mcp` - stdio MCP server (22 tools).
+- `packages/core` - ~40 modules including `osv`, `scanners`, `secrets`, `risk`, `reachability`, `validation`, `codex`, `gitOps`, `github`, `telegram`, `approval`, `audit` (hash chains), `attestation`, `redaction`, `promptInjection`, `mcpToolGuard`, `llmOutputGuard`, `workspace`, `pathSafety`, `queue`, `postgresStore`.
 - Persistence: file-backed by default; opt-in Postgres write-through.
 
 **There is no PatchPilot desktop app.** Any earlier reference to "PatchPilot desktop" in this repository is an error corrected by ADR-010.
@@ -25,7 +25,7 @@ A pnpm monorepo at the local PatchPilot path, built and live-verified in May 202
 | Run target repo's tests/build | `validation` | Reuse; extend to arbitrary configured commands |
 | Codex remediation loop | `codex`, `workspace` (secret-scrubbed disposable workspaces, sandbox flags, stdin prompts) | Reuse; parameterize by mission authority |
 | PR creation | `github`, `gitOps` (live-verified) | Reuse; gate behind Environment Guard |
-| Approvals (Telegram, HMAC, two-step) | `telegram`, `approval` | **Extend** with mission-level semantic approvals and command-hash binding — do not rebuild |
+| Approvals (Telegram, HMAC, two-step) | `telegram`, `approval` | **Extend** with mission-level semantic approvals and command-hash binding - do not rebuild |
 | Receipts / audit chain | `audit`, `attestation` | **Extend** from finding-level to mission-level Build Receipt |
 | Redaction | `redaction`, `env` | Reuse verbatim |
 | Prompt-injection defense | `promptInjection`, `mcpToolGuard`, `llmOutputGuard` | Reuse; label as heuristic |

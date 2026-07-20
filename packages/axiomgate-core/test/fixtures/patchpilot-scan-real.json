@@ -12,7 +12,7 @@
       "advisory": "GHSA-jf85-cpcp-j695",
       "dependencyType": "direct",
       "reachability": "imported",
-      "reachabilityNote": "Imported in first-party source — treat as reachable."
+      "reachabilityNote": "Imported in first-party source - treat as reachable."
     },
     {
       "package": "lodash",
@@ -23,7 +23,7 @@
       "advisory": "GHSA-35jh-r3h4-6jhm",
       "dependencyType": "direct",
       "reachability": "imported",
-      "reachabilityNote": "Imported in first-party source — treat as reachable."
+      "reachabilityNote": "Imported in first-party source - treat as reachable."
     },
     {
       "package": "lodash",
@@ -34,7 +34,7 @@
       "advisory": "GHSA-p6mc-m468-83gw",
       "dependencyType": "direct",
       "reachability": "imported",
-      "reachabilityNote": "Imported in first-party source — treat as reachable."
+      "reachabilityNote": "Imported in first-party source - treat as reachable."
     },
     {
       "package": "lodash",
@@ -45,7 +45,7 @@
       "advisory": "GHSA-r5fr-rjxr-66jc",
       "dependencyType": "direct",
       "reachability": "imported",
-      "reachabilityNote": "Imported in first-party source — treat as reachable."
+      "reachabilityNote": "Imported in first-party source - treat as reachable."
     },
     {
       "package": "lodash",
@@ -56,7 +56,7 @@
       "advisory": "GHSA-29mw-wpgm-hmr9",
       "dependencyType": "direct",
       "reachability": "imported",
-      "reachabilityNote": "Imported in first-party source — treat as reachable."
+      "reachabilityNote": "Imported in first-party source - treat as reachable."
     },
     {
       "package": "lodash",
@@ -67,7 +67,7 @@
       "advisory": "GHSA-f23m-r3pf-42rh",
       "dependencyType": "direct",
       "reachability": "imported",
-      "reachabilityNote": "Imported in first-party source — treat as reachable."
+      "reachabilityNote": "Imported in first-party source - treat as reachable."
     },
     {
       "package": "lodash",
@@ -78,7 +78,7 @@
       "advisory": "GHSA-xxjr-mmjv-4gpg",
       "dependencyType": "direct",
       "reachability": "imported",
-      "reachabilityNote": "Imported in first-party source — treat as reachable."
+      "reachabilityNote": "Imported in first-party source - treat as reachable."
     }
   ]
 }

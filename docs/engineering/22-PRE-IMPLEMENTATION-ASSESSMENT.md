@@ -1,4 +1,4 @@
-# Pre-Implementation Assessment — F3/F4
+# Pre-Implementation Assessment - F3/F4
 
 **Date:** 2026-07-14
 **Verdict:** Feasible as scoped to F3/F4.
@@ -22,7 +22,7 @@ PatchPilot is pre-existing May 2026 work: a pnpm monorepo with Next.js web, work
 
 ## Architecture assessment
 
-One process and one `@axiomgate/core` package with layer modules matches ADR-008 and avoids premature services. F3 should map PatchPilot reuse contracts but defer integration to V1–V4. No migration or persistence change is needed for F3/F4.
+One process and one `@axiomgate/core` package with layer modules matches ADR-008 and avoids premature services. F3 should map PatchPilot reuse contracts but defer integration to V1-V4. No migration or persistence change is needed for F3/F4.
 The canonical sketches need deterministic validation choices: strict objects, ISO-8601 timestamps, and `sha256:<64 lowercase hex>` hashes. Contract hashing must omit the existing `hash` field to avoid self-reference; version bumping increments `version`, accepts the new timestamp, then re-hashes.
 
 ## Implementation and verification plan
@@ -46,7 +46,7 @@ The canonical sketches need deterministic validation choices: strict objects, IS
 
 ---
 
-# Pre-Implementation Assessment — G4 Telegram Relay and T3 Notifications
+# Pre-Implementation Assessment - G4 Telegram Relay and T3 Notifications
 
 **Date:** 2026-07-20
 **Starting checkpoint:** `4eb1e8b` on clean `main`
@@ -67,7 +67,7 @@ The maximum implementation boundary is `MODIFY_LOCAL`: source, tests, documentat
 - The CLI is a zero-dependency command router. `doctor`, mission run summaries, and approval commands are direct integration points for the new surface.
 - `.local/telegram.env` exists and is ignored by `.gitignore`; its contents were not displayed or inspected during discovery. Telegram variables are not present in the current process environment.
 - The separate PatchPilot checkout was inspected read-only. Its adapter validates the 64-byte callback limit, masks chat IDs, checks an allowlist, calls `answerCallbackQuery`, and edits messages. It is not imported: ADR-014 keeps AxiomGate self-contained and the normative task requires a different local lookup/canonical-store contract.
-- Telegram's official Bot API confirms that `getUpdates` long polling and webhooks are mutually exclusive, offsets must advance to highest `update_id + 1`, `callback_data` is limited to 1–64 bytes, callback queries must be answered to stop the client spinner, HTML parse mode supports `<b>` and `<code>`, and `editMessageText` edits bot messages.
+- Telegram's official Bot API confirms that `getUpdates` long polling and webhooks are mutually exclusive, offsets must advance to highest `update_id + 1`, `callback_data` is limited to 1-64 bytes, callback queries must be answered to stop the client spinner, HTML parse mode supports `<b>` and `<code>`, and `editMessageText` edits bot messages.
 - Baseline `pnpm test` passed 27 files with 258 tests and one explicitly opt-in live identity smoke skipped.
 
 ## Architecture critique and decisions
@@ -113,7 +113,7 @@ Rollback is commit-level revert plus deletion of ignored `.axiomgate/telegram-st
 
 ---
 
-# Validation Assessment — Full-System Matrix
+# Validation Assessment - Full-System Matrix
 
 **Date:** 2026-07-20
 
@@ -152,7 +152,7 @@ Rollback is deletion of disposable `.local/matrix*` state and commit-level rever
 
 ---
 
-# Validation Assessment — Telegram Real-Workspace UX
+# Validation Assessment - Telegram Real-Workspace UX
 
 **Date:** 2026-07-20
 

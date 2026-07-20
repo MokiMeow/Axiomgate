@@ -1,4 +1,4 @@
-// AxiomGate local dashboard — self-contained Node HTTP server (no runtime deps).
+// AxiomGate local dashboard - self-contained Node HTTP server (no runtime deps).
 // Reads real mission state from a governed workspace's `.axiomgate/` directory
 // and serves it to the single-page dashboard. Falls back to a bundled sample
 // mission so the UI always renders on a clean clone.
@@ -382,5 +382,5 @@ server.listen(PORT, "127.0.0.1", () => {
   const live = existsSync(MISSIONS_DIR);
   console.log(`AxiomGate dashboard → http://localhost:${PORT}`);
   console.log(`workspace: ${WORKSPACE}`);
-  console.log(live ? "reading live .axiomgate mission data" : "no live missions — showing bundled sample");
+  console.log(live ? "reading live .axiomgate mission data" : "no live missions - showing bundled sample");
 });

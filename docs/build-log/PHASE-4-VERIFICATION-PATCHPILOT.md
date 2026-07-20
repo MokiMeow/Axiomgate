@@ -1,6 +1,6 @@
-# Phase 4 — Verification Engine and PatchPilot
+# Phase 4 - Verification Engine and PatchPilot
 
-Aligned to board tasks **V1–V4** (ADR-008, ADR-010). PatchPilot is a web/worker/CLI/MCP/core monorepo — see `docs/09`. Browser checks are stretch-only (X1); maintainability beyond a diff-size warning is post-hackathon.
+Aligned to board tasks **V1-V4** (ADR-008, ADR-010). PatchPilot is a web/worker/CLI/MCP/core monorepo - see `docs/09`. Browser checks are stretch-only (X1); maintainability beyond a diff-size warning is post-hackathon.
 
 ## Outcome
 
@@ -8,7 +8,7 @@ A real Codex change is tested, remediated, and reverified through the integrated
 
 ## Subtasks
 
-- Mission-level verification API over `packages/core` (typed runs, events, findings) — the smallest stable boundary.
+- Mission-level verification API over `packages/core` (typed runs, events, findings) - the smallest stable boundary.
 - Verification plan derived from acceptance criteria + diff.
 - Execute the target repo's own test suite via the validation runner.
 - Execute scanners: OSV, Gitleaks, Semgrep (verify WSL availability on the demo machine), secret scan.

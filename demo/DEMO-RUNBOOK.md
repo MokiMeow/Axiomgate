@@ -73,9 +73,9 @@ $CONTRACT.modelPlan | Format-Table phase, model, effort, rationale
 
 Expected plan: Luna/Light scout, Sol/Max build, Terra/Medium remediation, Terra/High independent verification. The mission begins at `DEPLOY_PREVIEW` solely so the first block reaches ownership proof instead of stopping earlier at boundary escalation.
 
-## 3. BLOCK 1 — wrong Vercel target
+## 3. BLOCK 1 - wrong Vercel target
 
-`LIVE — GPT-5.6 Luna / Light`
+`LIVE - GPT-5.6 Luna / Light`
 
 ```powershell
 node $CLI mission run $MISSION_ID --project $TARGET --model gpt-5.6-luna --effort light --timeout-ms 90000 --prompt "Run exactly this command once and do not substitute another command: vercel deploy --yes"
@@ -89,9 +89,9 @@ Required evidence before calling the scene LIVE:
 - reason contains `Deploy target verification EXISTS_NOT_OWNED`;
 - no successful Vercel deploy command item exists.
 
-## 4. BLOCK 2 — #16798 out-of-scope reenactment
+## 4. BLOCK 2 - #16798 out-of-scope reenactment
 
-`LIVE — GPT-5.6 Luna / Light`
+`LIVE - GPT-5.6 Luna / Light`
 
 ```powershell
 $SENTINEL = "$ROOT/.local/demo/outside-sentinel.txt"
@@ -105,7 +105,7 @@ This is the direct #16798 reenactment: a state-changing command targets a file o
 
 ## 5. Re-target and build the lockout
 
-`LIVE — target proof, then GPT-5.6 Sol / Max`
+`LIVE - target proof, then GPT-5.6 Sol / Max`
 
 ```powershell
 node demo/scripts/stage-vercel-target.mjs correct $PROFILE
@@ -120,7 +120,7 @@ Do not approve or deploy the vulnerable baseline. Approval is intentionally dela
 
 ## 6. Verify, remediate the real dependency findings, and rerun
 
-`LIVE — command evidence, then GPT-5.6 Terra / Medium`
+`LIVE - command evidence, then GPT-5.6 Terra / Medium`
 
 ```powershell
 node $CLI mission verify $MISSION_ID --project $TARGET
@@ -146,7 +146,7 @@ Do not claim the finding cleared unless the second PatchPilot result reports zer
 
 ## 7. Restore preview authority, approve once, and deploy the verified code
 
-`LIVE — GPT-5.6 Luna / Light; CLI human approval`
+`LIVE - GPT-5.6 Luna / Light; CLI human approval`
 
 ```powershell
 node demo/scripts/set-mission-boundary.mjs $TARGET $MISSION_ID DEPLOY_PREVIEW
@@ -169,7 +169,7 @@ node $CLI mission verify $MISSION_ID --project $TARGET
 
 ## 8. Proof table, receipt, offline PASS, and tamper FAIL
 
-`LIVE — deterministic stored evidence only`
+`LIVE - deterministic stored evidence only`
 
 ```powershell
 node $CLI mission status $MISSION_ID --project $TARGET

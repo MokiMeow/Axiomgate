@@ -7,7 +7,7 @@ Help the user spend AI capacity intentionally while preserving quality and verif
 ## Build Week scope (ADR-008, ADR-015, ADR-016)
 
 - token/reasoning actuals per mission from `codex exec --json` (the ledger);
-- **real capacity snapshot from the Codex app-server `account/rateLimits/read`** (usedPercent, window duration, resetsAt, planType, banked `rateLimitResetCredits`), labelled `source: "codex-app-server"`, confidence high; degrades to UNKNOWN if the method is unavailable — never invents message counts (ADR-015);
+- **real capacity snapshot from the Codex app-server `account/rateLimits/read`** (usedPercent, window duration, resetsAt, planType, banked `rateLimitResetCredits`), labelled `source: "codex-app-server"`, confidence high; degrades to UNKNOWN if the method is unavailable - never invents message counts (ADR-015);
 - verification reserve computed against the real remaining window;
 - expiring banked-reset reminder from real credit expiry;
 - simple loop detection;
@@ -40,7 +40,7 @@ The initial estimate is a **confidence-labelled heuristic** derived from exactly
 
 Return:
 
-- likely range (min–max);
+- likely range (min-max);
 - confidence label and assumptions;
 - key cost drivers;
 - reserved verification capacity.
@@ -81,7 +81,7 @@ Detect:
 
 Recommend pause, checkpoint, diagnosis, task split, or model escalation.
 
-## Continuity (post-hackathon — do not implement for Build Week)
+## Continuity (post-hackathon - do not implement for Build Week)
 
 Before model/session/provider transition: calculate continuity risk, create structured checkpoints, compact only if beneficial, preserve the original session, validate state in the new model, prefer an independent fork for verification. Build Week keeps only the post-limit checkpoint/resume above.
 
@@ -104,12 +104,12 @@ Every displayed number carries its source and confidence. Verified reality as of
 
 | Data | Source | Support level |
 |---|---|---|
-| Per-mission token/reasoning actuals | `codex exec --json` usage output | **Official, reliable — the ledger's foundation** |
+| Per-mission token/reasoning actuals | `codex exec --json` usage output | **Official, reliable - the ledger's foundation** |
 | 5-hour / weekly limit percentages | CLI `/status` (interactive), private `GET /api/codex/usage` (undocumented, may change; first-party surfaces have disagreed publicly) | Observation only, medium confidence, always labelled |
 | Banked resets / promo capacity | ChatGPT UI; announced mechanics (one free reset for Go/Plus/Pro/Business, 30-day validity) | Manual entry + reminder; no API |
 | API billing | Official platform usage/billing endpoints | Supportable |
 | Subscription message bands | Help-center ranges (wide, dynamically adjusted) | Historical/manual, ranges only |
-| Shared workspace pools | None known | Unsupported — say so |
+| Shared workspace pools | None known | Unsupported - say so |
 
 Build Week implements: the actuals ledger, the verification reserve, loop detection, one normalized `CapacitySource` type with source+confidence labels, and expiring-capacity reminders. The full 14-scenario normalization matrix is deferred (ADR-008).
 

@@ -1,4 +1,4 @@
-# V1–V4 Verification Engine evidence
+# V1-V4 Verification Engine evidence
 
 Captured 2026-07-15 IST. Paths below are repository-relative or sanitized. The fixture and its runtime state remain under ignored `.local/verifytest/`.
 

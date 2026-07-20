@@ -18,7 +18,7 @@ Each acceptance criterion links to evidence of the types available in the Build 
 - approval;
 - waiver.
 
-Conditional evidence types — only if the stretch work ships (X1/X2): browser trace, diff-size warning. A criterion requiring an evidence type the engine cannot produce is marked `UNKNOWN` or `BLOCKED`, never silently passed.
+Conditional evidence types - only if the stretch work ships (X1/X2): browser trace, diff-size warning. A criterion requiring an evidence type the engine cannot produce is marked `UNKNOWN` or `BLOCKED`, never silently passed.
 
 ## Criterion state
 

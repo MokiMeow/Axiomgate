@@ -25,7 +25,7 @@ Implements the mission within the contract and intent boundary.
 
 A fresh Codex session with no builder-context inheritance. Challenges the diff, tests assumptions, performs security review, and evaluates evidence. It must not inherit unsupported builder conclusions.
 
-### Scout (stretch — board task X3 only)
+### Scout (stretch - board task X3 only)
 
 Maps the repository, dependencies, architecture, test commands, and risks using a lower-cost tier (Luna). Do not build unless the stretch gate opens.
 
@@ -54,11 +54,11 @@ Use native Codex worktree support where isolation is needed. Custom worktree/bra
 
 Support exactly:
 
-- **provider rate limit** — checkpoint mission state, show reset/banked-reset options, `mission resume`;
-- **session interruption / crash of the mission's own Codex session** — resume from canonical mission state, never from raw chat memory;
-- **cancellation** — clean stop with recoverable state.
+- **provider rate limit** - checkpoint mission state, show reset/banked-reset options, `mission resume`;
+- **session interruption / crash of the mission's own Codex session** - resume from canonical mission state, never from raw chat memory;
+- **cancellation** - clean stop with recoverable state.
 
-## Post-hackathon — do not implement during Build Week
+## Post-hackathon - do not implement during Build Week
 
 - General process supervision (PIDs, ports, logs, health tracking of arbitrary processes).
 - Model-transition checkpoint/validation machinery and cross-provider handoff packs.

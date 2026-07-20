@@ -1,4 +1,4 @@
-# Phase 7 — Hardening
+# Phase 7 - Hardening
 
 Aligned to board task **S1** (ADR-008).
 

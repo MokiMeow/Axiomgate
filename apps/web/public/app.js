@@ -1,9 +1,9 @@
-// AxiomGate dashboard — renders real .axiomgate mission state.
+// AxiomGate dashboard - renders real .axiomgate mission state.
 const $ = (s, r = document) => r.querySelector(s);
 const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
-const shortHash = (h) => { if (!h) return "—"; const v = String(h).replace(/^sha256:/, ""); return "sha256:" + v.slice(0, 10) + "…"; };
-const fmtTime = (t) => { if (!t) return "—"; try { return new Date(t).toLocaleString(); } catch { return t; } };
+const shortHash = (h) => { if (!h) return "Unknown"; const v = String(h).replace(/^sha256:/, ""); return "sha256:" + v.slice(0, 10) + "…"; };
+const fmtTime = (t) => { if (!t) return "Unknown"; try { return new Date(t).toLocaleString(); } catch { return t; } };
 const fmtNum = (n) => {
   n = Number(n) || 0;
   if (n >= 1e6) return (n / 1e6).toFixed(1) + "M";
@@ -16,7 +16,7 @@ const STAGES = [
   { key: "plan", name: "Plan", desc: "Compiled into a versioned, hashed contract" },
   { key: "guard", name: "Guard", desc: "Identity resolved · policy enforced at the hook" },
   { key: "run", name: "Run", desc: "Codex builds under sandbox + intent boundary" },
-  { key: "verify", name: "Verify", desc: "Tests, scanners, remediation — machine evidence" },
+  { key: "verify", name: "Verify", desc: "Tests, scanners, remediation - machine evidence" },
   { key: "prove", name: "Prove", desc: "Completion gated on evidence · receipt" },
 ];
 
@@ -37,7 +37,7 @@ async function boot() {
   renderMissionList();
   if (STATE.missions[0]) selectMission(STATE.missions[0].id);
   else $("#detail").innerHTML =
-    '<div class="empty-state"><strong>No missions found.</strong><span>Run a governed mission in this workspace to populate the dashboard — mission state is read from <code>.axiomgate/missions/</code>.</span></div>';
+    '<div class="empty-state"><strong>No missions found.</strong><span>Run a governed mission in this workspace to populate the dashboard - mission state is read from <code>.axiomgate/missions/</code>.</span></div>';
 }
 
 async function loadCapacity() {
@@ -47,7 +47,7 @@ async function loadCapacity() {
     if (rl && rl.primary) {
       STATE.capacity = {
         text: `${rl.planType || "plan"} · ${rl.primary.usedPercent}% weekly used`,
-        title: `Real Codex capacity — resets ${fmtTime(rl.primary.resetsAt * 1000)} [codex-app-server]`,
+        title: `Real Codex capacity - resets ${fmtTime(rl.primary.resetsAt * 1000)} [codex-app-server]`,
         ok: true,
       };
     } else {
@@ -81,7 +81,7 @@ function renderMissionList() {
     item.title = m.objective || m.id;
     item.innerHTML = `
       <span class="m-obj">${esc(m.objective || m.id)}</span>
-      <span class="m-meta">${esc((m.label || "live").toLowerCase())} · ${esc(m.intentBoundary || "—")}${m.denials ? ` · <span class="flag">${m.denials} blocked</span>` : ""}</span>`;
+      <span class="m-meta">${esc((m.label || "live").toLowerCase())} · ${esc(m.intentBoundary || "Unknown")}${m.denials ? ` · <span class="flag">${m.denials} blocked</span>` : ""}</span>`;
     item.addEventListener("click", () => selectMission(m.id));
     list.appendChild(item);
   });
@@ -96,7 +96,7 @@ async function selectMission(id) {
 
 /* ---------- verdict computation (display only) ----------
    Authoritative source: the CLI-generated receipt (core verdict engine).
-   Fallback mirror: latest admissible evidence per criterion decides — a
+   Fallback mirror: latest admissible evidence per criterion decides - a
    superseding passing rerun outranks an earlier failure (remediation flow). */
 function criterionVerdict(c, evidence, receipt) {
   const rc = receipt && Array.isArray(receipt.criteria)
@@ -175,10 +175,10 @@ function pageHead(m, complete) {
       </div>
     </div>
     <div class="meta-line">
-      <span><span class="k">Boundary</span><span class="v">${esc(c.intentBoundary || "—")}</span></span>
-      <span><span class="k">GitHub</span><span class="v">${esc(identityField(m, "githubLogin") || "—")}</span></span>
+      <span><span class="k">Boundary</span><span class="v">${esc(c.intentBoundary || "Unknown")}</span></span>
+      <span><span class="k">GitHub</span><span class="v">${esc(identityField(m, "githubLogin") || "Unknown")}</span></span>
       <span><span class="k">Version</span><span class="v">v${esc(c.version ?? 1)}</span></span>
-      <span><span class="k">Status</span><span class="v">${esc(c.status || "—")}</span></span>
+      <span><span class="k">Status</span><span class="v">${esc(c.status || "Unknown")}</span></span>
       <span><span class="k">Contract</span><span class="v mono copyable" data-copy="${esc(c.hash || "")}" title="Click to copy full hash">${shortHash(c.hash)}</span></span>
     </div>`;
   const cp = head.querySelector(".copyable");
@@ -313,7 +313,7 @@ function blockMoment(m) {
   term.innerHTML = `
     <div class="term-bar">
       <span class="term-lights"><i></i><i></i><i></i></span>
-      <span class="term-title">axiomgate hook — codex exec</span>
+      <span class="term-title">axiomgate hook - codex exec</span>
       <span class="term-flag">${m.denials.length} denied</span>
     </div>
     <pre class="term-body">${lines.join("\n\n")}</pre>`;
@@ -348,12 +348,12 @@ function proofPanel(m, verdicts, complete) {
     const cls = v === "PASS" ? "pass" : v === "FAIL" ? "fail" : "unverified";
     const ev = m.evidence.filter((e) => e.criterionId === c.id);
     const tags = ev.slice(0, 4).map((e) =>
-      `<span class="evtag ${e.source === "model" ? "src-model" : ""}" ${e.source === "model" ? 'title="Model-sourced — inadmissible as evidence"' : ""}>${esc(e.source)}:${esc((e.id || "").slice(0, 8))}</span>`
+      `<span class="evtag ${e.source === "model" ? "src-model" : ""}" ${e.source === "model" ? 'title="Model-sourced - inadmissible as evidence"' : ""}>${esc(e.source)}:${esc((e.id || "").slice(0, 8))}</span>`
     ).join("");
     const tr = el("tr");
     tr.innerHTML = `
       <td>${esc(c.statement)}</td>
-      <td class="risk ${esc(c.risk || "")}">${esc(c.risk || "—")}</td>
+      <td class="risk ${esc(c.risk || "")}">${esc(c.risk || "Unknown")}</td>
       <td>${tags || '<span class="evtag none">none yet</span>'}</td>
       <td><span class="status-badge ${cls}">${esc(v)}</span></td>`;
     tbody.appendChild(tr);
@@ -378,8 +378,8 @@ function planPanel(m) {
   (plan || []).forEach((p) => {
     panel.appendChild(el("div", "phase-row", `
       <span class="ph">${esc(p.phase)}</span>
-      <span class="ph-model">${esc(p.model || "—")}${p.rationale ? `<span class="ph-why">${esc(p.rationale)}</span>` : ""}</span>
-      <span class="badge">${esc(p.effort || "—")}</span>`));
+      <span class="ph-model">${esc(p.model || "Unknown")}${p.rationale ? `<span class="ph-why">${esc(p.rationale)}</span>` : ""}</span>
+      <span class="badge">${esc(p.effort || "Unknown")}</span>`));
   });
   if (sessions.length) {
     const lbl = el("div", "section-label", "Sessions");
@@ -394,7 +394,7 @@ function planPanel(m) {
 
 function receiptPanel(m) {
   const r = m.receipt || {};
-  const commit = (r.repo && r.repo.commit) || "—";
+  const commit = (r.repo && r.repo.commit) || "Unknown";
   const panel = el("div", "panel");
   panel.appendChild(el("div", "panel-head", `
     <div class="section-label">Build receipt</div>

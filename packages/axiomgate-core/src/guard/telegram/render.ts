@@ -34,7 +34,7 @@ export function truncateTelegramText(value: string, limit: number): string {
 function safe(value: string, limit: number): string {
   return escapeTelegramHtml(
     truncateTelegramText(
-      redactSensitiveText(value).replaceAll("—", ":").replaceAll("–", "-"),
+      redactSensitiveText(value).replaceAll("\u2014", ":").replaceAll("\u2013", "-"),
       limit,
     ),
   );

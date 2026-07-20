@@ -92,7 +92,7 @@ Post-hackathon (see "Post-hackathon scope"): full multi-source quota normalizati
 
 Responsibilities:
 
-- enforce policy through official Codex extension points — hooks (`PreToolUse`, `PermissionRequest`, `PostToolUse`; deny-wins; exit-code and JSON-decision blocking) plus sandbox and permission-profile configuration — never through prompt-level requests alone;
+- enforce policy through official Codex extension points - hooks (`PreToolUse`, `PermissionRequest`, `PostToolUse`; deny-wins; exit-code and JSON-decision blocking) plus sandbox and permission-profile configuration - never through prompt-level requests alone;
 - refuse to start a mission when the enforcement configuration cannot be verified (fail closed);
 - inspect only the execution mechanisms required by the demo action set (general capability discovery: post-hackathon);
 - verify that every publish or deploy target exists and is owned by the profile's account before the action executes (GitHub/Vercel API resolution);
@@ -122,7 +122,7 @@ Post-hackathon: custom worktree/branch/port/process leasing (native Codex worktr
 
 Responsibilities:
 
-- integrate the existing PatchPilot engine (a pnpm monorepo: Next.js web dashboard, worker, published CLI, MCP server, and `packages/core` scanners/remediation/receipts — there is no PatchPilot desktop app);
+- integrate the existing PatchPilot engine (a pnpm monorepo: Next.js web dashboard, worker, published CLI, MCP server, and `packages/core` scanners/remediation/receipts - there is no PatchPilot desktop app);
 - run the target repository's own test suite (targeted and full) via the validation runner;
 - scan dependencies and secrets (OSV, Trivy, Gitleaks) and run SAST (Semgrep);
 - perform authorization negative tests from the mission policy;

@@ -1,4 +1,4 @@
-# BUG-ID — Title
+# BUG-ID - Title
 
 ## Observed behavior
 

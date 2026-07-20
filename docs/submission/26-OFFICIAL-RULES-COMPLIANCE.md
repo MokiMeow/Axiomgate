@@ -133,7 +133,7 @@ Use the stricter Official Rules wording.
 
 The demo video must:
 
-- be **less than three minutes**; target approximately **2:45–2:55**;
+- be **less than three minutes**; target approximately **2:45-2:55**;
 - be uploaded to **YouTube**;
 - be **publicly visible**;
 - show a clear, working demonstration;

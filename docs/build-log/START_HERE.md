@@ -1,4 +1,4 @@
-# Start Here — Mandatory Agent Preflight
+# Start Here - Mandatory Agent Preflight
 
 This file defines the first interaction every implementation agent must complete.
 
@@ -26,7 +26,7 @@ Read these files completely:
 12. `docs/build-log/TASKS.md`
 13. The phase file for the first planned task
 
-Also inspect the existing PatchPilot implementation at its local path (a pnpm monorepo containing `apps/web` (Next.js), `apps/worker`, `apps/cli`, `apps/mcp`, and `packages/core`). Note: this AxiomGate repository is documentation-only at the start of Build Week — there is no pre-existing AxiomGate source code, CI, or package manifest. Do not search for them; record their absence and initialize Git with a baseline commit as the first action.
+Also inspect the existing PatchPilot implementation at its local path (a pnpm monorepo containing `apps/web` (Next.js), `apps/worker`, `apps/cli`, `apps/mcp`, and `packages/core`). Note: this AxiomGate repository is documentation-only at the start of Build Week - there is no pre-existing AxiomGate source code, CI, or package manifest. Do not search for them; record their absence and initialize Git with a baseline commit as the first action.
 
 ## Required pre-implementation response
 

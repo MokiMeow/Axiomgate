@@ -1,16 +1,16 @@
-# F3/F4 Verification — 2026-07-15
+# F3/F4 Verification - 2026-07-15
 
 Scope: pnpm monorepo scaffold, `@axiomgate/core` canonical schemas and hashing, and the initial `@axiomgate/cli doctor` command. Platform: Windows, Node `v24.11.1`, pnpm `10.33.0`, Codex CLI `0.144.0`.
 
 ## Reproducible gates
 
-- `pnpm.cmd install` — succeeded for all three workspace projects; 56 packages installed.
-- `pnpm.cmd typecheck` — succeeded for `@axiomgate/cli` and `@axiomgate/core`.
-- `pnpm.cmd test` — one test file passed; 15 tests passed; no failures.
-- `pnpm.cmd build` — succeeded for `@axiomgate/cli` and `@axiomgate/core`.
-- `node apps/cli/dist/index.js doctor` — reported Node `v24.11.1`, Codex CLI `0.144.0`, and the current Git repository/branch state.
-- Scoped credential-pattern scan over the new manifests, lockfile, apps, and packages — no matches.
-- Production dependency license inventory — Zod `4.4.3`, MIT.
+- `pnpm.cmd install` - succeeded for all three workspace projects; 56 packages installed.
+- `pnpm.cmd typecheck` - succeeded for `@axiomgate/cli` and `@axiomgate/core`.
+- `pnpm.cmd test` - one test file passed; 15 tests passed; no failures.
+- `pnpm.cmd build` - succeeded for `@axiomgate/cli` and `@axiomgate/core`.
+- `node apps/cli/dist/index.js doctor` - reported Node `v24.11.1`, Codex CLI `0.144.0`, and the current Git repository/branch state.
+- Scoped credential-pattern scan over the new manifests, lockfile, apps, and packages - no matches.
+- Production dependency license inventory - Zod `4.4.3`, MIT.
 
 ## Test coverage in this slice
 

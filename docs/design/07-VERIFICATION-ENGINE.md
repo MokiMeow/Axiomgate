@@ -6,7 +6,7 @@ Prove the implementation works, is safe, and has not unnecessarily damaged maint
 
 ## Foundation
 
-Integrate the existing PatchPilot engine — `packages/core` (scanners, validation runner, Codex remediation, audit hash chains) surfaced through the existing Next.js dashboard and worker. PatchPilot is a web product; there is no desktop app. Treat PatchPilot as pre-existing work and clearly record Build Week additions.
+Integrate the existing PatchPilot engine - `packages/core` (scanners, validation runner, Codex remediation, audit hash chains) surfaced through the existing Next.js dashboard and worker. PatchPilot is a web product; there is no desktop app. Treat PatchPilot as pre-existing work and clearly record Build Week additions.
 
 Verified pre-existing capabilities (2026-07-14 audit): OSV/OSV-Scanner, Gitleaks, Trivy, Syft, Semgrep-via-WSL; EPSS/CISA-KEV/NVD enrichment; reachability triage; validation runner (npm install/ci/test/build); Codex remediation in secret-scrubbed disposable workspaces; deterministic npm fixer; live-verified GitHub PR flow; hash-chained audit receipts; HMAC Telegram approvals.
 
@@ -23,7 +23,7 @@ Derive checks from:
 - project test configuration;
 - deployment target;
 - risk classification;
-- browser behavior (only if stretch task X1 ships — otherwise browser evidence types are marked `UNKNOWN`).
+- browser behavior (only if stretch task X1 ships - otherwise browser evidence types are marked `UNKNOWN`).
 
 ## Check families
 
@@ -36,9 +36,9 @@ Build Week (all backed by existing PatchPilot machinery or the target repo's own
 - integration tests (target repo's own suite);
 - dependency vulnerabilities (OSV/Trivy);
 - secret scanning (Gitleaks + redaction tests);
-- SAST (Semgrep; WSL required on Windows — verify on the demo machine in Phase 0);
+- SAST (Semgrep; WSL required on Windows - verify on the demo machine in Phase 0);
 - risky diff analysis (size/paths heuristic);
-- deployment health (URL probe — never deploys);
+- deployment health (URL probe - never deploys);
 - authorization negative tests (mission-policy suite).
 
 Stretch (only after the core mission passes end to end): one scripted Playwright browser check on the demo fixture app.
@@ -49,7 +49,7 @@ Deferred beyond Build Week: general browser/e2e orchestration, console/network c
 
 **Build Week (stretch task X2 only):** a diff-size and risky-path warning. Nothing more.
 
-### Post-hackathon design — do not implement during Build Week
+### Post-hackathon design - do not implement during Build Week
 
 Measure relevant deltas: duplication; cognitive complexity; dependency count; bundle size; file count; dead code; circular dependencies; unnecessary abstractions; swallowed errors. Do not fail on arbitrary metrics without project context. Findings need evidence and severity.
 

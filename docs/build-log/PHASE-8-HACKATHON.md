@@ -1,6 +1,6 @@
-# Phase 8 — Hackathon Submission
+# Phase 8 - Hackathon Submission
 
-Aligned to board tasks **S2–S4** (ADR-008, ADR-013).
+Aligned to board tasks **S2-S4** (ADR-008, ADR-013).
 
 ## Outcome
 

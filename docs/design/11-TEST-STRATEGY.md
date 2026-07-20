@@ -14,7 +14,7 @@ Pure policy, parsing, scoring, state transitions, redaction, hashing, capacity-s
 
 Schemas and adapters for Codex, PatchPilot, GitHub, Vercel, semantic actions, Telegram, and persistence.
 
-### Integration (Build Week list — nothing else)
+### Integration (Build Week list - nothing else)
 
 - mission persistence (create/load/version/hash);
 - hook-to-policy integration (decision round-trip, deny-wins, fail-closed start);
@@ -36,7 +36,7 @@ Web-dashboard/CLI mission flow from contract to receipt using deterministic fixt
 
 Explicit, opt-in, isolated tests against sandbox GitHub/Vercel/provider resources. Never required for ordinary unit runs.
 
-## Build Week scenario matrix (required — ADR-008)
+## Build Week scenario matrix (required - ADR-008)
 
 - mission allow/deny/approval policy;
 - command or target mutation after approval (bound approval voided);
@@ -61,7 +61,7 @@ Explicit, opt-in, isolated tests against sandbox GitHub/Vercel/provider resource
 - multi-mechanism semantic-action equivalence (same verdict via CLI and MCP mechanism);
 - malicious or over-broad capability description blocked by the existing injection guard.
 
-## Future scenario matrix (post-hackathon — do not build tests for these now)
+## Future scenario matrix (post-hackathon - do not build tests for these now)
 
 Weekly/rolling quota normalization variants, purchased credits, API budgets, unknown quota, quota-policy change detection (post-limit resume itself is Build Week), model transitions, failed compaction/recovery, provider-adapter fixtures, worktree collisions, maintainability regression.
 

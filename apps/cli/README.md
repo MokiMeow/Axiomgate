@@ -14,6 +14,6 @@ npx axiomgate mission receipt <mission-id> --format json --project .
 npx axiomgate receipt verify ./evidence/<mission-id>-receipt.json
 ```
 
-The completion gate accepts fresh command, API, or hook evidence—never model prose. Consequential actions remain bound to the mission policy, identity, target, and exact approved command.
+The completion gate accepts fresh command, API, or hook evidence - never model prose. Consequential actions remain bound to the mission policy, identity, target, and exact approved command.
 
 Repository and full documentation: [github.com/mokimeow/axiomgate](https://github.com/mokimeow/axiomgate)

@@ -2,7 +2,7 @@
 
 Captured on 2026-07-19 on Windows with Node 24.11.1 and `codex-cli 0.144.6`. Local absolute paths below are shortened to `<repo>` and `<profile>`; no credentials or tokens are present.
 
-## Part A — polished CLI
+## Part A - polished CLI
 
 The capture was made through a non-TTY pipe, so ANSI was correctly disabled while layout and status glyph fallbacks remained readable.
 
@@ -52,7 +52,7 @@ GOOD_EXIT=0
 TAMPERED_EXIT=1
 ```
 
-## Part B — zero-dependency stdio MCP
+## Part B - zero-dependency stdio MCP
 
 Direct stdio proof used the built CLI and the shared timeout runner. Initialization negotiated MCP `2025-06-18`; `tools/list` returned all six tools. Read-only tools advertised `readOnlyHint: true`; the approval mutation did not.
 
@@ -97,7 +97,7 @@ Receipt valid: true
 
 An initial live attempt without MCP annotations was cancelled by Codex as approval-requiring even under `--ask-for-approval never`. After adding truthful `readOnlyHint: true` annotations to read paths, the same calls completed. This observed compatibility requirement is recorded in `docs/engineering/17-COMPATIBILITY-ADAPTERS.md`.
 
-## Part C — Codex plugin packaging
+## Part C - Codex plugin packaging
 
 Observed `codex plugin` contract on 0.144.6:
 
@@ -134,7 +134,7 @@ ARTIFACTS --------------------------------------------
 }
 ```
 
-## Part D — X4 mechanism equivalence
+## Part D - X4 mechanism equivalence
 
 The fixture drives equivalent pull-request creation through shell and MCP inputs. Both classify to `pull_request.create`, both receive `DENY` with identical reasons, and each persists its own hook decision event. Unknown explicitly matched MCP tools classify as state-changing `UNKNOWN` and deny by default. Generated configs sort and enumerate exact MCP matcher names in both hook events; wildcards are rejected.
 

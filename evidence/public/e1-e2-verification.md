@@ -1,4 +1,4 @@
-# E1–E2 Evidence Gate verification
+# E1-E2 Evidence Gate verification
 
 Captured 2026-07-15 IST. Runtime artifacts and the tampered copy remain under ignored `.local/verifytest/`; this file contains sanitized judge-facing results.
 

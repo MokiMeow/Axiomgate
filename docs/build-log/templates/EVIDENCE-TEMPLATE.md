@@ -1,4 +1,4 @@
-# Evidence — Title
+# Evidence - Title
 
 ## Mission
 

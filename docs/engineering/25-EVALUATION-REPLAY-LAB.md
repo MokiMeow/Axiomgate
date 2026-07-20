@@ -4,7 +4,7 @@
 
 Let judges reproduce the core controls without personal accounts, paid quota, or long agent runs.
 
-## Build Week replay scenarios (exactly three — ADR-008)
+## Build Week replay scenarios (exactly three - ADR-008)
 
 1. **Wrong identity / wrong target blocked.** A publish/deploy targets a repository or Vercel project that does not belong to the profile's account; Environment Guard denies it at the hook and records the denial as evidence.
 2. **Approved command mutated and denied.** An action is approved, then the command/arguments/target change; the bound approval is void and execution is blocked.
