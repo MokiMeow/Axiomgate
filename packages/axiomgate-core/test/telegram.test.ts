@@ -301,7 +301,7 @@ describe("Telegram approval relay", () => {
 
   it("sends and independently binds multiple pending approvals", async () => {
     const { projectPath } = setup(undefined, 2); const client = new FakeClient();
-    const result = await sendPendingApprovalCards(projectPath, config(), client);
+    const result = await sendPendingApprovalCards(projectPath, config(), client, { now: () => new Date(NOW) });
     expect(result.cardsSent).toBe(2);
     expect(new Set(readTelegramState(projectPath).cards.map((card) => card.ref)).size).toBe(2);
   });
@@ -327,14 +327,14 @@ describe("Telegram approval relay", () => {
 
   it("bounds send failure without changing the approval", async () => {
     const { projectPath, missionDir } = setup(); const client = new FakeClient(); client.failSend = true;
-    const result = await sendPendingApprovalCards(projectPath, config(), client);
+    const result = await sendPendingApprovalCards(projectPath, config(), client, { now: () => new Date(NOW) });
     expect(result.failures).toEqual(["network unavailable"]);
     expect(getApprovalRequest(missionDir, "act_preview_0")?.status).toBe("PENDING");
   });
 
   it("escapes hostile text and keeps callback data short", async () => {
     const { projectPath } = setup("<b>steal & destroy</b>"); const client = new FakeClient();
-    await sendPendingApprovalCards(projectPath, config(), client);
+    await sendPendingApprovalCards(projectPath, config(), client, { now: () => new Date(NOW) });
     expect(client.sent[0]?.text).toContain("&lt;b&gt;steal &amp; destroy&lt;/b&gt;");
     expect(client.sent[0]?.text).not.toContain("<hostile>");
     const markup = client.sent[0]?.markup as { inline_keyboard: Array<Array<{ callback_data: string }>> };
@@ -343,7 +343,7 @@ describe("Telegram approval relay", () => {
 
   it("truncates long display text while preserving the full bound hash", async () => {
     const { projectPath, missionDir } = setup("x".repeat(500)); const client = new FakeClient();
-    await sendPendingApprovalCards(projectPath, config(), client);
+    await sendPendingApprovalCards(projectPath, config(), client, { now: () => new Date(NOW) });
     expect(client.sent[0]?.text).toContain("…");
     const record = getApprovalRequest(missionDir, "act_preview_0");
     expect(record?.request.rawCommandHash).toBe(HASH);
@@ -353,14 +353,14 @@ describe("Telegram approval relay", () => {
   it("marks a redacted command without revealing the credential", async () => {
     const credential = `${"123456"}:${"q".repeat(35)}`;
     const { projectPath } = setup(undefined, 1, `deploy --token ${credential}`); const client = new FakeClient();
-    await sendPendingApprovalCards(projectPath, config(), client);
+    await sendPendingApprovalCards(projectPath, config(), client, { now: () => new Date(NOW) });
     expect(client.sent[0]?.text).toContain("[redacted]");
     expect(client.sent[0]?.text).not.toContain(credential);
   });
 
   it("persists getUpdates offset so callbacks are not replayed", async () => {
     const { projectPath } = setup(); const client = new FakeClient();
-    await sendPendingApprovalCards(projectPath, config(), client);
+    await sendPendingApprovalCards(projectPath, config(), client, { now: () => new Date(NOW) });
     const ref = readTelegramState(projectPath).cards[0]!.ref;
     client.updates = [{ update_id: 41, callback_query: { id: "cb", from: { id: CHAT }, data: `ag:${ref}:d`, message: { message_id: 1, chat: { id: CHAT, type: "private" } } } }];
     await watchTelegram(projectPath, config(), client, { once: true });
@@ -546,7 +546,7 @@ describe("Telegram rendering, configuration, and notifications", () => {
 
   it("does not persist bot tokens in relay state", async () => {
     const { projectPath } = setup(); const client = new FakeClient(); const configured = config();
-    await sendPendingApprovalCards(projectPath, configured, client);
+    await sendPendingApprovalCards(projectPath, configured, client, { now: () => new Date(NOW) });
     const persisted = readFileSync(join(projectPath, ".axiomgate", "telegram-state.json"), "utf8");
     expect(persisted).not.toContain(configured.token);
     expect(persisted).not.toContain(CHAT);
