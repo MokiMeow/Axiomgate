@@ -595,6 +595,34 @@ td.risk {
   margin-top: 3px;
 }
 
+/* Verification IDs are longer than model-plan phase names. Give every
+   field its own column so identifiers wrap instead of colliding with copy. */
+.verification-row {
+  display: grid;
+  grid-template-columns: minmax(128px, 0.48fr) minmax(220px, 1fr) auto;
+  align-items: center;
+  column-gap: 18px;
+  row-gap: 5px;
+}
+
+.verification-row .ph {
+  width: auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+
+.verification-row .ph-model {
+  min-width: 0;
+  font-family: var(--sans);
+  color: var(--body);
+  line-height: 1.45;
+}
+
+.verification-row .status-badge {
+  justify-self: end;
+}
+
 /* ----- Pills / chips / badges / dots ----- */
 .pill,
 .badge,
@@ -1274,6 +1302,16 @@ td.risk {
      crushing the criterion column into single-word shards. */
   .table-scroll table {
     min-width: 540px;
+  }
+
+  .verification-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 12px;
+  }
+
+  .verification-row .ph-model {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 }
 

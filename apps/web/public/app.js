@@ -456,7 +456,7 @@ function verificationPanel(m) {
   panel.appendChild(el("div", "section-label", "Verification and governed remediation"));
   runs.forEach((run) => {
     const pass = run.overall === "PASS";
-    panel.appendChild(el("div", "phase-row", `
+    panel.appendChild(el("div", "phase-row verification-row", `
       <span class="ph">${esc(run.id)}</span>
       <span class="ph-model">${pass ? "Targeted rerun cleared the affected check" : "Dependency scan found a blocking advisory"}</span>
       <span class="status-badge ${pass ? "pass" : "fail"}">${esc(run.overall)}</span>`));
