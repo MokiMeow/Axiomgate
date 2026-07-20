@@ -51,7 +51,7 @@ The final command must print `FAIL` and exit non-zero. See [JUDGE-QUICKSTART.md]
 | Intent boundary | Maps `OBSERVE` through `DEPLOY_PRODUCTION` to sandbox/network authority; production deploy is refused in this Build Week release. |
 | Semantic policy | Classifies commands and MCP tools into actions, then applies deterministic `ALLOW`, `DENY`, or `REQUIRE_APPROVAL` policy. Unknown state-changing actions fail closed. |
 | Approval binding | Binds a single-use, expiring approval to the exact command hash. Mutation or reuse is denied. |
-| Telegram relay | Optionally long-polls Telegram for allowlisted, exact-hash approvals and redacted stage notifications; no webhook or public URL is required. |
+| Telegram approvals and stage notifications | Long-polls Telegram for allowlisted, exact-command approvals plus readable Guard, Run, Verify, Remediate, Prove, and Runway updates. No webhook or public URL is required. [Live evidence](evidence/public/telegram-verification.md). |
 | Completion gate | Accepts only fresh `command`, `api`, or `hook` evidence. Model prose is advisory and cannot make a criterion pass. |
 | Build Receipt | Hash-chains stored evidence and supports offline integrity, freshness, contract-hash, and no-false-green verification. |
 
@@ -87,13 +87,37 @@ objective
 
 | Stage | Main implementation | Design reference |
 |---|---|---|
-| Plan | `src/mission`, `src/runway` | [Mission Compiler](docs/design/03-MISSION-COMPILER.md), [Runway](docs/design/04-RUNWAY.md) |
-| Guard | `src/guard` | [Environment Guard](docs/design/05-ENVIRONMENT-GUARD.md) |
-| Run | `src/runtime` | [Codex Runtime](docs/design/06-CODEX-RUNTIME.md) |
-| Verify | `src/verification` | [Verification Engine](docs/design/07-VERIFICATION-ENGINE.md) |
-| Prove | `src/evidence` | [Evidence Gate](docs/design/08-EVIDENCE-GATE.md) |
+| Plan | `packages/axiomgate-core/src/mission`, `packages/axiomgate-core/src/runway` | [Mission Compiler](docs/design/03-MISSION-COMPILER.md), [Runway](docs/design/04-RUNWAY.md) |
+| Guard | `packages/axiomgate-core/src/guard` | [Environment Guard](docs/design/05-ENVIRONMENT-GUARD.md) |
+| Run | `packages/axiomgate-core/src/runtime` | [Codex Runtime](docs/design/06-CODEX-RUNTIME.md) |
+| Verify | `packages/axiomgate-core/src/verification` | [Verification Engine](docs/design/07-VERIFICATION-ENGINE.md) |
+| Prove | `packages/axiomgate-core/src/evidence` | [Evidence Gate](docs/design/08-EVIDENCE-GATE.md) |
 
 The verification boundary invokes the published `patchpilot-cli@0.1.3` unchanged, then combines its dependency findings with the target repository’s native test/build commands and secret scan. PatchPilot source is not copied or represented as Build Week work.
+
+## Repository map
+
+This table is the one-hop entry point for reviewers, AI analysis, and contributors.
+
+| Path | Purpose |
+|---|---|
+| [README.md](README.md) | Product thesis, quickest runnable proof, architecture, support matrix, and repository index. |
+| [JUDGE-QUICKSTART.md](JUDGE-QUICKSTART.md) | Credential-free 90-second judge flow with expected outputs. |
+| [HACKATHON_DELTA.md](HACKATHON_DELTA.md) | Exact pre-event baseline and Build Week contribution boundary. |
+| [CODEX_COLLABORATION.md](CODEX_COLLABORATION.md) | Model roles, governed session record, and Codex integration evidence. |
+| [AGENTS.md](AGENTS.md) | Native repository instructions for coding agents. |
+| [SECURITY.md](SECURITY.md) | Supported security policy and private reporting guidance. |
+| [docs/design](docs/design/) | Product vision, architecture, domain schemas, layer blueprints, naming, and build contract. |
+| [docs/engineering](docs/engineering/) | Decisions, compatibility findings, quality rules, implementation status, and Definition of Done. |
+| [docs/submission](docs/submission/) | Hackathon submission plan and official-rules compliance. |
+| [docs/build-log](docs/build-log/) | Authoritative task board, phase history, agent preflight, and templates. |
+| [evidence/public](evidence/public/) | Sanitized, judge-facing proof for live and deterministic claims. |
+| [demo](demo/) | Synthetic target application, mission criteria, scripts, and the demonstration runbook. |
+| [.agents](.agents/) | Repository Codex skill, read-only verifier agent, and marketplace metadata. |
+| [apps](apps/) | Bundled CLI/MCP package and local dashboard. |
+| [packages](packages/) | Typed AxiomGate core containing all six product layers. |
+| [plugins](plugins/) | Versioned Codex plugin bundle containing the synchronized native artifacts. |
+| [scripts](scripts/) | Link/punctuation gates, replay fixtures, receipt tampering, and package verification. |
 
 ## Product surfaces
 
@@ -103,13 +127,17 @@ The local dashboard renders a seeded synthetic mission on a clean clone and real
 
 ![AxiomGate dashboard: wrong-target denial and evidence-gated completion](docs/assets/axiomgate-dashboard.png)
 
-## Judge path and support
+## Judge path and platform support
 
 Start with [JUDGE-QUICKSTART.md](JUDGE-QUICKSTART.md). The deterministic replay and sample receipt require no personal account, credential, paid service, or network after dependencies are installed. The public repository and npm package are intended to remain free through judging.
 
-- **Verified:** Windows 11, PowerShell, Node.js 20+, pnpm 10, Codex CLI 0.144.x.
-- **Untested:** macOS and Linux. The implementation avoids platform-specific package scripts, but no cross-platform claim is made yet.
-- **Optional live path:** requires the judge’s own Codex authentication; GitHub/Vercel checks require the judge’s own corresponding CLI login.
+| Platform | Status | Evidence or limitation |
+|---|---|---|
+| Windows 11, PowerShell, Node.js 20+, pnpm 10, Codex CLI 0.144.x | Verified | Full tests, build, replay, package install, live mission, hooks, Telegram, and receipt verification. |
+| Linux through WSL2 Ubuntu | Unverified | The registered WSL distribution could not attach its missing VHDX on this machine, so no Linux command was run. |
+| macOS | Untested | No macOS runner was available. |
+
+The optional live path requires the judge's own Codex authentication. GitHub and Vercel checks require the judge's own corresponding CLI login.
 
 ## Security and privacy
 
@@ -132,10 +160,10 @@ See the [threat model](docs/design/10-SECURITY-THREAT-MODEL.md), [negative guard
 
 ## Roadmap
 
-- test macOS/Linux and publish a supported-platform matrix;
 - adopt deterministic named custom-agent targeting when Codex exposes it non-interactively;
 - broaden replay coverage beyond the three Build Week security regressions;
-- add post-hackathon quota/provider normalization without inventing capacity data.
+- normalize additional quota providers without inventing capacity data;
+- verify Linux in a working clean environment and add macOS verification.
 
 ## License
 
