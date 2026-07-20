@@ -161,4 +161,19 @@ GitHub API main:  7d478863112cbfe89c9644e6b47c8c41090b9453
 
 The final documentation-audit commit is synchronized and rechecked against the remote as the last repository step; its resulting head is recorded in the ignored full report rather than self-referenced inside its own commit.
 
-The first authorized publish attempt built the exact three-file package but stopped with `EOTP`. A subsequent `npm view axiomgate@0.1.1 version` returned `E404`, confirming no partial release. After the user supplied a publish-scoped registry token, a second process-scoped attempt succeeded without persisting or printing that credential. Registry lookup, fresh `npx` doctor, individual evidence-gate replay, and receipt PASS/tamper-FAIL then passed. The final verifier rerun also checks GitHub `main` against local HEAD and the rendered 0.1.1 quickstart.
+The first authorized publish attempt built the exact three-file package but stopped with `EOTP`. A subsequent `npm view axiomgate@0.1.1 version` returned `E404`, confirming no partial release. After the user supplied a publish-scoped registry token, a second process-scoped attempt succeeded without persisting or printing that credential.
+
+Final `node scripts/verify-published.mjs` result: exit 0.
+
+```text
+PASS registry exposes axiomgate version: 0.1.1
+PASS fresh npx doctor
+PASS fresh npx individual evidence-gate replay
+PASS published receipt verification accepts intact fixture
+PASS published receipt verification rejects tampered fixture
+PASS local release head is readable
+PASS GitHub main matches local release head
+PASS GitHub README exposes the 0.1.1 quickstart
+```
+
+The clean-temp doctor correctly reported absent Git state, skill, verifier, and Telegram configuration and unavailable App Server capacity rather than inventing availability. Those environment results do not affect the credential-free replay or offline receipt proof.
