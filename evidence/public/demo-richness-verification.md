@@ -70,7 +70,7 @@ Markdown links: PASS, 130 relative targets across 81 tracked Markdown files
 
 The verified web commit was deployed to Vercel production through the authenticated CLI. Vercel reported deployment `dpl_Dqe57KgMBs3TAg6Gf7KcCDNGE5XE` as `READY`, with four Node functions for approvals, capacity, mission detail, and mission summaries.
 
-- Production demo: [axiomgate-eta.vercel.app](https://axiomgate-eta.vercel.app/)
-- Dashboard: [axiomgate-eta.vercel.app/dashboard](https://axiomgate-eta.vercel.app/dashboard)
+- Production demo: [axiomgates.vercel.app](https://axiomgates.vercel.app/)
+- Dashboard: [axiomgates.vercel.app/dashboard](https://axiomgates.vercel.app/dashboard)
 
-The shorter requested alias `axiomgate.vercel.app` was unavailable because Vercel reported that it was already in use. No claim is made over that alias.
+Both public routes were rechecked after the alias update and returned HTTP 200.
