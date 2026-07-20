@@ -24,6 +24,8 @@ const temporaryRoot = mkdtempSync(join(tmpdir(), "axiomgate-pack-"));
 const packDirectory = join(temporaryRoot, "pack");
 const installDirectory = join(temporaryRoot, "installed");
 const isolatedCodexHome = join(temporaryRoot, "codex-home");
+const telegramSmoke = process.argv.includes("--telegram");
+const telegramEnvPath = join(repositoryRoot, ".local", "telegram.env");
 
 function sanitize(value) {
   return value.replaceAll(temporaryRoot, "<temp>");
@@ -48,6 +50,16 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+function privateTelegramValues() {
+  const values = new Map();
+  for (const line of readFileSync(telegramEnvPath, "utf8").split(/\r?\n/u)) {
+    const match = /^\s*(TELEGRAM_(?:BOT_TOKEN|CHAT_ID|USER_ID))\s*=\s*(.*)\s*$/u.exec(line);
+    if (match === null) continue;
+    values.set(match[1], match[2].trim().replace(/^(?:"(.*)"|'(.*)')$/u, "$1$2"));
+  }
+  return values;
+}
+
 try {
   mkdirSync(packDirectory, { recursive: true });
   mkdirSync(installDirectory, { recursive: true });
@@ -63,7 +75,7 @@ try {
   );
   printResult("npm pack", packed);
   const pack = parsePackOutput(packed.stdout);
-  assert(pack.name === "axiomgate" && pack.version === "0.1.2", "unexpected package identity");
+  assert(pack.name === "axiomgate" && pack.version === "0.1.3", "unexpected package identity");
   const packedPaths = pack.files.map((file) => file.path).sort();
   assert(
     JSON.stringify(packedPaths) === JSON.stringify(["README.md", "dist/index.js", "package.json"]),
@@ -119,6 +131,29 @@ try {
   );
   assert(doctor.stdout.includes("doctor") && doctor.stdout.includes("Node"), "doctor output was incomplete");
   printResult("installed axiomgate doctor", doctor);
+
+  if (telegramSmoke) {
+    assert(existsSync(telegramEnvPath), "--telegram requires ignored .local/telegram.env");
+    const telegram = requireSuccess(
+      "axiomgate telegram test",
+      runCommand(shim, ["telegram", "test", "--project", repositoryRoot], {
+        cwd: installDirectory,
+        env: environment,
+        timeoutMs: 45_000,
+      }),
+    );
+    const output = `${telegram.stdout}\n${telegram.stderr}`;
+    assert(
+      output.includes("token=configured") && output.includes("users="),
+      "Telegram test omitted masked authorization mode",
+    );
+    for (const [key, rawValue] of privateTelegramValues()) {
+      for (const value of rawValue.split(",").map((item) => item.trim()).filter(Boolean)) {
+        assert(!output.includes(value), `Telegram test exposed full ${key}`);
+      }
+    }
+    printResult("installed axiomgate telegram test (masked)", telegram);
+  }
 
   const wrongTarget = requireSuccess(
     "wrong-target replay",
@@ -179,13 +214,13 @@ try {
   const initialized = responses.find((response) => response.id === 1);
   const tools = responses.find((response) => response.id === 2);
   const toolCall = responses.find((response) => response.id === 3);
-  assert(initialized?.result?.serverInfo?.version === "0.1.2", "MCP server version mismatch");
+  assert(initialized?.result?.serverInfo?.version === "0.1.3", "MCP server version mismatch");
   assert(tools?.result?.tools?.length === 6, "MCP tools/list did not return six tools");
   const toolPayload = JSON.parse(toolCall?.result?.content?.[0]?.text ?? "null");
   assert(toolPayload?.valid === true, "MCP receipt verification did not return valid=true");
   printResult("installed MCP initialize + tools/list + receipt call", mcp);
 
-  console.log("\nPASS packed distribution: clean tarball, installed shim, individual replay, receipt tamper detection, and MCP stdio.");
+  console.log(`\nPASS packed distribution: clean tarball, installed shim, individual replay, receipt tamper detection, MCP stdio${telegramSmoke ? ", and masked Telegram test" : ""}.`);
 } finally {
   rmSync(temporaryRoot, { recursive: true, force: true });
 }

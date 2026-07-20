@@ -113,6 +113,38 @@ actual launch failed before Node could run because the registered VHDX path
 was missing (`ERROR_PATH_NOT_FOUND`). No Linux command was run, no WSL repair
 was attempted, and the platform matrix remains unchanged.
 
+## npm 0.1.3 release-candidate proof
+
+Publication status: `PENDING USER CONFIRMATION`.
+
+The bundled package was packed, installed into a fresh temporary directory,
+and exercised only through its installed command shim:
+
+```text
+package: axiomgate@0.1.3
+files: README.md, dist/index.js, package.json
+package size: 147347 bytes
+unpacked size: 848312 bytes
+shasum: 784c60c9c634d57e61747aabbacf1b3ccee3dfb9
+```
+
+Installed-tarball results:
+
+```text
+axiomgate --help: PASS
+axiomgate doctor: PASS
+axiomgate telegram test: PASS, token=configured, chats masked, users=private-only
+axiomgate replay wrong-target: PASS, EXISTS_NOT_OWNED
+receipt verify intact: PASS
+receipt verify tampered: expected FAIL, exit 1
+MCP initialize/tools/list/receipt call: PASS, server version 0.1.3
+```
+
+The tarball verifier checked the live Telegram output against the ignored
+configuration values before printing it. No full token, chat ID, or user ID
+was present. This was `npm pack` plus a local install only; no npm publish or
+GitHub push occurred.
+
 ## Straggler audit
 
 - No tracked `42/100`, unsupported `44-52%`, or non-repudiable wording remains.

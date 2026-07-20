@@ -32,12 +32,12 @@ The second command must report `FAIL · RECEIPT INTEGRITY` and return a non-zero
 
 ## Published-package path
 
-The published 0.1.2 clean-machine path is:
+The 0.1.3 clean-machine path below becomes public after the pending user-authorized release:
 
 ```powershell
-npx -y axiomgate@0.1.2 doctor
-npx -y axiomgate@0.1.2 replay all
-npx -y axiomgate@0.1.2 receipt verify scripts/fixtures/publish-receipt.json
+npx -y axiomgate@0.1.3 doctor
+npx -y axiomgate@0.1.3 replay all
+npx -y axiomgate@0.1.3 receipt verify scripts/fixtures/publish-receipt.json
 ```
 
 The receipt path in the last command assumes this repository is the current directory. No GitHub, Vercel, Telegram, or Codex login is used by replay or offline receipt verification.

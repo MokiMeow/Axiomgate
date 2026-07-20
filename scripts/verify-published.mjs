@@ -16,7 +16,7 @@ import {
 } from "./lib/command.mjs";
 
 const dryRun = process.argv.includes("--dry-run");
-const expectedVersion = "0.1.2";
+const expectedVersion = "0.1.3";
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const receiptFixture = join(repositoryRoot, "scripts", "fixtures", "publish-receipt.json");
 const npm = platformCommand("npm");
@@ -30,7 +30,7 @@ if (dryRun) {
   console.log(`CHECK 2: npx -y axiomgate@${expectedVersion} doctor`);
   console.log(`CHECK 3: npx -y axiomgate@${expectedVersion} replay evidence-gate`);
   console.log("CHECK 4: published receipt verify PASS and tampered FAIL");
-  console.log("CHECK 5: GitHub main equals local HEAD and README contains the 0.1.2 quickstart");
+  console.log("CHECK 5: GitHub main equals local HEAD and README contains the 0.1.3 quickstart");
   process.exit(0);
 }
 
@@ -144,9 +144,9 @@ try {
     timeoutMs: 60_000,
   });
   report(
-    "GitHub README exposes the 0.1.2 quickstart",
+    "GitHub README exposes the 0.1.3 quickstart",
     githubReadme,
-    (result) => result.stdout.includes("# AxiomGate") && result.stdout.includes("axiomgate@0.1.2"),
+    (result) => result.stdout.includes("# AxiomGate") && result.stdout.includes("axiomgate@0.1.3"),
   );
 } finally {
   rmSync(temporaryRoot, { recursive: true, force: true });
