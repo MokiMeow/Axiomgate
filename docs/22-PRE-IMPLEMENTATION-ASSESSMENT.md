@@ -190,3 +190,66 @@ The active intent boundary is `MODIFY_LOCAL`. Source, tests, local docs/evidence
 | Security/privacy verification | Repository tests and token/path scans | Local read-only | No secret, full chat ID, or private path in committed proof |
 
 Rollback is commit-level revert. Ignored test missions and Telegram state can be deleted locally; already-sent Telegram messages may remain but contain only redacted project data.
+# Validation Assessment: Repository Curation and 0.1.1 Preflight
+
+Date: 2026-07-20
+
+## 1. Understanding
+
+AxiomGate is a six-layer governance system: Mission Compiler, Runway, Environment Guard, Codex Runtime, Verification Engine, and Evidence Gate. A mission moves from an objective and bounded contract through hook-enforced action policy, governed Codex execution, independent machine verification, and an evidence-derived completion gate. Genuine completion requires fresh admissible command, API, or hook evidence and a COMPLETE proof gate. Model prose is never evidence. PatchPilot contributes the published dependency-scanning integration without becoming copied AxiomGate source.
+
+This task is repository and release curation. It reorganizes design, engineering, submission, and build-history documents; makes README the one-hop discovery surface; removes em and en dash punctuation from every tracked file; strengthens the native skill; records an honest platform matrix; and prepares a locally verified 0.1.1 package. It does not authorize GitHub push, npm publish, deployment, credential search, or any external mutation.
+
+## 2. Repository reality
+
+- Branch: `main`, ahead of `origin/main`; working tree clean at assessment time.
+- Identity: local Git identity `mokimeow`; remote is the public AxiomGate GitHub repository.
+- Stack: pnpm 10 TypeScript monorepo, bundled Node CLI, Vitest, and a zero-dependency local web surface.
+- Persistence: local `.axiomgate` mission directories with JSON/JSONL state and ignored `.local` private artifacts.
+- Published package source: `apps/cli`, currently version 0.1.0 with bundled core and a three-file whitelist.
+- Native artifacts: repo skill under `.agents/skills/axiomgate`, plugin skill copy under `plugins/axiomgate`, and read-only verifier agent.
+- Documentation is flat under `docs/`; build-history task files are under root `tasks/`; several root guidance files need relocation.
+- Existing scripts cover packed and published verification but no full Markdown relative-link checker exists.
+- CLI help confirms the commands requested for the strengthened skill exist, including mission create/run/verify/status/receipt, receipt verify, replay, telegram watch, verify-enforcement, and runway status.
+- WSL2 Ubuntu is registered but cannot start because its VHDX path is missing. No Linux command was executed. Windows remains verified; Linux and macOS remain unverified.
+
+Inspected commands and files include `git status`, `git remote -v`, root/docs/tasks inventories, `README.md`, `MASTER_BUILD_CONTRACT.md`, `AGENTS.md`, required architecture/security/test/quality/Done/hygiene documents, `docs/18-DECISION-LOG.md`, `docs/19-IDEAS-INBOX.md`, package manifests, CLI help, skill copies, validation scripts, and `wsl --status`/distribution startup.
+
+## 3. Architecture critique
+
+The six-layer architecture and evidence hierarchy remain appropriate. The flat documentation layout is no longer appropriate for judging because design intent, implementation history, and submission material compete at the same level. Moving task history into `docs/build-log` improves discovery without deleting provenance. README should replace the stale hand-maintained root file index as the primary map; a generated link checker should enforce integrity instead of another manually synchronized index.
+
+The skill is accurate but too small to guide a full governed lifecycle. It should remain concise while naming real commands and hard safety rules. The package preflight currently hard-codes 0.1.0 and must migrate with the version. WSL repair would be environment administration outside the time-boxed verification task and should not be attempted.
+
+## 4. Proposed implementation
+
+1. Use `git mv` to create `docs/design`, `docs/engineering`, `docs/submission`, and `docs/build-log`; relocate root strays; update AGENTS and all relative references; replace `FILE_INDEX.md` with the README repository map; add a deterministic Markdown link checker.
+2. Sweep tracked files for Unicode em/en dashes and rewrite punctuation without changing meaning.
+3. Restructure README as the AI and human entry point with one-hop repository map, shipped Telegram surface, honest roadmap, platform matrix, and evidence-linked claims.
+4. Strengthen and synchronize both skill copies; assert every referenced command against shipped CLI help.
+5. Record WSL as unavailable with the exact environment failure and retain unverified Linux/macOS labels.
+6. Bump the publishable package to 0.1.1, update README/changelog pins, update packed verification, inspect the pack list, and install/test the tarball locally.
+7. Run link integrity, Unicode punctuation gate, typecheck, tests, build, pack verification, secret/path inspection, and final diff review. Commit each curation part atomically.
+
+Rollback is per atomic commit. Document moves preserve history and can be reverted without data migration. No application schema or external state changes are planned.
+
+## 5. Open decisions
+
+- File index: fold it into README and delete `FILE_INDEX.md`; this avoids two maps drifting.
+- WSL: record unavailable and stop platform work; do not repair the user's WSL installation.
+- En dash: use plain hyphens even for ranges so the tracked Unicode gate has one unambiguous zero-hit rule.
+- Release: prepare 0.1.1 locally, then request explicit authorization for push and publish.
+
+## 6. Capability-use plan
+
+- `git mv` and `apply_patch`: local documentation/source organization and link repair; local repository write only; allowed.
+- `rg`, `git ls-files`, and a Node Markdown-link checker: local discovery and deterministic integrity evidence; read-only except the committed checker; allowed.
+- Shipped CLI help: confirm skill command truth; local process, no account; allowed.
+- `wsl.exe`: platform discovery only; local environment read/start attempt, no install or repair; allowed and now concluded unavailable.
+- pnpm typecheck/test/build: local verification; no account; allowed.
+- `npm pack` and temporary tarball installation: local release verification with registry use only if dependencies are already resolved; no publish credential; allowed.
+- GitHub push and npm publish: external state changes requiring account authority; denied until the user explicitly confirms after preflight.
+
+## 7. Feasibility verdict
+
+Feasible with one verified limitation: Linux cannot be claimed because the installed WSL2 Ubuntu instance cannot attach its missing virtual disk. C1-C4 and C6 local preparation are feasible. C5 will record the honest unavailable result. Push and publish remain blocked pending explicit user confirmation.
