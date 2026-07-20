@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-20 - 0.1.2
+
+- Hard-denied model-visible writes into governed `.axiomgate` state before mission policy evaluation.
+- Changed unrecognized shell commands from guessed repository reads to state-changing `UNKNOWN` with deny-by-default.
+- Added 23 authority-hardening regressions and a live Codex 0.144.6 `.axiomgate` write-denial proof.
+- Replaced unsupported motivation figures, labelled the wrong-target scene REPLAY, qualified PermissionRequest behavior, and documented receipt and Telegram limits.
+- Prepared the bundled public CLI release with 309 passing tests and one optional live identity smoke skipped.
+
 ## 2026-07-20 - 0.1.1
 
 - Bundled the verified source updates that postdate npm 0.1.0, including individual replay dispatch, Telegram lifecycle cards, current effort labels, and security hardening.

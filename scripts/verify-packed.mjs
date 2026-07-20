@@ -63,7 +63,7 @@ try {
   );
   printResult("npm pack", packed);
   const pack = parsePackOutput(packed.stdout);
-  assert(pack.name === "axiomgate" && pack.version === "0.1.1", "unexpected package identity");
+  assert(pack.name === "axiomgate" && pack.version === "0.1.2", "unexpected package identity");
   const packedPaths = pack.files.map((file) => file.path).sort();
   assert(
     JSON.stringify(packedPaths) === JSON.stringify(["README.md", "dist/index.js", "package.json"]),
@@ -179,7 +179,7 @@ try {
   const initialized = responses.find((response) => response.id === 1);
   const tools = responses.find((response) => response.id === 2);
   const toolCall = responses.find((response) => response.id === 3);
-  assert(initialized?.result?.serverInfo?.version === "0.1.1", "MCP server version mismatch");
+  assert(initialized?.result?.serverInfo?.version === "0.1.2", "MCP server version mismatch");
   assert(tools?.result?.tools?.length === 6, "MCP tools/list did not return six tools");
   const toolPayload = JSON.parse(toolCall?.result?.content?.[0]?.text ?? "null");
   assert(toolPayload?.valid === true, "MCP receipt verification did not return valid=true");

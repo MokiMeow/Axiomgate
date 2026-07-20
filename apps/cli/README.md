@@ -5,13 +5,13 @@ AxiomGate turns Codex work into proof-carrying missions. It bounds agent authori
 ## Quickstart
 
 ```sh
-npx -y axiomgate@0.1.1 doctor
-npx -y axiomgate@0.1.1 replay all
-npx -y axiomgate@0.1.1 mission create --objective "Add a tested security fix" --project .
-npx -y axiomgate@0.1.1 mission run <mission-id> --project .
-npx -y axiomgate@0.1.1 mission verify <mission-id> --project .
-npx -y axiomgate@0.1.1 mission receipt <mission-id> --format json --project .
-npx -y axiomgate@0.1.1 receipt verify ./evidence/<mission-id>-receipt.json
+npx -y axiomgate@0.1.2 doctor
+npx -y axiomgate@0.1.2 replay all
+npx -y axiomgate@0.1.2 mission create --objective "Add a tested security fix" --project .
+npx -y axiomgate@0.1.2 mission run <mission-id> --project .
+npx -y axiomgate@0.1.2 mission verify <mission-id> --project .
+npx -y axiomgate@0.1.2 mission receipt <mission-id> --format json --project .
+npx -y axiomgate@0.1.2 receipt verify ./evidence/<mission-id>-receipt.json
 ```
 
 The completion gate accepts fresh command, API, or hook evidence - never model prose. Consequential actions remain bound to the mission policy, identity, target, and exact approved command.
