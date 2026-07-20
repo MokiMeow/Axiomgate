@@ -46,17 +46,27 @@ describe("AxiomGate Codex skill", () => {
     expect(metadata.description).toContain("authority");
     expect(metadata.description).toContain("evidence");
 
-    const commands = [...skill.matchAll(/`(axiomgate [^`]+)`/gu)].map(
-      (match) => match[1],
-    );
+    const commands = [...new Set(
+      [...skill.matchAll(/`(axiomgate [^`]+)`/gu)].map((match) => match[1]),
+    )];
     expect(commands).toEqual([
-      "axiomgate mission verify <id>",
-      "axiomgate mission status <id>",
+      "axiomgate mission create --objective \"<objective>\" --project <path>",
+      "axiomgate mission run <id> --project <path>",
+      "axiomgate mission verify <id> --project <path>",
+      "axiomgate mission status <id> --project <path>",
+      "axiomgate mission receipt <id> --project <path>",
+      "axiomgate receipt verify <file>",
+      "axiomgate replay all",
+      "axiomgate telegram watch --project <path>",
+      "axiomgate verify-enforcement",
+      "axiomgate runway status --project <path>",
     ]);
     const cli = readFileSync(resolve(repositoryRoot, "apps/cli/src/index.ts"), "utf8");
-    for (const command of commands) {
-      const words = command!.replace(/ <id>$/u, "").split(" ");
-      expect(cli).toContain(`missionCommand === "${words.at(-1)}"`);
+    for (const command of ["create", "run", "verify", "status", "receipt"]) {
+      expect(cli).toContain(`missionCommand === "${command}"`);
+    }
+    for (const command of ["receipt", "replay", "telegram", "verify-enforcement", "runway"]) {
+      expect(cli).toContain(`command === "${command}"`);
     }
   });
 });
