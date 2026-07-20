@@ -134,7 +134,7 @@ Start with [JUDGE-QUICKSTART.md](JUDGE-QUICKSTART.md). The deterministic replay 
 | Platform | Status | Evidence or limitation |
 |---|---|---|
 | Windows 11, PowerShell, Node.js 20+, pnpm 10, Codex CLI 0.144.x | Verified | Full tests, build, replay, package install, live mission, hooks, Telegram, and receipt verification. |
-| Linux through WSL2 Ubuntu | Unverified | The registered WSL distribution could not attach its missing VHDX on this machine, so no Linux command was run. |
+| Linux through WSL2 Ubuntu | Unverified | The registered WSL distribution could not attach its missing VHDX on this machine, so no Linux command was run. [Curation evidence](evidence/public/repo-curation-verification.md). |
 | macOS | Untested | No macOS runner was available. |
 
 The optional live path requires the judge's own Codex authentication. GitHub and Vercel checks require the judge's own corresponding CLI login.
