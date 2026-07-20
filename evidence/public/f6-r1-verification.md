@@ -137,5 +137,5 @@ The final run record hash was `sha256:eb7c32c529eb2223d7692a29c15d8f65ad1f103437
 - A production-implying objective leaves `production.deploy` denied, marks the conflicting criterion `BLOCKED`, and prints a `CONFLICT` requiring an explicit contract edit. It never converts production deployment into an allowed action; Build Week production execution remains refused.
 - The CLI exposes `--effort` and `--timeout-ms` so the required live proof can override the contract build phase and the 20-minute default deterministically.
 - Basic resume is fixture/integration tested against the installed CLI argument contract but was not exercised against a live interrupted paid session. Full recovery and Runway logic remain R3.
-- `PreToolUse` persistence was verified live. `PermissionRequest` still shares the same fixture-tested hook path but has not been induced in a live non-interactive run, as recorded in `docs/17-COMPATIBILITY-ADAPTERS.md`.
+- `PreToolUse` persistence was verified live. `PermissionRequest` still shares the same fixture-tested hook path but has not been induced in a live non-interactive run, as recorded in `docs/engineering/17-COMPATIBILITY-ADAPTERS.md`.
 - Codex 0.144.4 emits the hook-trust warning as JSON error items even when the explicitly configured hook executes correctly; these raw events are preserved rather than suppressed.

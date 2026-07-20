@@ -95,7 +95,7 @@ Gate outcome: COMPLETE
 Receipt valid: true
 ```
 
-An initial live attempt without MCP annotations was cancelled by Codex as approval-requiring even under `--ask-for-approval never`. After adding truthful `readOnlyHint: true` annotations to read paths, the same calls completed. This observed compatibility requirement is recorded in `docs/17-COMPATIBILITY-ADAPTERS.md`.
+An initial live attempt without MCP annotations was cancelled by Codex as approval-requiring even under `--ask-for-approval never`. After adding truthful `readOnlyHint: true` annotations to read paths, the same calls completed. This observed compatibility requirement is recorded in `docs/engineering/17-COMPATIBILITY-ADAPTERS.md`.
 
 ## Part C — Codex plugin packaging
 

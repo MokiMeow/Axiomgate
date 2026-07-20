@@ -6,7 +6,7 @@ A verified map of the existing codebase and a low-risk implementation foundation
 
 ## Work
 
-- Complete `docs/22-PRE-IMPLEMENTATION-ASSESSMENT.md`.
+- Complete `docs/engineering/22-PRE-IMPLEMENTATION-ASSESSMENT.md`.
 - Locate all repositories involved, including the PatchPilot monorepo (web/worker/CLI/MCP/core — no desktop app exists).
 - Empirically verify Codex hooks, SDK/App Server, and `exec --json` behavior on the installed version; record in `docs/17` (gate for all enforcement claims).
 - Record package boundaries, language, framework, build tools, persistence, IPC/API, CI, release, and test commands.

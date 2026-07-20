@@ -134,7 +134,7 @@ AxiomGate skill  [OK] via plugin axiomgate@axiomgate-build-week
 Verifier agent   [OK] via plugin axiomgate@axiomgate-build-week
 ```
 
-The Git URL path cannot be exercised until the user pushes the repository. `docs/14-HACKATHON-SUBMISSION.md` records the exact fresh-home commands for that post-push check.
+The Git URL path cannot be exercised until the user pushes the repository. `docs/submission/14-HACKATHON-SUBMISSION.md` records the exact fresh-home commands for that post-push check.
 
 ## Post-publication verifier
 

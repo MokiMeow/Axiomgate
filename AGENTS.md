@@ -6,7 +6,7 @@ These instructions apply to the entire repository.
 
 ## First action
 
-Read `START_HERE.md` and complete its mandatory pre-implementation assessment. Do not begin implementation first.
+Read `docs/build-log/START_HERE.md` and complete its mandatory pre-implementation assessment. Do not begin implementation first.
 
 ## Work style
 
@@ -42,8 +42,8 @@ Never:
 
 1. Read the task and acceptance criteria.
 2. Inspect relevant source and tests.
-3. Check `docs/18-DECISION-LOG.md`.
-4. Check `docs/19-IDEAS-INBOX.md` for accepted ideas only.
+3. Check `docs/engineering/18-DECISION-LOG.md`.
+4. Check `docs/engineering/19-IDEAS-INBOX.md` for accepted ideas only.
 5. Inspect available execution mechanisms and required semantic actions.
 6. Select the smallest relevant capability set.
 7. Confirm the current intent boundary.
@@ -123,7 +123,7 @@ Update documentation in the same change when:
 
 Do not silently expand scope.
 
-Write the idea to `docs/19-IDEAS-INBOX.md` with:
+Write the idea to `docs/engineering/19-IDEAS-INBOX.md` with:
 
 - problem;
 - evidence;
@@ -134,7 +134,7 @@ Write the idea to `docs/19-IDEAS-INBOX.md` with:
 - effect on demo;
 - recommendation.
 
-Only accepted ideas enter `tasks/TASKS.md`.
+Only accepted ideas enter `docs/build-log/TASKS.md`.
 
 ## Failure handling
 

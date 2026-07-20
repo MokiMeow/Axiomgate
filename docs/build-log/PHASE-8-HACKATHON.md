@@ -17,7 +17,7 @@ A judge can understand, run, and verify AxiomGate quickly.
 - Write `CODEX_COLLABORATION.md`.
 - Add supported platforms and installation instructions.
 - Capture primary Codex `/feedback` session ID.
-- Complete `docs/26-OFFICIAL-RULES-COMPLIANCE.md`.
+- Complete `docs/submission/26-OFFICIAL-RULES-COMPLIANCE.md`.
 - Verify public repository license or private repository access for both judge email addresses.
 - Record a public YouTube demo less than three minutes with English audio covering the project, Codex, and GPT-5.6.
 - Run clean clone.

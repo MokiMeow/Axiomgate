@@ -1,6 +1,6 @@
 # Phase 1 — Mission Contract and Runway Lite
 
-Aligned to board tasks **F6** and **R3** (ADR-008). Deferred items live in `MASTER_BUILD_CONTRACT.md` "Post-hackathon scope".
+Aligned to board tasks **F6** and **R3** (ADR-008). Deferred items live in `docs/design/MASTER_BUILD_CONTRACT.md` "Post-hackathon scope".
 
 ## Outcome
 

@@ -77,7 +77,7 @@ Environment Guard enforces policy through official Codex hooks (`PreToolUse`/`Pe
 
 **Date:** 2026-07-14 · **Status:** Accepted
 
-Build the one governed mission end to end (contract → hook-enforced guard → Codex build → PatchPilot verify → receipt). Deferred: desktop app, general browser/e2e orchestration, maintainability engine, capability-discovery generalization, worktree/port coordination, continuity/model-transition machinery, instruction-compilation NLP, multi-provider adapters, cross-provider portability proof, 11 of 14 quota scenarios, 9 of 12 replay scenarios. `tasks/TASKS.md` v3 is the authoritative board; where a phase file lists deferred work, TASKS.md wins.
+Build the one governed mission end to end (contract → hook-enforced guard → Codex build → PatchPilot verify → receipt). Deferred: desktop app, general browser/e2e orchestration, maintainability engine, capability-discovery generalization, worktree/port coordination, continuity/model-transition machinery, instruction-compilation NLP, multi-provider adapters, cross-provider portability proof, 11 of 14 quota scenarios, 9 of 12 replay scenarios. `docs/build-log/TASKS.md` v3 is the authoritative board; where a phase file lists deferred work, TASKS.md wins.
 
 **Consequences:** a finished, demonstrable product; deferred items remain documented for post-hackathon.
 

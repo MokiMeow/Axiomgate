@@ -9,11 +9,11 @@ Use Codex deeply and visibly for real repository work while adding governance ar
 - **Session control:** the official Codex TypeScript SDK / App Server JSON-RPC protocol. Fall back to `codex exec --json` (prompt via stdin) where the SDK is unnecessary.
 - **Event and token capture:** `codex exec --json` reasoning/token usage feeds the Runway ledger; structured results use `--output-schema`.
 - **Sandbox:** intent boundary → sandbox flags (for example `--sandbox workspace-write`, network disabled below PUBLISH), following the pattern already live-verified in PatchPilot's Codex integration.
-- **Policy:** hooks configured per mission (see `docs/05-ENVIRONMENT-GUARD.md`).
+- **Policy:** hooks configured per mission (see `docs/design/05-ENVIRONMENT-GUARD.md`).
 - **Model plan:** phase-specific GPT-5.6 tier (Sol / Terra / Luna) and reasoning-effort selection, recorded with rationale in the mission state and Build Receipt.
 - **Session identity:** preserve the primary session ID for `/feedback` from day one.
 
-Phase 0 must verify all of the above empirically against the installed Codex version and record results in `docs/17-COMPATIBILITY-ADAPTERS.md`.
+Phase 0 must verify all of the above empirically against the installed Codex version and record results in `docs/engineering/17-COMPATIBILITY-ADAPTERS.md`.
 
 ## Roles
 

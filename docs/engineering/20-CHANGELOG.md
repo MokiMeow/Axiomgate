@@ -28,7 +28,7 @@ No production functionality is claimed in this entry.
 - Corrected the PatchPilot factual model everywhere: web/worker/CLI/MCP monorepo, not a desktop app; rewrote `docs/09`.
 - Re-scoped browser verification (stretch) and maintainability (deferred) — they do not exist in PatchPilot.
 - Replaced the desktop app with the local web dashboard (ADR-009).
-- Cut `tasks/TASKS.md` to the vertical slice; deferred items retained and labelled.
+- Cut `docs/build-log/TASKS.md` to the vertical slice; deferred items retained and labelled.
 - Added canonical JSON schema sketches to `docs/02`.
 - Added deploy-target ownership proof, post-limit resume plan, and `axiomgate receipt verify` (ADR-011/012).
 - Rewrote the demo storyboard around the wrong-target block and evidence-gated completion.

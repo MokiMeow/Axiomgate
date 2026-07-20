@@ -6,7 +6,7 @@
 ## Understanding and boundaries
 
 AxiomGate turns a Codex objective into a versioned Mission Contract, plans capacity, enforces identity and action authority, runs Codex, verifies through PatchPilot, and permits completion only from admissible evidence.
-The six layers are Mission Compiler, Runway, Environment Guard, Codex Runtime, Verification Engine, and Evidence Gate. The Build Week path ends at a pull request and preview deployment; production deploys and every item under `MASTER_BUILD_CONTRACT.md` “Post-hackathon scope” are excluded.
+The six layers are Mission Compiler, Runway, Environment Guard, Codex Runtime, Verification Engine, and Evidence Gate. The Build Week path ends at a pull request and preview deployment; production deploys and every item under `docs/design/MASTER_BUILD_CONTRACT.md` “Post-hackathon scope” are excluded.
 Genuine completion requires current code, automated checks, runtime evidence, documentation, and task status to agree. Model prose is not evidence.
 PatchPilot is pre-existing May 2026 work: a pnpm monorepo with Next.js web, worker, CLI, MCP server, and `packages/core` scanners, validation, remediation, audit, approvals, redaction, and injection guards. F3/F4 will not copy or modify it.
 
@@ -14,10 +14,10 @@ PatchPilot is pre-existing May 2026 work: a pnpm monorepo with Next.js web, work
 
 - AxiomGate started as a documentation-only repository at baseline commit `58c1a0a`; current branch is `main`, with no remote, package manifest, TypeScript source, test suite, persistence layer, web app, or CI workflow.
 - Current HEAD before this assessment is `2e17304`; the worktree was clean and Git commit identity is configured.
-- `docs/17-COMPATIBILITY-ADAPTERS.md` records F2 on `codex-cli 0.144.0`: JSON hook denial is enforced; bare exit code 2 fails open under `approval_policy="never"`. PermissionRequest and usage-field checks remain later work.
+- `docs/engineering/17-COMPATIBILITY-ADAPTERS.md` records F2 on `codex-cli 0.144.0`: JSON hook denial is enforced; bare exit code 2 fails open under `approval_policy="never"`. PermissionRequest and usage-field checks remain later work.
 - Local tools: Node `v24.11.1`, pnpm `10.33.0`, Codex CLI `0.144.0`, Git `2.55.0.windows.2`, and `rg`. PowerShell script shims are blocked, so verification uses the equivalent `.cmd` launchers on Windows.
 - A separate pre-existing PatchPilot checkout was inspected read-only. Its `packages/core/src` exports the documented validation, scanner, Codex, audit, approval, redaction, prompt-injection, and MCP-tool-guard modules. Its unrelated working-tree state was not touched.
-- Relevant sources read: `START_HERE.md`, `README.md`, the build contract, architecture/domain/security/test/quality/DoD/hygiene docs, ADRs, ideas inbox, status board, task board, Phase 0 file, `docs/17`, PatchPilot `FEATURE_MATRIX.md`, package manifests, core index, and relevant core exports.
+- Relevant sources read: `docs/build-log/START_HERE.md`, `README.md`, the build contract, architecture/domain/security/test/quality/DoD/hygiene docs, ADRs, ideas inbox, status board, task board, Phase 0 file, `docs/17`, PatchPilot `FEATURE_MATRIX.md`, package manifests, core index, and relevant core exports.
 - Discovery commands: `git status/log/show/remote`, `rg --files`, `Get-Content`, tool version/presence checks, and read-only PatchPilot tree/Git inspection using a per-command safe-directory override.
 
 ## Architecture assessment
@@ -208,12 +208,12 @@ This task is repository and release curation. It reorganizes design, engineering
 - Persistence: local `.axiomgate` mission directories with JSON/JSONL state and ignored `.local` private artifacts.
 - Published package source: `apps/cli`, currently version 0.1.0 with bundled core and a three-file whitelist.
 - Native artifacts: repo skill under `.agents/skills/axiomgate`, plugin skill copy under `plugins/axiomgate`, and read-only verifier agent.
-- Documentation is flat under `docs/`; build-history task files are under root `tasks/`; several root guidance files need relocation.
+- Documentation is flat under `docs/`; build-history task files are under root `docs/build-log/`; several root guidance files need relocation.
 - Existing scripts cover packed and published verification but no full Markdown relative-link checker exists.
 - CLI help confirms the commands requested for the strengthened skill exist, including mission create/run/verify/status/receipt, receipt verify, replay, telegram watch, verify-enforcement, and runway status.
 - WSL2 Ubuntu is registered but cannot start because its VHDX path is missing. No Linux command was executed. Windows remains verified; Linux and macOS remain unverified.
 
-Inspected commands and files include `git status`, `git remote -v`, root/docs/tasks inventories, `README.md`, `MASTER_BUILD_CONTRACT.md`, `AGENTS.md`, required architecture/security/test/quality/Done/hygiene documents, `docs/18-DECISION-LOG.md`, `docs/19-IDEAS-INBOX.md`, package manifests, CLI help, skill copies, validation scripts, and `wsl --status`/distribution startup.
+Inspected commands and files include `git status`, `git remote -v`, root/docs/tasks inventories, `README.md`, `docs/design/MASTER_BUILD_CONTRACT.md`, `AGENTS.md`, required architecture/security/test/quality/Done/hygiene documents, `docs/engineering/18-DECISION-LOG.md`, `docs/engineering/19-IDEAS-INBOX.md`, package manifests, CLI help, skill copies, validation scripts, and `wsl --status`/distribution startup.
 
 ## 3. Architecture critique
 

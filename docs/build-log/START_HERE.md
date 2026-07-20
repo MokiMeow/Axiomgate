@@ -13,24 +13,24 @@ Reading documentation, inspecting the repository, running read-only discovery co
 Read these files completely:
 
 1. `README.md`
-2. `MASTER_BUILD_CONTRACT.md`
+2. `docs/design/MASTER_BUILD_CONTRACT.md`
 3. `AGENTS.md`
-4. `docs/00-PRODUCT-VISION.md`
-5. `docs/01-ARCHITECTURE.md`
-6. `docs/02-DOMAIN-MODEL.md`
-7. `docs/10-SECURITY-THREAT-MODEL.md`
-8. `docs/11-TEST-STRATEGY.md`
-9. `docs/15-CODE-QUALITY.md`
-10. `docs/23-DEFINITION-OF-DONE.md`
-11. `docs/24-REPO-HYGIENE.md`
-12. `tasks/TASKS.md`
+4. `docs/design/00-PRODUCT-VISION.md`
+5. `docs/design/01-ARCHITECTURE.md`
+6. `docs/design/02-DOMAIN-MODEL.md`
+7. `docs/design/10-SECURITY-THREAT-MODEL.md`
+8. `docs/design/11-TEST-STRATEGY.md`
+9. `docs/engineering/15-CODE-QUALITY.md`
+10. `docs/engineering/23-DEFINITION-OF-DONE.md`
+11. `docs/engineering/24-REPO-HYGIENE.md`
+12. `docs/build-log/TASKS.md`
 13. The phase file for the first planned task
 
 Also inspect the existing PatchPilot implementation at its local path (a pnpm monorepo containing `apps/web` (Next.js), `apps/worker`, `apps/cli`, `apps/mcp`, and `packages/core`). Note: this AxiomGate repository is documentation-only at the start of Build Week — there is no pre-existing AxiomGate source code, CI, or package manifest. Do not search for them; record their absence and initialize Git with a baseline commit as the first action.
 
 ## Required pre-implementation response
 
-Create or update `docs/22-PRE-IMPLEMENTATION-ASSESSMENT.md` and report the following to the user before implementation:
+Create or update `docs/engineering/22-PRE-IMPLEMENTATION-ASSESSMENT.md` and report the following to the user before implementation:
 
 ### 1. Your understanding
 

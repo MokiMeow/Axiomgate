@@ -8,7 +8,7 @@ Keep the repository small, understandable, reproducible, and safe.
 
 - production source in established app/package directories;
 - docs in `docs/`;
-- execution work in `tasks/`;
+- execution work in `docs/build-log/`;
 - public fixtures in `tests/fixtures/public/`;
 - judge fixtures in `demo/fixtures/`;
 - reviewed evidence in `evidence/public/`;

@@ -1,6 +1,6 @@
 # Phase 3 — Codex Runtime
 
-Aligned to board tasks **R1–R2** (ADR-008). Worktree/branch/port leases, provider handoffs, target-model validation, and compaction-recovery machinery are **post-hackathon** (see `MASTER_BUILD_CONTRACT.md`).
+Aligned to board tasks **R1–R2** (ADR-008). Worktree/branch/port leases, provider handoffs, target-model validation, and compaction-recovery machinery are **post-hackathon** (see `docs/design/MASTER_BUILD_CONTRACT.md`).
 
 ## Outcome
 

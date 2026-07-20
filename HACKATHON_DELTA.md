@@ -37,4 +37,4 @@ git diff --stat 58c1a0a..HEAD
 git log --oneline 58c1a0a..HEAD
 ```
 
-These commands are the authoritative Build Week change range. Claims remain bounded by [docs/21-IMPLEMENTATION-STATUS.md](docs/21-IMPLEMENTATION-STATUS.md) and the linked evidence.
+These commands are the authoritative Build Week change range. Claims remain bounded by [docs/engineering/21-IMPLEMENTATION-STATUS.md](docs/engineering/21-IMPLEMENTATION-STATUS.md) and the linked evidence.

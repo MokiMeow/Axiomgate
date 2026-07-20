@@ -4,7 +4,7 @@
 
 This is the authoritative implementation contract. It consolidates product scope, engineering standards, task governance, testing, security, documentation, and hackathon requirements.
 
-If another document conflicts with this file, stop, record the conflict in `docs/18-DECISION-LOG.md`, and resolve it explicitly. Do not silently choose whichever instruction is easier.
+If another document conflicts with this file, stop, record the conflict in `docs/engineering/18-DECISION-LOG.md`, and resolve it explicitly. Do not silently choose whichever instruction is easier.
 
 ## Product thesis
 
@@ -281,9 +281,9 @@ Do not create “final”, “misc”, “fix stuff”, “complete everything�
 - Provide setup, supported platform, and test instructions.
 - Publish the demo publicly on YouTube, keep it less than three minutes, and include accurate audio covering the project, Codex, and GPT-5.6.
 - Preserve private data locally and publish only sanitized evidence.
-- Complete `docs/26-OFFICIAL-RULES-COMPLIANCE.md`; when sources conflict, the Official Rules and current Devpost website prevail.
+- Complete `docs/submission/26-OFFICIAL-RULES-COMPLIANCE.md`; when sources conflict, the Official Rules and current Devpost website prevail.
 - Use a relevant license for a public repository, or share a private repository with both official judging addresses.
 
 ## Completion
 
-AxiomGate is submission-ready only when the final acceptance checklist in `tasks/PHASE-8-HACKATHON.md` and `docs/23-DEFINITION-OF-DONE.md` passes with linked evidence.
+AxiomGate is submission-ready only when the final acceptance checklist in `docs/build-log/PHASE-8-HACKATHON.md` and `docs/engineering/23-DEFINITION-OF-DONE.md` passes with linked evidence.

@@ -87,11 +87,11 @@ objective
 
 | Stage | Main implementation | Design reference |
 |---|---|---|
-| Plan | `src/mission`, `src/runway` | [Mission Compiler](docs/03-MISSION-COMPILER.md), [Runway](docs/04-RUNWAY.md) |
-| Guard | `src/guard` | [Environment Guard](docs/05-ENVIRONMENT-GUARD.md) |
-| Run | `src/runtime` | [Codex Runtime](docs/06-CODEX-RUNTIME.md) |
-| Verify | `src/verification` | [Verification Engine](docs/07-VERIFICATION-ENGINE.md) |
-| Prove | `src/evidence` | [Evidence Gate](docs/08-EVIDENCE-GATE.md) |
+| Plan | `src/mission`, `src/runway` | [Mission Compiler](docs/design/03-MISSION-COMPILER.md), [Runway](docs/design/04-RUNWAY.md) |
+| Guard | `src/guard` | [Environment Guard](docs/design/05-ENVIRONMENT-GUARD.md) |
+| Run | `src/runtime` | [Codex Runtime](docs/design/06-CODEX-RUNTIME.md) |
+| Verify | `src/verification` | [Verification Engine](docs/design/07-VERIFICATION-ENGINE.md) |
+| Prove | `src/evidence` | [Evidence Gate](docs/design/08-EVIDENCE-GATE.md) |
 
 The verification boundary invokes the published `patchpilot-cli@0.1.3` unchanged, then combines its dependency findings with the target repository’s native test/build commands and secret scan. PatchPilot source is not copied or represented as Build Week work.
 
@@ -120,7 +120,7 @@ Start with [JUDGE-QUICKSTART.md](JUDGE-QUICKSTART.md). The deterministic replay 
 - Optional Telegram approvals read `TELEGRAM_BOT_TOKEN` and the comma-separated `TELEGRAM_CHAT_ID` allowlist only from the process environment or ignored `.local/telegram.env`. Run `axiomgate telegram test`, then `axiomgate telegram watch --project <path>`; persisted relay state contains hashed chat identifiers, never the token or full chat ID.
 - Demo users, IDs, tokens, and wrong-target profiles are synthetic. Presenter substitutions are explicitly labelled in [demo/DEMO-RUNBOOK.md](demo/DEMO-RUNBOOK.md).
 
-See the [threat model](docs/10-SECURITY-THREAT-MODEL.md), [negative guard suite](packages/axiomgate-core/test/negative-guard.test.ts), and [public evidence index](evidence/public/README.md).
+See the [threat model](docs/design/10-SECURITY-THREAT-MODEL.md), [negative guard suite](packages/axiomgate-core/test/negative-guard.test.ts), and [public evidence index](evidence/public/README.md).
 
 ## Submission evidence
 
@@ -128,7 +128,7 @@ See the [threat model](docs/10-SECURITY-THREAT-MODEL.md), [negative guard suite]
 - [Codex collaboration log](CODEX_COLLABORATION.md) — model roles, seven-session headline ledger, and verified hook probes.
 - [Headline run evidence](evidence/public/headline-run-verification.md) — real lockout mission, denial, remediation, review, and receipt proof.
 - [Sample offline-verifiable receipt](scripts/fixtures/publish-receipt.json).
-- [Implementation status](docs/21-IMPLEMENTATION-STATUS.md) — evidence-linked product truth.
+- [Implementation status](docs/engineering/21-IMPLEMENTATION-STATUS.md) — evidence-linked product truth.
 
 ## Roadmap
 
