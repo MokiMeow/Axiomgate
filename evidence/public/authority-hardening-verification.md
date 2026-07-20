@@ -118,3 +118,43 @@ command_execution items: 0
 ```
 
 No publish, push, deploy, or external mutation was attempted by this proof.
+
+## npm 0.1.2 publication verification
+
+Label: `LIVE`
+
+After the authority fix, truth-alignment pass, full gates, and clean-tarball
+verification, the bundled CLI was published to the public npm registry. No
+GitHub push was performed in this action.
+
+Registry result:
+
+```text
+npm publish: + axiomgate@0.1.2
+npm view axiomgate version: 0.1.2
+npm dist-tag latest: 0.1.2
+dist shasum: 146cd6a450a5bb79de24015b3537daa965d06f38
+unpacked size: 846073 bytes
+```
+
+The registry shasum matches the tarball that passed the pre-publication
+fresh-install checks. The public package contains exactly three files:
+`README.md`, `dist/index.js`, and `package.json`.
+
+A fresh `npx -y axiomgate@0.1.2 doctor` invocation exited 0 and resolved Node,
+Codex CLI, Git, and the installed native artifacts without using repository
+build output. Optional Telegram configuration remained explicitly unavailable.
+
+Credential-free public replay:
+
+```text
+AXIOMGATE / replay wrong-target · deterministic · no credentials
+Wrong deploy target is blocked  EXISTS_NOT_OWNED  EXISTS_NOT_OWNED  [OK] PASS
+[OK] PASS · GOVERNANCE REPLAY
+```
+
+The publication credential was supplied through a non-echoed, temporary npm
+configuration and removed immediately after the command. No credential is
+present in this evidence, package, or tracked repository state. The 0.1.2
+source and evidence commits remain local until a separate GitHub push is
+authorized.
