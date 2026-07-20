@@ -6,6 +6,7 @@ export type TelegramNotifyMode = "all" | "approvals" | "off";
 export interface TelegramConfig {
   readonly token: string;
   readonly chatIds: readonly string[];
+  readonly userIds?: readonly string[];
   readonly notify: TelegramNotifyMode;
   readonly notifyUsagePercent: number;
   readonly source: "environment" | ".local/telegram.env";
@@ -23,6 +24,7 @@ export interface TelegramConfigOptions {
 
 const BOT_TOKEN_PATTERN = /^\d{5,20}:[A-Za-z0-9_-]{20,}$/u;
 const CHAT_ID_PATTERN = /^-?\d+$/u;
+const USER_ID_PATTERN = /^[1-9]\d*$/u;
 
 function unquote(value: string): string {
   const trimmed = value.trim();
@@ -44,7 +46,7 @@ export function parseTelegramEnvFile(contents: string): Record<string, string> {
     const separator = trimmed.indexOf("=");
     if (separator <= 0) continue;
     const key = trimmed.slice(0, separator).trim();
-    if (!/^TELEGRAM_(?:BOT_TOKEN|CHAT_ID|NOTIFY|NOTIFY_USAGE_PCT)$/u.test(key)) {
+    if (!/^TELEGRAM_(?:BOT_TOKEN|CHAT_ID|USER_ID|NOTIFY|NOTIFY_USAGE_PCT)$/u.test(key)) {
       continue;
     }
     parsed[key] = unquote(trimmed.slice(separator + 1));
@@ -108,6 +110,19 @@ export function readTelegramConfig(
       reason: "TELEGRAM_CHAT_ID must be a comma-separated numeric allowlist",
     };
   }
+  const rawUserIds = value("TELEGRAM_USER_ID");
+  const userIds = rawUserIds === undefined
+    ? undefined
+    : [...new Set(rawUserIds.split(",").map((item) => item.trim()))].filter(Boolean);
+  if (
+    userIds !== undefined &&
+    (userIds.length === 0 || userIds.some((userId) => !USER_ID_PATTERN.test(userId)))
+  ) {
+    return {
+      status: "UNAVAILABLE",
+      reason: "TELEGRAM_USER_ID must be a comma-separated positive numeric allowlist",
+    };
+  }
   const rawNotify = value("TELEGRAM_NOTIFY") ?? "all";
   if (rawNotify !== "all" && rawNotify !== "approvals" && rawNotify !== "off") {
     return {
@@ -129,6 +144,7 @@ export function readTelegramConfig(
     config: {
       token,
       chatIds,
+      ...(userIds === undefined ? {} : { userIds }),
       notify: rawNotify,
       notifyUsagePercent,
       source:
@@ -141,7 +157,10 @@ export function readTelegramConfig(
 
 export function renderTelegramConfigSummary(result: TelegramConfigResult): string {
   if (result.status === "UNAVAILABLE") return `UNAVAILABLE (${result.reason})`;
-  return `configured token=${maskTelegramValue(result.config.token)} chats=${result.config.chatIds
+  const users = result.config.userIds === undefined
+    ? "private-only"
+    : result.config.userIds.map(maskTelegramValue).join(",");
+  return `configured token=configured chats=${result.config.chatIds
     .map(maskTelegramValue)
-    .join(",")} notify=${result.config.notify} source=${result.config.source}`;
+    .join(",")} users=${users} notify=${result.config.notify} source=${result.config.source}`;
 }

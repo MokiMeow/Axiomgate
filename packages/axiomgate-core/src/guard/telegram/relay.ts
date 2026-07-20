@@ -31,6 +31,84 @@ export interface TelegramRelayResult {
   readonly failures: readonly string[];
 }
 
+const ACTOR_AUTHORIZATION_TOAST =
+  "approvals require a private chat or an allowlisted user";
+
+type TelegramCallback = NonNullable<TelegramUpdate["callback_query"]>;
+
+type CallbackAuthorization =
+  | {
+      readonly authorized: true;
+      readonly chatId: string;
+      readonly chatType: string;
+      readonly actor: string;
+    }
+  | {
+      readonly authorized: false;
+      readonly chatId: string | undefined;
+      readonly chatType: string;
+      readonly actorId: string;
+      readonly reason:
+        | "chat_unavailable"
+        | "chat_not_allowlisted"
+        | "private_chat_required"
+        | "actor_not_allowlisted";
+    };
+
+function authorizeCallback(
+  config: TelegramConfig,
+  callback: TelegramCallback,
+): CallbackAuthorization {
+  const actorId = String(callback.from.id);
+  const chatId = callback.message === undefined
+    ? undefined
+    : String(callback.message.chat.id);
+  const chatType = callback.message?.chat.type ?? "unknown";
+  if (chatId === undefined) {
+    return {
+      authorized: false,
+      chatId,
+      chatType,
+      actorId,
+      reason: "chat_unavailable",
+    };
+  }
+  if (!config.chatIds.includes(chatId)) {
+    return {
+      authorized: false,
+      chatId,
+      chatType,
+      actorId,
+      reason: "chat_not_allowlisted",
+    };
+  }
+  if (config.userIds !== undefined) {
+    if (!config.userIds.includes(actorId)) {
+      return {
+        authorized: false,
+        chatId,
+        chatType,
+        actorId,
+        reason: "actor_not_allowlisted",
+      };
+    }
+  } else if (chatType !== "private") {
+    return {
+      authorized: false,
+      chatId,
+      chatType,
+      actorId,
+      reason: "private_chat_required",
+    };
+  }
+  return {
+    authorized: true,
+    chatId,
+    chatType,
+    actor: `telegram:user=${maskTelegramValue(actorId)};chat=${chatType}`,
+  };
+}
+
 function missionDirectories(projectPath: string): string[] {
   const root = join(resolve(projectPath), ".axiomgate", "missions");
   if (!existsSync(root)) return [];
@@ -208,15 +286,22 @@ export async function processTelegramUpdate(
 ): Promise<void> {
   const callback = update.callback_query;
   if (callback === undefined) return;
-  const chatId = String(callback.message?.chat.id ?? callback.from.id);
-  if (!config.chatIds.includes(chatId)) {
+  const authorization = authorizeCallback(config, callback);
+  if (!authorization.authorized) {
     appendRelayEvent(projectPath, {
       type: "telegram.callback.unauthorized",
       ts: (options.now ?? (() => new Date()))().toISOString(),
-      chat: maskTelegramValue(chatId),
+      chat: authorization.chatId === undefined
+        ? "unavailable"
+        : maskTelegramValue(authorization.chatId),
+      actor: maskTelegramValue(authorization.actorId),
+      chatType: authorization.chatType,
+      reason: authorization.reason,
     });
+    await client.answerCallbackQuery(callback.id, ACTOR_AUTHORIZATION_TOAST);
     return;
   }
+  const { actor, chatId } = authorization;
   const parsed = parseTelegramCallback(callback.data);
   if (parsed === undefined) {
     await client.answerCallbackQuery(callback.id, "Invalid or stale AxiomGate action");
@@ -253,7 +338,6 @@ export async function processTelegramUpdate(
     writeTelegramState(projectPath, state);
     return;
   }
-  const actor = `telegram:${maskTelegramValue(chatId)}`;
   const decidedAt = (options.now ?? (() => new Date()))();
   const actorOptions = {
     approver: actor,

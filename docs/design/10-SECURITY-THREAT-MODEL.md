@@ -43,6 +43,11 @@ The correct action is performed with the wrong account or workspace.
 
 The displayed approval and executed command differ.
 
+### Approval actor confusion
+
+A member of an allowlisted Telegram group attempts to approve or deny without
+being an authorized decision-maker.
+
 ### Runtime permission mismatch
 
 The runtime applies broader or narrower permission than the user approved.
@@ -81,6 +86,8 @@ A dependency, installer, script, binary, or external capability is malicious.
 - target and identity verification;
 - scoped credential handles;
 - binding approvals to exact action, target, identity, and technical execution;
+- authorizing Telegram callbacks by allowlisted chat and clicking user, with
+  private-chat-only behavior when no user allowlist is configured;
 - effective-permission reconciliation;
 - prompt-injection classification;
 - integrity metadata when available;
@@ -96,7 +103,7 @@ A dependency, installer, script, binary, or external capability is malicious.
 
 ## Security test principle
 
-Create negative tests for each authority level and external adapter. Test malicious capability fixtures, wrong account, wrong environment, stale approval, changed command or target after approval, secret output, hidden background action, effective-permission mismatch, and receipt tampering.
+Create negative tests for each authority level and external adapter. Test malicious capability fixtures, wrong account, wrong environment, stale approval, changed command or target after approval, unauthorized Telegram group actors, secret output, hidden background action, effective-permission mismatch, and receipt tampering.
 
 ## Non-claims
 

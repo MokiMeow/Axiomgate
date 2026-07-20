@@ -6,13 +6,18 @@ export interface TelegramMessage {
   readonly chat?: { readonly id: string | number };
 }
 
+export type TelegramChatType = "private" | "group" | "supergroup" | "channel";
+
 export interface TelegramCallbackQuery {
   readonly id: string;
   readonly from: { readonly id: string | number };
   readonly data?: string;
   readonly message?: {
     readonly message_id: number;
-    readonly chat: { readonly id: string | number };
+    readonly chat: {
+      readonly id: string | number;
+      readonly type?: TelegramChatType;
+    };
   };
 }
 

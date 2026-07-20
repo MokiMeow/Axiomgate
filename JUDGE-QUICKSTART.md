@@ -59,14 +59,14 @@ node apps/cli/dist/index.js mission receipt <mission-id> --format json --project
 
 ## Optional Telegram approval relay
 
-Set `TELEGRAM_BOT_TOKEN` and a comma-separated `TELEGRAM_CHAT_ID` allowlist in the environment or ignored `.local/telegram.env`, then run:
+Set `TELEGRAM_BOT_TOKEN` and a comma-separated `TELEGRAM_CHAT_ID` allowlist in the environment or ignored `.local/telegram.env`. Private chat is the default. For group or supergroup approvals, also set `TELEGRAM_USER_ID` to the comma-separated numeric IDs of users allowed to decide. Then run:
 
 ```powershell
 node apps/cli/dist/index.js telegram test
 node apps/cli/dist/index.js telegram watch --project <governed-workspace>
 ```
 
-The relay uses Bot API long polling only: it opens no webhook or public listener. Use a private one-to-one bot chat in this release; group callbacks are allowlisted by chat and are not independently authorized by clicking user. Approval cards bind to the existing exact command hash and canonical single-use store. Stage notifications send objective, workspace, action, target, and a best-effort redacted command to Telegram. `TELEGRAM_NOTIFY=approvals` suppresses stage notifications; `TELEGRAM_NOTIFY=off` disables the surface; the default is `all` when configured.
+The relay uses Bot API long polling only: it opens no webhook or public listener. Every decision requires an allowlisted chat. Without `TELEGRAM_USER_ID`, only private-chat callbacks are accepted. With it, the clicking `callback.from.id` must also match; a group member cannot approve merely because the group is allowlisted. Approval records keep a masked actor and chat type while preserving exact-command binding, expiry, and single use. Stage notifications send objective, workspace, action, target, and a best-effort redacted command to Telegram. `TELEGRAM_NOTIFY=approvals` suppresses stage notifications; `TELEGRAM_NOTIFY=off` disables the surface; the default is `all` when configured.
 
 ## Labels and limitations
 

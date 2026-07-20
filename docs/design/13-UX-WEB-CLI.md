@@ -95,4 +95,4 @@ CLI and dashboard must call the same application services.
 
 ## Telegram
 
-Use for concise, evidence-aware approvals and alerts. Do not attempt to reproduce the full dashboard. This release supports approvals only in a private one-to-one bot chat: chat IDs are allowlisted, but group callback actors are not independently authorized. Stage notifications send the mission objective, workspace label, action, target, and a best-effort redacted command to Telegram, so this project metadata leaves the local machine.
+Use for concise, evidence-aware approvals and alerts. Do not attempt to reproduce the full dashboard. Chat IDs are always allowlisted. When `TELEGRAM_USER_ID` is absent, approval callbacks are accepted only from an allowlisted private one-to-one chat. Group and supergroup use requires an explicit matching user-ID allowlist, so seeing a card does not grant decision authority. Approval records retain only a masked actor ID and chat type. Stage notifications send the mission objective, workspace label, action, target, and a best-effort redacted command to Telegram, so this project metadata leaves the local machine.

@@ -18,6 +18,7 @@ Record discovered security issues privately. Do not place exploit details, token
 - prompt-injection classification;
 - permission request/approval/application/observation reconciliation;
 - append-only approval and evidence events;
+- Telegram approval callbacks authorized by both allowlisted chat and clicking actor, with private-chat-only behavior when no actor allowlist is configured;
 - redaction before persistence;
 - deny-by-default production actions;
 - trusted path validation for local commands;

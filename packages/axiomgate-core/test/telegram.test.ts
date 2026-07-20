@@ -21,6 +21,7 @@ import {
   readTelegramState,
   reconcileApprovalCards,
   renderApprovalCard,
+  renderTelegramConfigSummary,
   sendPendingApprovalCards,
   sendStageNotifications,
   stageNotificationFromEvent,
@@ -40,6 +41,8 @@ import {
 const projects: string[] = [];
 const NOW = "2026-07-20T10:00:00.000Z";
 const CHAT = "123456789";
+const GROUP = "-1009876543210";
+const USER = "2468013579";
 const HASH = `sha256:${"a".repeat(64)}`;
 
 afterEach(() => {
@@ -101,8 +104,15 @@ function setup(objective?: string, count = 1, displayCommand = "vercel deploy <h
   return { projectPath, missionDir };
 }
 
-function config(chatIds: readonly string[] = [CHAT]): TelegramConfig {
-  return { token: `${"123456"}:${"x".repeat(35)}`, chatIds, notify: "all", notifyUsagePercent: 80, source: "environment" };
+function config(chatIds: readonly string[] = [CHAT], userIds?: readonly string[]): TelegramConfig {
+  return {
+    token: `${"123456"}:${"x".repeat(35)}`,
+    chatIds,
+    ...(userIds === undefined ? {} : { userIds }),
+    notify: "all",
+    notifyUsagePercent: 80,
+    source: "environment",
+  };
 }
 
 class FakeClient implements TelegramClient {
@@ -129,17 +139,48 @@ async function sentCard(projectPath: string, client: FakeClient): Promise<{ ref:
   await sendPendingApprovalCards(projectPath, config(), client, { now: () => new Date(NOW) });
   const state = readTelegramState(projectPath);
   const ref = state.cards[0]!.ref;
-  return { ref, callback: { update_id: 1, callback_query: { id: "cb_1", from: { id: CHAT }, data: `ag:${ref}:a`, message: { message_id: 1, chat: { id: CHAT } } } } };
+  return { ref, callback: callbackUpdate(ref) };
+}
+
+function callbackUpdate(
+  ref: string,
+  options: {
+    readonly chatId?: string;
+    readonly chatType?: "private" | "group" | "supergroup" | "channel";
+    readonly userId?: string;
+    readonly verb?: "a" | "d" | "i";
+  } = {},
+): TelegramUpdate {
+  return {
+    update_id: 1,
+    callback_query: {
+      id: "cb_1",
+      from: { id: options.userId ?? CHAT },
+      data: `ag:${ref}:${options.verb ?? "a"}`,
+      message: {
+        message_id: 1,
+        chat: {
+          id: options.chatId ?? CHAT,
+          type: options.chatType ?? "private",
+        },
+      },
+    },
+  };
 }
 
 describe("Telegram approval relay", () => {
-  it("approves through the canonical store and edits the card", async () => {
+  it("accepts an allowlisted private-chat callback and records the masked actor", async () => {
     const { projectPath, missionDir } = setup(); const client = new FakeClient();
     const { callback } = await sentCard(projectPath, client);
     await processTelegramUpdate(projectPath, config(), client, callback, { now: () => new Date("2026-07-20T10:01:00.000Z") });
     const record = getApprovalRequest(missionDir, "act_preview_0");
     expect(record?.status).toBe("APPROVED");
-    expect(record?.approval).toMatchObject({ surface: "telegram", singleUse: true, boundCommandHash: HASH });
+    expect(record?.approval).toMatchObject({
+      surface: "telegram",
+      singleUse: true,
+      boundCommandHash: HASH,
+      approver: "telegram:user=***6789;chat=private",
+    });
     expect(client.edits[0]?.text).toContain("Approved once");
     expect(client.edits[0]?.text).not.toContain("sha256:");
     expect(client.edits[0]?.text).not.toMatch(/[\u2014\u2013]/u);
@@ -147,6 +188,62 @@ describe("Telegram approval relay", () => {
     expect(outcomeMarkup.inline_keyboard.flat().map((button) => button.text)).toEqual(["Details"]);
     await processTelegramUpdate(projectPath, config(), client, callback, { now: () => new Date("2026-07-20T10:02:00.000Z") });
     expect(client.answers.at(-1)).toContain("already decided");
+  });
+
+  it("rejects a group callback when no user allowlist is configured", async () => {
+    const { projectPath, missionDir } = setup(); const client = new FakeClient();
+    const groupConfig = config([GROUP]);
+    await sendPendingApprovalCards(projectPath, groupConfig, client, { now: () => new Date(NOW) });
+    const ref = readTelegramState(projectPath).cards[0]!.ref;
+    await processTelegramUpdate(
+      projectPath,
+      groupConfig,
+      client,
+      callbackUpdate(ref, { chatId: GROUP, chatType: "group", userId: USER }),
+    );
+    expect(getApprovalRequest(missionDir, "act_preview_0")?.status).toBe("PENDING");
+    expect(client.answers).toContain("approvals require a private chat or an allowlisted user");
+    const log = readFileSync(join(projectPath, ".axiomgate", "telegram-events.jsonl"), "utf8");
+    expect(log).toContain("private_chat_required");
+    expect(log).not.toContain(GROUP);
+    expect(log).not.toContain(USER);
+  });
+
+  it("accepts a matching allowlisted actor in an allowlisted group", async () => {
+    const { projectPath, missionDir } = setup(); const client = new FakeClient();
+    const groupConfig = config([GROUP], [USER]);
+    await sendPendingApprovalCards(projectPath, groupConfig, client, { now: () => new Date(NOW) });
+    const ref = readTelegramState(projectPath).cards[0]!.ref;
+    await processTelegramUpdate(
+      projectPath,
+      groupConfig,
+      client,
+      callbackUpdate(ref, { chatId: GROUP, chatType: "group", userId: USER }),
+      { now: () => new Date("2026-07-20T10:01:00.000Z") },
+    );
+    expect(getApprovalRequest(missionDir, "act_preview_0")?.approval?.approver).toBe(
+      "telegram:user=***3579;chat=group",
+    );
+  });
+
+  it("rejects a non-allowlisted actor even inside an allowlisted group", async () => {
+    const { projectPath, missionDir } = setup(); const client = new FakeClient();
+    const intruder = "1357924680";
+    const groupConfig = config([GROUP], [USER]);
+    await sendPendingApprovalCards(projectPath, groupConfig, client, { now: () => new Date(NOW) });
+    const ref = readTelegramState(projectPath).cards[0]!.ref;
+    await processTelegramUpdate(
+      projectPath,
+      groupConfig,
+      client,
+      callbackUpdate(ref, { chatId: GROUP, chatType: "group", userId: intruder }),
+    );
+    expect(getApprovalRequest(missionDir, "act_preview_0")?.status).toBe("PENDING");
+    expect(client.answers).toContain("approvals require a private chat or an allowlisted user");
+    const log = readFileSync(join(projectPath, ".axiomgate", "telegram-events.jsonl"), "utf8");
+    expect(log).toContain("actor_not_allowlisted");
+    expect(log).not.toContain(intruder);
+    expect(log).not.toContain(USER);
   });
 
   it("edits an approved card to consumed with the stored run id", async () => {
@@ -167,7 +264,11 @@ describe("Telegram approval relay", () => {
     const { ref, callback } = await sentCard(projectPath, client);
     const denyUpdate = { ...callback, callback_query: { ...callback.callback_query!, data: `ag:${ref}:d` } };
     await processTelegramUpdate(projectPath, config(), client, denyUpdate, { now: () => new Date("2026-07-20T10:01:00.000Z") });
-    expect(getApprovalRequest(missionDir, "act_preview_0")?.status).toBe("DENIED");
+    expect(getApprovalRequest(missionDir, "act_preview_0")).toMatchObject({
+      status: "DENIED",
+      deniedBy: "telegram:user=***6789;chat=private",
+      deniedSurface: "telegram",
+    });
   });
 
   it("renders every normative card field and sends redacted details", async () => {
@@ -218,7 +319,7 @@ describe("Telegram approval relay", () => {
     const { projectPath, missionDir } = setup(); const client = new FakeClient();
     const { callback } = await sentCard(projectPath, client);
     const intruder = "987654321";
-    await processTelegramUpdate(projectPath, config(), client, { ...callback, callback_query: { ...callback.callback_query!, from: { id: intruder }, message: { message_id: 1, chat: { id: intruder } } } });
+    await processTelegramUpdate(projectPath, config(), client, { ...callback, callback_query: { ...callback.callback_query!, from: { id: intruder }, message: { message_id: 1, chat: { id: intruder, type: "private" } } } });
     expect(getApprovalRequest(missionDir, "act_preview_0")?.status).toBe("PENDING");
     const log = readFileSync(join(projectPath, ".axiomgate", "telegram-events.jsonl"), "utf8");
     expect(log).not.toContain(intruder); expect(log).toContain("***4321");
@@ -261,7 +362,7 @@ describe("Telegram approval relay", () => {
     const { projectPath } = setup(); const client = new FakeClient();
     await sendPendingApprovalCards(projectPath, config(), client);
     const ref = readTelegramState(projectPath).cards[0]!.ref;
-    client.updates = [{ update_id: 41, callback_query: { id: "cb", from: { id: CHAT }, data: `ag:${ref}:d`, message: { message_id: 1, chat: { id: CHAT } } } }];
+    client.updates = [{ update_id: 41, callback_query: { id: "cb", from: { id: CHAT }, data: `ag:${ref}:d`, message: { message_id: 1, chat: { id: CHAT, type: "private" } } } }];
     await watchTelegram(projectPath, config(), client, { once: true });
     expect(readTelegramState(projectPath).nextUpdateOffset).toBe(42);
   });
@@ -276,10 +377,40 @@ describe("Telegram rendering, configuration, and notifications", () => {
 
   it("parses only allowlisted environment keys and masks configuration", () => {
     const token = `${"654321"}:${"z".repeat(35)}`;
-    const result = readTelegramConfig({ cwd: project(), env: { TELEGRAM_BOT_TOKEN: token, TELEGRAM_CHAT_ID: `${CHAT},-${CHAT}`, TELEGRAM_NOTIFY: "approvals" } });
+    const result = readTelegramConfig({ cwd: project(), env: { TELEGRAM_BOT_TOKEN: token, TELEGRAM_CHAT_ID: `${CHAT},-${CHAT}`, TELEGRAM_USER_ID: `${USER},1357924680`, TELEGRAM_NOTIFY: "approvals" } });
     expect(result.status).toBe("CONFIGURED");
     expect(JSON.stringify(result).includes(token)).toBe(true);
+    expect(result.status === "CONFIGURED" ? result.config.userIds : undefined).toEqual([USER, "1357924680"]);
+    const summary = renderTelegramConfigSummary(result);
+    expect(summary).toContain("users=***3579,***4680");
+    expect(summary).not.toContain(token);
+    expect(summary).not.toContain(USER);
     expect(escapeTelegramHtml("<&>\"")).toBe("&lt;&amp;&gt;&quot;");
+  });
+
+  it("reports private-only mode without exposing a token or full identifier", () => {
+    const token = `${"654321"}:${"z".repeat(35)}`;
+    const result = readTelegramConfig({ cwd: project(), env: { TELEGRAM_BOT_TOKEN: token, TELEGRAM_CHAT_ID: CHAT } });
+    const summary = renderTelegramConfigSummary(result);
+    expect(summary).toContain("users=private-only");
+    expect(summary).not.toContain(token);
+    expect(summary).not.toContain(CHAT);
+  });
+
+  it("rejects a malformed user allowlist instead of weakening actor checks", () => {
+    const token = `${"654321"}:${"z".repeat(35)}`;
+    const result = readTelegramConfig({
+      cwd: project(),
+      env: {
+        TELEGRAM_BOT_TOKEN: token,
+        TELEGRAM_CHAT_ID: CHAT,
+        TELEGRAM_USER_ID: `${USER},not-a-user`,
+      },
+    });
+    expect(result).toEqual({
+      status: "UNAVAILABLE",
+      reason: "TELEGRAM_USER_ID must be a comma-separated positive numeric allowlist",
+    });
   });
 
   it("redacts token-shaped API failures and never persists credentials", async () => {

@@ -2,6 +2,10 @@
 
 Date: 2026-07-20 IST
 
+> Historical 0.1.2 behavior. The group-actor limitation documented below is
+> closed by the 0.1.3 actor-authorization work in
+> [`telegram-actor-auth-verification.md`](telegram-actor-auth-verification.md).
+
 > Current safety limitation: use approvals only in a private one-to-one bot
 > chat. This release allowlists callback chats but does not independently
 > authorize the clicking user inside a group. Stage notifications send the
@@ -85,7 +89,7 @@ The update offset advanced across Details, approval, and repeated status callbac
 
 After the live re-tap proof, presenter feedback identified the visible approved-status button as confusing because it resembled a second approval action. The final UI keeps only **Details** on approved, denied, expired, and consumed cards. Stale, duplicated, or already-in-flight decision callbacks still follow the tested already-decided/expired path and cannot re-grant authority.
 
-No token, full chat ID, private path, raw environment value, or source payload is present in this evidence. G4 and the Environment Guard layer are now `VERIFIED`.
+No token, full chat ID, private path, raw environment value, or source payload is present in this evidence. This historical proof predates the actor-authorization fix linked above.
 
 ## Real-workspace lifecycle and message UX proof
 

@@ -93,7 +93,7 @@ The committed Vercel profile contains placeholders only. A private copy exists u
 Error: replace every placeholder with private real staging IDs before use
 ```
 
-After the presenter inserts two real staging project IDs, `stage-vercel-target.mjs wrong` writes only the ignored isolated target link, calls the real Vercel inspect through `verifyDeployTarget`, and refuses to continue unless the verdict is exactly `EXISTS_NOT_OWNED`. `correct` similarly requires `VERIFIED_OWNED`. No live Vercel ownership result is claimed in this artifact because real IDs are intentionally absent from Git; that live proof is the next headline mission run.
+After the presenter inserts two real staging project IDs, `stage-vercel-target.mjs wrong` writes only the ignored isolated target link, calls the real Vercel inspect through `verifyDeployTarget`, and refuses to continue unless the verdict is exactly `EXISTS_NOT_OWNED`. `correct` similarly requires `VERIFIED_OWNED`. No live Vercel ownership result is claimed in this artifact because real IDs are intentionally absent from Git; the live Vercel proof remains pending.
 
 The #16798 sentinel path is outside the isolated governed repository. Preparation and preservation checks ran successfully:
 
