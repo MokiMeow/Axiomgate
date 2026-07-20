@@ -1,6 +1,6 @@
 # AxiomGate Dashboard
 
-A local dashboard for AxiomGate missions. It uses Node's HTTP server plus the workspace's canonical `@axiomgate/core` approval store, reads mission state directly from a governed workspace's `.axiomgate/` directory, and falls back to a bundled sample mission on a clean clone.
+A local dashboard for AxiomGate missions. It uses Node's HTTP server plus the workspace's canonical `@axiomgate/core` approval store and reads mission state directly from a governed workspace's `.axiomgate/` directory. A fresh clone remains empty unless demo mode is explicitly enabled.
 
 ## Run
 
@@ -13,6 +13,9 @@ AXIOMGATE_WORKSPACE=/path/to/project node apps/web/server.mjs
 
 # default: current directory, port 4319
 node apps/web/server.mjs
+
+# explicit curated SAMPLE data, never a live-account claim
+AXIOMGATE_DEMO=true node apps/web/server.mjs
 ```
 
 Open `http://localhost:4319`.
@@ -37,3 +40,27 @@ Same visual family as PatchPilot Watch Commander (dark editorial theme): warm ne
 
 - The dashboard is read-only over mission state except the web-approval endpoint, which mutates the same exact-hash, expiring, single-use approval record used by the CLI; the hook remains the enforcement point.
 - `LIVE` / `REPLAY` / `SAMPLE` labels are always shown so replayed or sample data is never presented as a live run.
+
+## Vercel hosted demo
+
+The root `vercel.json` publishes `apps/web/public` and the read-only functions in `api/`. The hosted API always returns the curated synthetic mission and SAMPLE capacity. It does not read a Vercel account, a Codex account, or a governed workspace. Hosted approval requests return a friendly local-only response and never write serverless state.
+
+From the repository root, the user deploys with their own Vercel account:
+
+```powershell
+vercel env add AXIOMGATE_DEMO production
+# Enter true when prompted.
+vercel --prod
+```
+
+For a one-command deployment with the same runtime environment value:
+
+```powershell
+vercel --prod -e AXIOMGATE_DEMO=true
+```
+
+Node.js is pinned to `24.x` through the root package manifest. The local hosting harness is credential-free:
+
+```powershell
+node apps/web/hosting/verify.mjs
+```

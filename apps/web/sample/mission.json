@@ -1,56 +1,804 @@
 {
-  "id": "msn_sample_lockout",
+  "id": "msn_demo_lockout",
   "label": "SAMPLE",
+  "sampleNotice": "CURATED DEMO DATA - synthetic and not a live run",
   "contract": {
-    "id": "msn_sample_lockout",
-    "version": 2,
-    "hash": "sha256:d5548d7d9cb0fcd9516908d767058f99f79f4a3e7de0638b0a602c0721f4d410",
-    "objective": "Add brute-force lockout to the login endpoint (lock after 5 failed attempts for 15 minutes), preserving existing behavior",
-    "intentBoundary": "PUBLISH",
-    "status": "VERIFYING",
+    "id": "msn_demo_lockout",
+    "version": 3,
+    "objective": "Add brute-force lockout to the login endpoint (lock after 5 failed attempts for 15 minutes), preserve existing behavior",
+    "projectProfileId": "sample-target-app",
+    "intentBoundary": "MODIFY_LOCAL",
     "acceptanceCriteria": [
-      { "id": "criterion_implement", "statement": "Lockout engages after 5 failed logins and lifts after 15 minutes", "risk": "high", "evidenceTypes": ["test", "diff"], "verdict": "PASS" },
-      { "id": "criterion_regression", "statement": "Existing successful-login behavior is unchanged", "risk": "high", "evidenceTypes": ["test"], "verdict": "PASS" },
-      { "id": "criterion_security", "statement": "No new known-vulnerable dependencies are introduced", "risk": "high", "evidenceTypes": ["security_scan"], "verdict": "PASS" },
-      { "id": "criterion_secrets", "statement": "The change exposes no secrets", "risk": "critical", "evidenceTypes": ["secret_scan"], "verdict": "PASS" },
-      { "id": "criterion_browser", "statement": "Locked account shows the correct message in the browser", "risk": "medium", "evidenceTypes": ["browser"], "verdict": "UNVERIFIED" }
+      {
+        "id": "criterion_implementation",
+        "statement": "Lockout logic is implemented without unrelated file changes",
+        "risk": "high",
+        "evidenceTypes": [
+          "diff"
+        ],
+        "verdict": "UNVERIFIED",
+        "evidenceIds": []
+      },
+      {
+        "id": "criterion_lockout",
+        "statement": "The sixth failed login is locked for 15 minutes after five failures",
+        "risk": "critical",
+        "evidenceTypes": [
+          "lockout_test"
+        ],
+        "verdict": "UNVERIFIED",
+        "evidenceIds": []
+      },
+      {
+        "id": "criterion_regression",
+        "statement": "Existing successful-login and validation behavior remains green",
+        "risk": "high",
+        "evidenceTypes": [
+          "test"
+        ],
+        "verdict": "UNVERIFIED",
+        "evidenceIds": []
+      },
+      {
+        "id": "criterion_dependencies",
+        "statement": "The inherited lodash advisory is remediated and no vulnerable dependency remains",
+        "risk": "high",
+        "evidenceTypes": [
+          "security_scan"
+        ],
+        "verdict": "UNVERIFIED",
+        "evidenceIds": []
+      },
+      {
+        "id": "criterion_secrets",
+        "statement": "The diff contains no credential or secret material",
+        "risk": "critical",
+        "evidenceTypes": [
+          "secret_scan"
+        ],
+        "verdict": "UNVERIFIED",
+        "evidenceIds": []
+      }
+    ],
+    "constraints": [
+      "Synthetic demo users only",
+      "Do not publish or deploy",
+      "Preserve the existing login response contract"
+    ],
+    "nonGoals": [
+      "Production deployment",
+      "Persistent account storage"
+    ],
+    "actionPolicy": [
+      {
+        "action": "repository.read",
+        "decision": "ALLOW"
+      },
+      {
+        "action": "file.modify",
+        "decision": "ALLOW"
+      },
+      {
+        "action": "branch.create",
+        "decision": "ALLOW",
+        "restrict": {
+          "branchPrefix": "agent/"
+        }
+      },
+      {
+        "action": "pull_request.create",
+        "decision": "REQUIRE_APPROVAL"
+      },
+      {
+        "action": "preview.deploy",
+        "decision": "REQUIRE_APPROVAL"
+      },
+      {
+        "action": "production.deploy",
+        "decision": "DENY"
+      },
+      {
+        "action": "verification.run",
+        "decision": "ALLOW"
+      }
     ],
     "modelPlan": [
-      { "phase": "scout", "model": "gpt-5.6-luna", "effort": "light", "rationale": "structured repository mapping" },
-      { "phase": "build", "model": "gpt-5.6-sol", "effort": "max", "rationale": "single unbroken reasoning chain; hardest security-sensitive step" },
-      { "phase": "remediate", "model": "gpt-5.6-terra", "effort": "medium", "rationale": "bounded fixes" }
-    ]
+      {
+        "phase": "scout",
+        "model": "gpt-5.6-luna",
+        "effort": "light",
+        "rationale": "Structured repository mapping with low spend"
+      },
+      {
+        "phase": "build",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "rationale": "Primary implementation with a sustained reasoning chain"
+      },
+      {
+        "phase": "security escalation note",
+        "model": "gpt-5.6-sol",
+        "effort": "max",
+        "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+        "multiAgent": false,
+        "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+      },
+      {
+        "phase": "remediate",
+        "model": "gpt-5.6-terra",
+        "effort": "medium",
+        "rationale": "Bounded dependency remediation"
+      },
+      {
+        "phase": "verify",
+        "model": "gpt-5.6-terra",
+        "effort": "high",
+        "rationale": "Independent read-only challenge in a fresh session"
+      }
+    ],
+    "budgetPolicy": {
+      "reservePercent": 20
+    },
+    "status": "COMPLETE",
+    "createdAt": "2026-07-20T09:00:00.000Z",
+    "updatedAt": "2026-07-20T09:24:00.000Z",
+    "hash": "sha256:b83f5ffab6c5f2cad7148fec79305b06bab15d0f73ae76f2c246de29fa0f4f5d"
   },
-  "identity": { "githubLogin": { "value": "mokimeow", "source": "gh api user", "confidence": "high" } },
+  "identity": {
+    "githubLogin": {
+      "value": "sample-owner",
+      "source": "sample",
+      "confidence": "sample",
+      "capturedAt": "2026-07-20T09:00:00.000Z"
+    }
+  },
   "denials": [
-    { "decision": "DENY", "hookEvent": "PreToolUse", "semanticAction": "preview.deploy", "command": "vercel deploy --prod --scope acme-staging", "reasons": ["Deploy target 'acme-staging' is not owned by the signed-in account (mokimeow). EXISTS_NOT_OWNED."] }
+    {
+      "ts": "2026-07-20T09:05:00.000Z",
+      "hookEvent": "PreToolUse",
+      "toolName": "shell",
+      "commandHash": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
+      "semanticAction": "preview.deploy",
+      "command": "vercel deploy --scope sample-unowned-team",
+      "decision": "DENY",
+      "reasons": [
+        "SAMPLE replay: deploy target exists but is not owned by the expected sample profile (EXISTS_NOT_OWNED)."
+      ],
+      "missionId": "msn_demo_lockout",
+      "sessionId": "session_demo_builder",
+      "label": "SAMPLE"
+    }
   ],
   "evidence": [
-    { "id": "evd_impl01", "criterionId": "criterion_implement", "source": "command", "exitCode": 0 },
-    { "id": "evd_impl02", "criterionId": "criterion_implement", "source": "hook", "exitCode": 0 },
-    { "id": "evd_regr01", "criterionId": "criterion_regression", "source": "command", "exitCode": 0 },
-    { "id": "evd_secu01", "criterionId": "criterion_security", "source": "api", "exitCode": 0 },
-    { "id": "evd_secr01", "criterionId": "criterion_secrets", "source": "command", "exitCode": 0 }
+    {
+      "id": "ev_demo_diff",
+      "missionId": "msn_demo_lockout",
+      "criterionId": "criterion_implementation",
+      "source": "command",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "outputHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "outputRef": "sample://evidence/ev_demo_diff",
+      "capturedAt": "2026-07-20T09:15:00.000Z",
+      "freshForCommit": "demo9f3a1c7e2",
+      "label": "REPLAY",
+      "redacted": true
+    },
+    {
+      "id": "ev_demo_lockout",
+      "missionId": "msn_demo_lockout",
+      "criterionId": "criterion_lockout",
+      "source": "command",
+      "command": "npm run test:lockout",
+      "exitCode": 0,
+      "outputHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "outputRef": "sample://evidence/ev_demo_lockout",
+      "capturedAt": "2026-07-20T09:16:00.000Z",
+      "freshForCommit": "demo9f3a1c7e2",
+      "label": "REPLAY",
+      "redacted": true
+    },
+    {
+      "id": "ev_demo_regression",
+      "missionId": "msn_demo_lockout",
+      "criterionId": "criterion_regression",
+      "source": "command",
+      "command": "npm test",
+      "exitCode": 0,
+      "outputHash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+      "outputRef": "sample://evidence/ev_demo_regression",
+      "capturedAt": "2026-07-20T09:17:00.000Z",
+      "freshForCommit": "demo9f3a1c7e2",
+      "label": "REPLAY",
+      "redacted": true
+    },
+    {
+      "id": "ev_demo_dependency",
+      "missionId": "msn_demo_lockout",
+      "criterionId": "criterion_dependencies",
+      "source": "api",
+      "command": "patchpilot scan .",
+      "exitCode": 0,
+      "outputHash": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+      "outputRef": "sample://evidence/ev_demo_dependency",
+      "capturedAt": "2026-07-20T09:22:00.000Z",
+      "freshForCommit": "demo9f3a1c7e2",
+      "label": "REPLAY",
+      "redacted": true
+    },
+    {
+      "id": "ev_demo_secrets",
+      "missionId": "msn_demo_lockout",
+      "criterionId": "criterion_secrets",
+      "source": "command",
+      "command": "builtin-secret-scan --diff",
+      "exitCode": 0,
+      "outputHash": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+      "outputRef": "sample://evidence/ev_demo_secrets",
+      "capturedAt": "2026-07-20T09:23:00.000Z",
+      "freshForCommit": "demo9f3a1c7e2",
+      "label": "REPLAY",
+      "redacted": true
+    }
   ],
-  "events": [{ "hookEvent": "PreToolUse" }],
+  "events": [
+    {
+      "type": "mission.planned",
+      "ts": "2026-07-20T09:00:00.000Z",
+      "missionId": "msn_demo_lockout",
+      "label": "SAMPLE"
+    },
+    {
+      "ts": "2026-07-20T09:05:00.000Z",
+      "hookEvent": "PreToolUse",
+      "toolName": "shell",
+      "commandHash": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
+      "semanticAction": "preview.deploy",
+      "command": "vercel deploy --scope sample-unowned-team",
+      "decision": "DENY",
+      "reasons": [
+        "SAMPLE replay: deploy target exists but is not owned by the expected sample profile (EXISTS_NOT_OWNED)."
+      ],
+      "missionId": "msn_demo_lockout",
+      "sessionId": "session_demo_builder",
+      "label": "SAMPLE"
+    },
+    {
+      "type": "run.completed",
+      "ts": "2026-07-20T09:18:00.000Z",
+      "missionId": "msn_demo_lockout",
+      "role": "builder",
+      "status": "PASS",
+      "label": "SAMPLE"
+    },
+    {
+      "type": "verification.completed",
+      "ts": "2026-07-20T09:19:00.000Z",
+      "missionId": "msn_demo_lockout",
+      "status": "FAIL",
+      "findingId": "finding_demo_lodash",
+      "label": "SAMPLE"
+    },
+    {
+      "type": "remediation.completed",
+      "ts": "2026-07-20T09:22:00.000Z",
+      "missionId": "msn_demo_lockout",
+      "findingId": "finding_demo_lodash",
+      "status": "PASS",
+      "label": "SAMPLE"
+    },
+    {
+      "type": "proof.completed",
+      "ts": "2026-07-20T09:25:00.000Z",
+      "missionId": "msn_demo_lockout",
+      "outcome": "COMPLETE",
+      "label": "SAMPLE"
+    }
+  ],
   "ledger": [
-    { "usage": { "input_tokens": 73764, "output_tokens": 632, "reasoning_output_tokens": 200 }, "role": "builder" },
-    { "usage": { "input_tokens": 306713, "output_tokens": 2219, "reasoning_output_tokens": 576 }, "role": "builder" },
-    { "usage": { "input_tokens": 41200, "output_tokens": 410, "reasoning_output_tokens": 180 }, "role": "verifier" }
+    {
+      "role": "builder",
+      "phase": "build",
+      "model": "gpt-5.6-sol",
+      "effort": "high",
+      "usage": {
+        "input_tokens": 18420,
+        "output_tokens": 2240,
+        "reasoning_output_tokens": 920
+      },
+      "label": "SAMPLE"
+    },
+    {
+      "role": "builder",
+      "phase": "remediate",
+      "model": "gpt-5.6-terra",
+      "effort": "medium",
+      "usage": {
+        "input_tokens": 6140,
+        "output_tokens": 760,
+        "reasoning_output_tokens": 210
+      },
+      "label": "SAMPLE"
+    },
+    {
+      "role": "verifier",
+      "phase": "verify",
+      "model": "gpt-5.6-terra",
+      "effort": "high",
+      "usage": {
+        "input_tokens": 8900,
+        "output_tokens": 1100,
+        "reasoning_output_tokens": 430
+      },
+      "label": "SAMPLE"
+    }
   ],
-  "sessions": [{ "id": "019f66d0", "role": "builder" }, { "id": "019f66d1", "role": "verifier" }],
-  "findings": [],
+  "sessions": [
+    {
+      "id": "session_demo_builder",
+      "role": "builder",
+      "label": "SAMPLE"
+    },
+    {
+      "id": "session_demo_verifier",
+      "role": "verifier",
+      "sandbox": "read-only",
+      "fresh": true,
+      "label": "SAMPLE"
+    }
+  ],
+  "findings": [
+    {
+      "id": "finding_demo_lodash",
+      "checkId": "dependency_scan",
+      "criterionIds": [
+        "criterion_dependencies"
+      ],
+      "title": "Inherited lodash advisory",
+      "detail": "Sample initial scan found lodash 4.17.4; governed remediation upgraded it and the targeted rerun passed.",
+      "severity": "high",
+      "status": "resolved",
+      "cve": "CVE-2021-23337",
+      "advisory": "GHSA-35jh-r3h4-6jhm",
+      "ecosystem": "npm",
+      "package": "lodash",
+      "version": "4.17.4",
+      "fixedVersion": "4.17.21",
+      "reachability": "unknown"
+    }
+  ],
   "runs": [
-    { "id": "run_a", "status": "SUCCESS", "model": "gpt-5.6-sol", "effort": "max", "startedAt": "2026-07-16T10:00:00Z" },
-    { "id": "run_b", "status": "SUCCESS", "model": "gpt-5.6-terra", "effort": "medium", "startedAt": "2026-07-16T10:20:00Z" }
+    {
+      "id": "run_demo_build",
+      "role": "builder",
+      "status": "SUCCESS",
+      "model": "gpt-5.6-sol",
+      "effort": "high",
+      "startedAt": "2026-07-20T09:08:00.000Z",
+      "endedAt": "2026-07-20T09:18:00.000Z",
+      "label": "SAMPLE"
+    },
+    {
+      "id": "run_demo_remediate",
+      "role": "remediate",
+      "status": "SUCCESS",
+      "model": "gpt-5.6-terra",
+      "effort": "medium",
+      "startedAt": "2026-07-20T09:20:00.000Z",
+      "endedAt": "2026-07-20T09:22:00.000Z",
+      "label": "SAMPLE"
+    },
+    {
+      "id": "run_demo_verify",
+      "role": "verifier",
+      "status": "SUCCESS",
+      "model": "gpt-5.6-terra",
+      "effort": "high",
+      "sandbox": "read-only",
+      "startedAt": "2026-07-20T09:22:30.000Z",
+      "endedAt": "2026-07-20T09:24:00.000Z",
+      "label": "SAMPLE"
+    }
   ],
-  "verifications": [{ "id": "verify_a", "overall": "PASS", "startedAt": "2026-07-16T10:25:00Z" }],
-  "approvals": [
-    { "id": "apr_1", "actionRequestId": "act_pr", "command": "gh pr create --title 'Add brute-force lockout'", "semanticAction": "pull_request.create", "expiresAt": "2026-07-16T11:00:00Z" }
+  "verifications": [
+    {
+      "id": "verify_demo_initial",
+      "overall": "FAIL",
+      "findingIds": [
+        "finding_demo_lodash"
+      ],
+      "startedAt": "2026-07-20T09:18:10.000Z",
+      "endedAt": "2026-07-20T09:19:00.000Z",
+      "label": "SAMPLE"
+    },
+    {
+      "id": "verify_demo_targeted",
+      "overall": "PASS",
+      "resolvedFindingIds": [
+        "finding_demo_lodash"
+      ],
+      "startedAt": "2026-07-20T09:22:10.000Z",
+      "endedAt": "2026-07-20T09:23:30.000Z",
+      "label": "SAMPLE"
+    }
   ],
+  "approvals": [],
   "receipt": {
-    "outcome": "INCOMPLETE",
-    "evidenceChainHead": "sha256:533815f1b74dcb667998b15cdaa52c7b09a2283a033af97f20bbe2b1bca0c9f3",
-    "repo": { "commit": "7708120ed9b8" }
+    "schemaVersion": 1,
+    "missionId": "msn_demo_lockout",
+    "contract": {
+      "id": "msn_demo_lockout",
+      "version": 3,
+      "hash": "sha256:b83f5ffab6c5f2cad7148fec79305b06bab15d0f73ae76f2c246de29fa0f4f5d",
+      "objective": "Add brute-force lockout to the login endpoint (lock after 5 failed attempts for 15 minutes), preserve existing behavior",
+      "projectProfileId": "sample-target-app",
+      "intentBoundary": "MODIFY_LOCAL",
+      "acceptanceCriteria": [
+        {
+          "id": "criterion_implementation",
+          "statement": "Lockout logic is implemented without unrelated file changes",
+          "risk": "high",
+          "evidenceTypes": [
+            "diff"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_lockout",
+          "statement": "The sixth failed login is locked for 15 minutes after five failures",
+          "risk": "critical",
+          "evidenceTypes": [
+            "lockout_test"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_regression",
+          "statement": "Existing successful-login and validation behavior remains green",
+          "risk": "high",
+          "evidenceTypes": [
+            "test"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_dependencies",
+          "statement": "The inherited lodash advisory is remediated and no vulnerable dependency remains",
+          "risk": "high",
+          "evidenceTypes": [
+            "security_scan"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_secrets",
+          "statement": "The diff contains no credential or secret material",
+          "risk": "critical",
+          "evidenceTypes": [
+            "secret_scan"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        }
+      ],
+      "constraints": [
+        "Synthetic demo users only",
+        "Do not publish or deploy",
+        "Preserve the existing login response contract"
+      ],
+      "nonGoals": [
+        "Production deployment",
+        "Persistent account storage"
+      ],
+      "actionPolicy": [
+        {
+          "action": "repository.read",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "file.modify",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "branch.create",
+          "decision": "ALLOW",
+          "restrict": {
+            "branchPrefix": "agent/"
+          }
+        },
+        {
+          "action": "pull_request.create",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "preview.deploy",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "production.deploy",
+          "decision": "DENY"
+        },
+        {
+          "action": "verification.run",
+          "decision": "ALLOW"
+        }
+      ],
+      "modelPlan": [
+        {
+          "phase": "scout",
+          "model": "gpt-5.6-luna",
+          "effort": "light",
+          "rationale": "Structured repository mapping with low spend"
+        },
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "rationale": "Primary implementation with a sustained reasoning chain"
+        },
+        {
+          "phase": "security escalation note",
+          "model": "gpt-5.6-sol",
+          "effort": "max",
+          "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+          "multiAgent": false,
+          "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+        },
+        {
+          "phase": "remediate",
+          "model": "gpt-5.6-terra",
+          "effort": "medium",
+          "rationale": "Bounded dependency remediation"
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "rationale": "Independent read-only challenge in a fresh session"
+        }
+      ],
+      "budgetPolicy": {
+        "reservePercent": 20
+      },
+      "status": "COMPLETE",
+      "createdAt": "2026-07-20T09:00:00.000Z",
+      "updatedAt": "2026-07-20T09:24:00.000Z"
+    },
+    "contractHash": "sha256:b83f5ffab6c5f2cad7148fec79305b06bab15d0f73ae76f2c246de29fa0f4f5d",
+    "repo": {
+      "remote": "https://example.invalid/axiomgate/sample-target-app.git",
+      "branch": "agent/demo-lockout",
+      "commit": "demo9f3a1c7e2"
+    },
+    "identities": {
+      "github": "sample-owner",
+      "vercel": "SAMPLE_NOT_CONNECTED"
+    },
+    "modelUsage": [
+      {
+        "phase": "build",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "tokens": {
+          "input": 18420,
+          "output": 2240,
+          "reasoning": 920
+        }
+      },
+      {
+        "phase": "remediate",
+        "model": "gpt-5.6-terra",
+        "effort": "medium",
+        "tokens": {
+          "input": 6140,
+          "output": 760,
+          "reasoning": 210
+        }
+      },
+      {
+        "phase": "verify",
+        "model": "gpt-5.6-terra",
+        "effort": "high",
+        "tokens": {
+          "input": 8900,
+          "output": 1100,
+          "reasoning": 430
+        }
+      }
+    ],
+    "capacityLedger": {
+      "estimated": {
+        "totalTokens": 42000
+      },
+      "actual": {
+        "totalTokens": 37540
+      },
+      "sourceLabels": {
+        "capacity": "SAMPLE",
+        "tokenUsage": "SAMPLE"
+      }
+    },
+    "actions": [],
+    "permissionQuad": {
+      "requested": "0/0",
+      "approved": "0/0",
+      "applied": "0/0",
+      "observed": "0/0"
+    },
+    "criteria": [
+      {
+        "id": "criterion_implementation",
+        "verdict": "PASS",
+        "evidenceIds": [
+          "ev_demo_diff"
+        ],
+        "evidenceHashes": [
+          "sha256:c877561a006a6ebd4f10bbd7f7bc0bf4f78ebf71d313f4055558c29cc39bb9e9"
+        ]
+      },
+      {
+        "id": "criterion_lockout",
+        "verdict": "PASS",
+        "evidenceIds": [
+          "ev_demo_lockout"
+        ],
+        "evidenceHashes": [
+          "sha256:ad46e48c42eef999a6175f9a00188bfb4cddd0b4f49c2177a0e00445d2183586"
+        ]
+      },
+      {
+        "id": "criterion_regression",
+        "verdict": "PASS",
+        "evidenceIds": [
+          "ev_demo_regression"
+        ],
+        "evidenceHashes": [
+          "sha256:6594fe1b54e125d1b42ead29f7f495201da5dc17af7a3ef75516fc6ee3c12a90"
+        ]
+      },
+      {
+        "id": "criterion_dependencies",
+        "verdict": "PASS",
+        "evidenceIds": [
+          "ev_demo_dependency"
+        ],
+        "evidenceHashes": [
+          "sha256:25e69e05a3694632a866837a27bb360b0a862f45c94a7caf0dfb4191fda0c5ff"
+        ]
+      },
+      {
+        "id": "criterion_secrets",
+        "verdict": "PASS",
+        "evidenceIds": [
+          "ev_demo_secrets"
+        ],
+        "evidenceHashes": [
+          "sha256:c83c59cebd0bfe5276da846acee3c7ee24f8414617dd9ec5e136a49e997c44c2"
+        ]
+      }
+    ],
+    "findings": [
+      {
+        "id": "finding_demo_lodash",
+        "checkId": "dependency_scan",
+        "criterionIds": [
+          "criterion_dependencies"
+        ],
+        "title": "Inherited lodash advisory",
+        "detail": "Sample initial scan found lodash 4.17.4; governed remediation upgraded it and the targeted rerun passed.",
+        "severity": "high",
+        "status": "resolved",
+        "cve": "CVE-2021-23337",
+        "advisory": "GHSA-35jh-r3h4-6jhm",
+        "ecosystem": "npm",
+        "package": "lodash",
+        "version": "4.17.4",
+        "fixedVersion": "4.17.21",
+        "reachability": "unknown"
+      }
+    ],
+    "waivers": [],
+    "outcome": "COMPLETE",
+    "evidenceRecords": [
+      {
+        "record": {
+          "id": "ev_demo_diff",
+          "missionId": "msn_demo_lockout",
+          "criterionId": "criterion_implementation",
+          "source": "command",
+          "command": "git diff --check",
+          "exitCode": 0,
+          "outputHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "outputRef": "sample://evidence/ev_demo_diff",
+          "capturedAt": "2026-07-20T09:15:00.000Z",
+          "freshForCommit": "demo9f3a1c7e2",
+          "label": "REPLAY",
+          "redacted": true
+        },
+        "previousHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "hash": "sha256:c877561a006a6ebd4f10bbd7f7bc0bf4f78ebf71d313f4055558c29cc39bb9e9"
+      },
+      {
+        "record": {
+          "id": "ev_demo_lockout",
+          "missionId": "msn_demo_lockout",
+          "criterionId": "criterion_lockout",
+          "source": "command",
+          "command": "npm run test:lockout",
+          "exitCode": 0,
+          "outputHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          "outputRef": "sample://evidence/ev_demo_lockout",
+          "capturedAt": "2026-07-20T09:16:00.000Z",
+          "freshForCommit": "demo9f3a1c7e2",
+          "label": "REPLAY",
+          "redacted": true
+        },
+        "previousHash": "sha256:c877561a006a6ebd4f10bbd7f7bc0bf4f78ebf71d313f4055558c29cc39bb9e9",
+        "hash": "sha256:ad46e48c42eef999a6175f9a00188bfb4cddd0b4f49c2177a0e00445d2183586"
+      },
+      {
+        "record": {
+          "id": "ev_demo_regression",
+          "missionId": "msn_demo_lockout",
+          "criterionId": "criterion_regression",
+          "source": "command",
+          "command": "npm test",
+          "exitCode": 0,
+          "outputHash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+          "outputRef": "sample://evidence/ev_demo_regression",
+          "capturedAt": "2026-07-20T09:17:00.000Z",
+          "freshForCommit": "demo9f3a1c7e2",
+          "label": "REPLAY",
+          "redacted": true
+        },
+        "previousHash": "sha256:ad46e48c42eef999a6175f9a00188bfb4cddd0b4f49c2177a0e00445d2183586",
+        "hash": "sha256:6594fe1b54e125d1b42ead29f7f495201da5dc17af7a3ef75516fc6ee3c12a90"
+      },
+      {
+        "record": {
+          "id": "ev_demo_dependency",
+          "missionId": "msn_demo_lockout",
+          "criterionId": "criterion_dependencies",
+          "source": "api",
+          "command": "patchpilot scan .",
+          "exitCode": 0,
+          "outputHash": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+          "outputRef": "sample://evidence/ev_demo_dependency",
+          "capturedAt": "2026-07-20T09:22:00.000Z",
+          "freshForCommit": "demo9f3a1c7e2",
+          "label": "REPLAY",
+          "redacted": true
+        },
+        "previousHash": "sha256:6594fe1b54e125d1b42ead29f7f495201da5dc17af7a3ef75516fc6ee3c12a90",
+        "hash": "sha256:25e69e05a3694632a866837a27bb360b0a862f45c94a7caf0dfb4191fda0c5ff"
+      },
+      {
+        "record": {
+          "id": "ev_demo_secrets",
+          "missionId": "msn_demo_lockout",
+          "criterionId": "criterion_secrets",
+          "source": "command",
+          "command": "builtin-secret-scan --diff",
+          "exitCode": 0,
+          "outputHash": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+          "outputRef": "sample://evidence/ev_demo_secrets",
+          "capturedAt": "2026-07-20T09:23:00.000Z",
+          "freshForCommit": "demo9f3a1c7e2",
+          "label": "REPLAY",
+          "redacted": true
+        },
+        "previousHash": "sha256:25e69e05a3694632a866837a27bb360b0a862f45c94a7caf0dfb4191fda0c5ff",
+        "hash": "sha256:c83c59cebd0bfe5276da846acee3c7ee24f8414617dd9ec5e136a49e997c44c2"
+      }
+    ],
+    "evidenceChainHead": "sha256:c83c59cebd0bfe5276da846acee3c7ee24f8414617dd9ec5e136a49e997c44c2",
+    "limitations": [
+      "Curated synthetic hosted-demo receipt; it does not represent a live account or deployment."
+    ],
+    "generatedAt": "2026-07-20T09:25:00.000Z"
   }
 }

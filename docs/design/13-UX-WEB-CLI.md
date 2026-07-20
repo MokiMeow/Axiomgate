@@ -1,6 +1,8 @@
 # Web Dashboard and CLI Experience
 
-The shipped product surface is the bundled CLI/MCP server plus a **zero-dependency local web dashboard** served by `apps/web/server.mjs`. The dashboard is AxiomGate code, binds to loopback, reads one governed workspace, and falls back to labelled sample data. It does not embed PatchPilot's Next.js application. There is no desktop Electron/Tauri app.
+The shipped product surface is the bundled CLI/MCP server plus a **zero-dependency local web dashboard** served by `apps/web/server.mjs`. The dashboard is AxiomGate code, binds to loopback, and reads one governed workspace. A fresh clone has an empty state; the curated synthetic SAMPLE mission is loaded only with `AXIOMGATE_DEMO=true`. Real mission data always wins and is shown without a demo banner. It does not embed PatchPilot's Next.js application. There is no desktop Electron/Tauri app.
+
+The Vercel-hosted surface serves the same static landing page and dashboard with read-only serverless endpoints. It always returns the curated SAMPLE mission and SAMPLE capacity, never a live-account claim. Hosted approvals are disabled because canonical approval mutation requires the loopback local server and governed workspace.
 
 ## Product experience
 

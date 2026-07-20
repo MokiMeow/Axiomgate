@@ -37,12 +37,23 @@ async function boot() {
   renderMissionList();
   if (STATE.missions[0]) selectMission(STATE.missions[0].id);
   else $("#detail").innerHTML =
-    '<div class="empty-state"><strong>No missions found.</strong><span>Run a governed mission in this workspace to populate the dashboard - mission state is read from <code>.axiomgate/missions/</code>.</span></div>';
+    '<div class="empty-state"><strong>No governed missions yet.</strong><span>Run <code>axiomgate mission run</code> in this workspace, or <code>npx axiomgate replay all</code> to see enforcement with no setup.</span></div>';
 }
 
 async function loadCapacity() {
   try {
     const c = await api("/api/capacity");
+    if (c.demo && c.capacity && c.capacity.kind === "sample") {
+      const weekly = (c.capacity.windows || []).find((w) => w.windowLabel === "weekly");
+      STATE.capacity = {
+        text: weekly ? `SAMPLE · ${weekly.usedPercent}% weekly used` : "SAMPLE capacity",
+        title: `${c.capacity.note || "Illustrative hosted-demo capacity"} [source: sample; confidence: sample]`,
+        ok: false,
+        sample: true,
+      };
+      updateCapacityPill();
+      return;
+    }
     const rl = c.capacity && c.capacity.rateLimits;
     if (rl && rl.primary) {
       STATE.capacity = {
@@ -145,7 +156,7 @@ function renderDetail(m) {
   if (STATE.demo) {
     root.appendChild(el("div", "demo-banner", `
       <span class="demo-dot"></span>
-      <span><b>Demo data.</b> This preview shows a seeded sample mission so you can explore the UI.
+      <span><b>Demo data.</b> This hosted preview shows a curated synthetic SAMPLE mission; no live account or workspace was queried.
       For real governed missions, run locally against your workspace. See the <a href="/#quickstart">quickstart</a>.</span>`));
   }
 
@@ -326,12 +337,36 @@ function twoColumn(m, verdicts, complete) {
   // balanced in a row below, so there is no empty column gap.
   const wrap = el("section", "grid");
   wrap.appendChild(proofPanel(m, verdicts, complete));
+  const verification = verificationPanel(m);
+  if (verification) wrap.appendChild(verification);
   const row = el("div", "grid two");
   const plan = planPanel(m);
   if (plan) row.appendChild(plan);
   row.appendChild(receiptPanel(m));
   wrap.appendChild(row);
   return wrap;
+}
+
+function verificationPanel(m) {
+  const runs = m.verifications || [];
+  const findings = m.findings || [];
+  if (!runs.length && !findings.length) return null;
+  const panel = el("div", "panel");
+  panel.appendChild(el("div", "section-label", "Verification and governed remediation"));
+  runs.forEach((run) => {
+    const pass = run.overall === "PASS";
+    panel.appendChild(el("div", "phase-row", `
+      <span class="ph">${esc(run.id)}</span>
+      <span class="ph-model">${pass ? "Targeted rerun cleared the affected check" : "Dependency scan found a blocking advisory"}</span>
+      <span class="status-badge ${pass ? "pass" : "fail"}">${esc(run.overall)}</span>`));
+  });
+  findings.forEach((finding) => {
+    panel.appendChild(el("div", "gate complete", `
+      <span class="gate-label">${esc(finding.package || "finding")} ${esc(finding.version || "")}</span>
+      <span class="status-badge complete">${esc((finding.status || "resolved").toUpperCase())}</span>
+      <span class="gate-reason">${esc(finding.title)}${finding.fixedVersion ? ` · fixed in ${esc(finding.fixedVersion)}` : ""}</span>`));
+  });
+  return panel;
 }
 
 function proofPanel(m, verdicts, complete) {

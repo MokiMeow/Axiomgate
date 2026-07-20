@@ -1,7 +1,7 @@
 // AxiomGate local dashboard - self-contained Node HTTP server (no runtime deps).
 // Reads real mission state from a governed workspace's `.axiomgate/` directory
-// and serves it to the single-page dashboard. Falls back to a bundled sample
-// mission so the UI always renders on a clean clone.
+// and serves it to the single-page dashboard. The bundled sample is used only
+// when AXIOMGATE_DEMO=true; a clean clone otherwise has an honest empty state.
 //
 // Usage:
 //   node apps/web/server.mjs [--workspace <path>] [--port 4319]
@@ -20,6 +20,10 @@ import {
   resolveStaticPath,
   validateApprovalIntent,
 } from "./security.mjs";
+import {
+  demoModeEnabled,
+  resolveDashboardMissions,
+} from "./dashboard-data.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = join(__dirname, "public");
@@ -170,15 +174,14 @@ async function loadMission(dir, id) {
   };
 }
 
-async function loadAllMissions() {
+async function loadDashboardData() {
   const ids = await listMissionIds();
-  if (ids.length === 0) {
-    // sample fallback so the dashboard always renders
-    const sample = await readJson(join(SAMPLE_DIR, "mission.json"));
-    return sample ? [{ ...sample, label: "SAMPLE" }] : [];
-  }
-  const loaded = await Promise.all(ids.map((id) => loadMission(MISSIONS_DIR, id)));
-  return loaded.filter(Boolean);
+  return resolveDashboardMissions({
+    liveMissionIds: ids,
+    loadLiveMission: (id) => loadMission(MISSIONS_DIR, id),
+    loadSampleMission: () => readJson(join(SAMPLE_DIR, "mission.json")),
+    demoMode: demoModeEnabled(),
+  });
 }
 
 // Live Codex account capacity via the app-server (best-effort, read-only).
@@ -311,12 +314,7 @@ const server = createServer(async (req, res) => {
   const path = url.pathname;
 
   if (path === "/api/missions") {
-    const missions = await loadAllMissions();
-    // Demo when explicitly hosted (AXIOMGATE_DEMO=true) or when only the bundled
-    // sample is available; real local missions are never labeled as demo.
-    const demo =
-      process.env.AXIOMGATE_DEMO === "true" ||
-      missions.every((m) => m.label === "SAMPLE");
+    const { demo, missions } = await loadDashboardData();
     return json(res, 200, {
       workspace: WORKSPACE,
       demo,
@@ -336,13 +334,18 @@ const server = createServer(async (req, res) => {
 
   if (path.startsWith("/api/mission/")) {
     const id = decodeURIComponent(path.split("/").pop());
-    const all = await loadAllMissions();
+    const { missions: all } = await loadDashboardData();
     const m = all.find((x) => x.id === id);
     if (!m) return json(res, 404, { error: "mission not found" });
     return json(res, 200, m);
   }
 
   if (path === "/api/capacity") {
+    const { demo, missions } = await loadDashboardData();
+    if (demo && missions.length > 0) {
+      const capacity = await readJson(join(SAMPLE_DIR, "capacity.json"));
+      return json(res, 200, { capacity, source: "sample", demo: true });
+    }
     const cap = await readCapacity();
     return json(res, 200, { capacity: cap, source: cap ? "codex-app-server" : "unavailable" });
   }
@@ -378,9 +381,16 @@ const server = createServer(async (req, res) => {
   return serveStatic(res, path);
 });
 
-server.listen(PORT, "127.0.0.1", () => {
-  const live = existsSync(MISSIONS_DIR);
+server.listen(PORT, "127.0.0.1", async () => {
+  const live = (await listMissionIds()).length > 0;
+  const demo = demoModeEnabled();
   console.log(`AxiomGate dashboard → http://localhost:${PORT}`);
   console.log(`workspace: ${WORKSPACE}`);
-  console.log(live ? "reading live .axiomgate mission data" : "no live missions - showing bundled sample");
+  console.log(
+    live
+      ? "reading live .axiomgate mission data"
+      : demo
+        ? "demo mode - showing bundled SAMPLE mission"
+        : "no governed missions yet - showing empty state",
+  );
 });

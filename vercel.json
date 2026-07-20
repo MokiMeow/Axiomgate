@@ -1,0 +1,33 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "outputDirectory": "apps/web/public",
+  "cleanUrls": true,
+  "functions": {
+    "api/**/*.mjs": {
+      "includeFiles": "apps/web/sample/*.json",
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, s-maxage=300"
+        }
+      ]
+    }
+  ]
+}

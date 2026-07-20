@@ -122,7 +122,7 @@ This table is the one-hop entry point for reviewers, AI analysis, and contributo
 
 ## Product surfaces
 
-The local dashboard renders a seeded synthetic mission on a clean clone and real `.axiomgate` state when pointed at a governed workspace. Public screenshots are path-redacted captures of the bundled sample data.
+The local dashboard is empty on a fresh clone and renders real `.axiomgate` state when pointed at a governed workspace. Set `AXIOMGATE_DEMO=true` only when you intentionally want the curated synthetic SAMPLE mission used by the publicly hostable Vercel surface. Hosted capacity and mission data are visibly labelled SAMPLE; they never claim to be a live account or workspace. To host it, set `AXIOMGATE_DEMO=true` in Vercel and run `vercel --prod` from the repository root. See [dashboard hosting notes](apps/web/README.md#vercel-hosted-demo).
 
 ![AxiomGate landing page: proof-carrying missions for Codex](docs/assets/axiomgate-landing.png)
 
@@ -134,7 +134,7 @@ Start with [JUDGE-QUICKSTART.md](JUDGE-QUICKSTART.md). The deterministic replay 
 
 | Platform | Status | Evidence or limitation |
 |---|---|---|
-| Windows 11, PowerShell, Node.js 20+, pnpm 10, Codex CLI 0.144.x | Verified | Full tests, build, replay, package install, live mission, hooks, Telegram, and receipt verification. |
+| Windows 11, PowerShell, Node.js 24, pnpm 10, Codex CLI 0.144.x | Verified | Full tests, build, replay, package install, live mission, hooks, Telegram, receipt verification, and the Vercel hosting harness. The published CLI retains its Node.js 20+ engine range. |
 | Linux through WSL2 Ubuntu | Unverified | The registered WSL distribution could not attach its missing VHDX on this machine, so no Linux command was run. [Curation evidence](evidence/public/repo-curation-verification.md). |
 | macOS | Untested | No macOS runner was available. |
 
