@@ -15,7 +15,10 @@ if (tracked.status !== 0) {
   process.exit(tracked.status ?? 1);
 }
 
-const markdownFiles = tracked.stdout.split(/\r?\n/u).filter(Boolean);
+const markdownFiles = tracked.stdout
+  .split(/\r?\n/u)
+  .filter(Boolean)
+  .filter((relativeFile) => existsSync(resolve(repositoryRoot, relativeFile)));
 const failures = [];
 let checked = 0;
 

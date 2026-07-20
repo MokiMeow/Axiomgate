@@ -19,32 +19,32 @@ A pnpm monorepo at the local PatchPilot path, built and live-verified in May 202
 
 ## Reuse map
 
-| AxiomGate need | Existing PatchPilot module | Build Week action |
+The table distinguishes prior PatchPilot capability from what AxiomGate actually consumes. Only the published CLI row crosses the runtime boundary.
+
+| AxiomGate need | Prior PatchPilot capability | Shipped AxiomGate action |
 |---|---|---|
-| Dependency/secret/SAST scanning | `osv`, `scanners`, `secrets`, `sbom` | Reuse; wire to mission plan |
-| Run target repo's tests/build | `validation` | Reuse; extend to arbitrary configured commands |
-| Codex remediation loop | `codex`, `workspace` (secret-scrubbed disposable workspaces, sandbox flags, stdin prompts) | Reuse; parameterize by mission authority |
-| PR creation | `github`, `gitOps` (live-verified) | Reuse; gate behind Environment Guard |
-| Approvals (Telegram, HMAC, two-step) | `telegram`, `approval` | **Extend** with mission-level semantic approvals and command-hash binding - do not rebuild |
-| Receipts / audit chain | `audit`, `attestation` | **Extend** from finding-level to mission-level Build Receipt |
-| Redaction | `redaction`, `env` | Reuse verbatim |
-| Prompt-injection defense | `promptInjection`, `mcpToolGuard`, `llmOutputGuard` | Reuse; label as heuristic |
-| Dashboard shell | `apps/web` | Extend with mission timeline views |
+| Dependency scanning | Published `patchpilot-cli scan` | Invoke pinned `patchpilot-cli@0.1.3`, parse output, and store command evidence. |
+| Target tests/build | Internal validation runner existed | Detect and run the target repository's own commands directly through AxiomGate's timeout runner. |
+| Codex remediation | Internal Codex/workspace modules existed | Use AxiomGate's governed mission runtime and hook configuration; rerun only affected checks. |
+| PR/deploy guard | GitHub helpers existed | Use AxiomGate identity, target-ownership, policy, and approval modules. |
+| Approvals and Telegram | Internal adapters existed | Implement AxiomGate's canonical exact-hash, expiring, single-use store and Telegram relay independently. |
+| Receipts and audit chain | Finding-level audit modules existed | Implement the AxiomGate mission receipt and offline verifier from stored AxiomGate evidence. |
+| Redaction and prompt safety | Internal helpers existed | Implement and test AxiomGate-local redaction and fail-closed command policy; no PatchPilot source import. |
+| Dashboard | PatchPilot had a Next.js product | Ship AxiomGate's zero-dependency loopback dashboard; do not embed or copy PatchPilot UI code. |
 
 ## What must remain separate
 
-PatchPilot's CVE Watch Commander identity (inventory, watch mode, CVE enrichment UI) is a different product loop. AxiomGate consumes engine functions; it does not absorb the watch product.
+PatchPilot's CVE Watch Commander identity (inventory, watch mode, CVE enrichment UI) is a different product loop. AxiomGate consumes one published scan command; it does not absorb the watch product.
 
 ## Integration boundary
 
-**Superseded by ADR-014.** PatchPilot is a separate repo; judges clone only AxiomGate. Integration is via the **published `patchpilot-cli`** (npm, invoked through the timeout runner, JSON output parsed into typed findings) plus the target repo's own test/build commands. No co-located `packages/core`, no submodule, no database access. The operations below are realized as CLI invocations, not in-process calls.
+PatchPilot is a separate repo; judges clone only AxiomGate. Integration is via the **published `patchpilot-cli@0.1.3`** (npm, invoked through the timeout runner, output parsed into typed findings) plus the target repo's own test/build commands. There is no co-located `packages/core`, submodule, database access, or in-process PatchPilot API.
 
-Operations:
+The AxiomGate verification layer owns these operations around that narrow scan boundary:
 
 - create verification run (mission, diff, criteria, risk);
 - list planned checks;
-- start/cancel run;
-- stream typed events;
+- execute a bounded run and emit typed events;
 - get findings;
 - validate finding;
 - attach remediation;
@@ -73,10 +73,7 @@ Operations:
 
 ## Migration
 
-- Back up existing PatchPilot state before schema changes.
-- Explicit schema migration with rollback.
-- Preserve existing PatchPilot projects/runs where practical.
-- Existing PatchPilot regression suite must pass after integration.
+No PatchPilot state or schema is modified. AxiomGate pins the published CLI version and regression-tests parsing against captured real output. Upgrading PatchPilot requires a new interface probe, updated fixture, malformed-output check, and end-to-end scan before changing the pin.
 
 ## Performance
 
@@ -88,4 +85,4 @@ The integration is complete only when a real Codex change flows through PatchPil
 
 ## Hackathon delta discipline
 
-PatchPilot predates Build Week (git history: 2026-05-26 → 2026-05-31). `HACKATHON_DELTA.md` must list its pre-existing capabilities explicitly, and the demo narration must say "our existing PatchPilot engine" out loud. Misattributing pre-existing work is a disqualification risk under the Official Rules.
+PatchPilot predates Build Week (git history: 2026-05-26 → 2026-05-31). `HACKATHON_DELTA.md` lists its pre-existing capabilities explicitly, and demo narration identifies the pinned published PatchPilot CLI as pre-existing work. Misattributing it as new AxiomGate source is a disqualification risk under the Official Rules.

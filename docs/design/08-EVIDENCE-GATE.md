@@ -50,7 +50,8 @@ Approval surfaces:
 
 - web dashboard;
 - CLI;
-- Telegram.
+- Telegram;
+- MCP.
 
 All surfaces consume the same typed action request. Telegram must not receive raw secrets or excessive source content.
 

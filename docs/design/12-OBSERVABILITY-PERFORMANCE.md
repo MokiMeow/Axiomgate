@@ -4,20 +4,20 @@
 
 Explain what AxiomGate is doing without leaking private content.
 
-Track:
+The shipped records track:
 
 - mission phase;
 - current model;
 - capability-policy snapshot and selected execution mechanisms;
-- process health;
 - Runway capacity snapshot;
-- context pressure;
 - acceptance progress;
 - findings;
 - pending approvals;
 - evidence freshness;
 - external actions;
 - recovery events.
+
+General process-health telemetry and context-pressure measurement remain future work.
 
 ## Structured events
 
@@ -35,9 +35,9 @@ Redact:
 - personal account information;
 - sensitive source fragments in remote notifications.
 
-## Performance baselines
+## Future performance baselines
 
-Measure before optimization:
+No repository-wide benchmark claim is made in this release. A future benchmark pass should measure:
 
 - dashboard startup;
 - mission creation;
@@ -57,7 +57,7 @@ Set budgets only after baseline. Store measured values and environment informati
 
 ## Large outputs
 
-Store large logs externally and place summaries/references in mission context. Support streaming and cancellation.
+Command output is bounded by the shared timeout runner, hashed into evidence, and referenced from local state. Codex JSONL is parsed as it arrives; timeouts and interruptions create checkpoints. General large-log externalization and user-driven cancellation remain future work.
 
 ## Reliability
 

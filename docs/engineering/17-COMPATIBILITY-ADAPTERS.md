@@ -6,7 +6,7 @@
 
 First-class and complete. Codex performs the primary implementation, remediation, and evidence-producing workflow.
 
-Integration interfaces (all official): hooks (`PreToolUse`, `PermissionRequest`, `PostToolUse`, `PreCompact`, `PostCompact`, `UserPromptSubmit`, `SubagentStop`, `Stop`; deny-wins), App Server JSON-RPC / TypeScript SDK, `codex exec --json` (events + token usage), `--output-schema`, sandbox and permission-profile flags.
+Codex exposes several official integration interfaces. AxiomGate's shipped subset is deliberately smaller: `PreToolUse` and `PermissionRequest` hooks, `codex exec --json` events and token usage, `--output-schema`, sandbox and permission-profile flags, and App Server JSON-RPC for `account/rateLimits/read`. AxiomGate does not ship a Codex TypeScript SDK dependency or configure the other available hook events.
 
 **Phase 0 gate:** empirically verify on the installed Codex version - the `PermissionRequest` payload contents, deny semantics, fail-open/fail-closed behavior on hook error, and the `exec --json` usage fields. Record version numbers in the matrix below. If hooks fail open, missions must not claim enforcement until mitigated.
 

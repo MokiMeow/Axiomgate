@@ -2,7 +2,7 @@
 
 ## Working name
 
-# AxiomGate
+**AxiomGate**
 
 **Tagline:** Plan. Govern. Execute. Prove.
 

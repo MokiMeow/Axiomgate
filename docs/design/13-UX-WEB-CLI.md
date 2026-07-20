@@ -1,6 +1,6 @@
 # Web Dashboard and CLI Experience
 
-For Build Week the product surface is a **local web dashboard** (extending the existing PatchPilot Next.js app) plus a CLI. There is no desktop (Electron/Tauri) app - ADR-009. "Desktop" below means the local web dashboard.
+The shipped product surface is the bundled CLI/MCP server plus a **zero-dependency local web dashboard** served by `apps/web/server.mjs`. The dashboard is AxiomGate code, binds to loopback, reads one governed workspace, and falls back to labelled sample data. It does not embed PatchPilot's Next.js application. There is no desktop Electron/Tauri app.
 
 ## Product experience
 
@@ -17,26 +17,9 @@ Do not surface the internal vocabulary (Mission Compiler, Runway, Environment Gu
 
 `axiomgate mission create` must work with a one-line objective and safe defaults: auto-detected identity, standard policy template, `MODIFY_LOCAL` boundary. The full contract editor is optional. Target: first governed mission in under 3 minutes from install. A normal mission must generate **at most 3 approval prompts**; if policy defaults produce more, fix the defaults, not the user.
 
-## Primary dashboard screens
+## Shipped dashboard panels
 
-### Dashboard
-
-- active missions;
-- blocked actions;
-- expiring capacity;
-- pending approvals;
-- recent receipts.
-
-### New mission
-
-- project;
-- objective;
-- authority;
-- budget policy;
-- model preference;
-- evidence level.
-
-### Mission detail
+### Mission view
 
 - timeline;
 - contract;
@@ -47,6 +30,8 @@ Do not surface the internal vocabulary (Mission Compiler, Runway, Environment Gu
 - proof graph;
 - approvals;
 - receipt.
+
+Mission creation and execution remain CLI workflows. The dashboard is a focused inspection and loopback approval surface, not a general project manager.
 
 ### Environment Guard
 
@@ -66,12 +51,7 @@ Do not add skill-installation, MCP-registry, deduplication, or plugin-management
 
 ### Settings
 
-- Codex/runtime configuration (Build Week; generic multi-provider settings: post-hackathon);
-- approval channels;
-- privacy;
-- local storage;
-- limits;
-- notification preferences.
+No settings screen is shipped. Codex/runtime options, Runway manual fallback, Telegram environment configuration, and privacy controls are explicit CLI/environment inputs. A generic provider settings UI is post-hackathon.
 
 ## UX requirements
 
@@ -93,16 +73,21 @@ Core commands (Build Week):
 
 ```text
 axiomgate doctor
-axiomgate mission create
-axiomgate mission run
-axiomgate mission resume
-axiomgate mission verify
-axiomgate mission receipt
-axiomgate receipt verify <file>    # judge-facing: verifies receipt hash chain integrity
+axiomgate install-codex [--dry-run]
+axiomgate mcp
+axiomgate verify-enforcement [--offline]
+axiomgate runway status
+axiomgate runway set
+axiomgate mission create|update|run|resume|review|verify|remediate|status|waive|receipt
+axiomgate approvals list
+axiomgate approve <id>
+axiomgate deny <id>
+axiomgate receipt verify <file>
 axiomgate replay <scenario>
+axiomgate telegram test|watch
 ```
 
-Deferred: `mission plan`, `runway status`, `environment inspect`, `policy explain`, `project link` as separate commands (their content appears inside `mission create/run` output).
+Not shipped as separate commands: `mission plan`, `environment inspect`, `policy explain`, and `project link`. Their relevant state appears in mission creation, run, status, doctor, or dashboard output.
 
 CLI and dashboard must call the same application services.
 

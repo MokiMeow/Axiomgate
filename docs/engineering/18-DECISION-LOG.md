@@ -85,7 +85,7 @@ Build the one governed mission end to end (contract → hook-enforced guard → 
 
 **Date:** 2026-07-14 · **Status:** Accepted
 
-The product surface is the CLI plus a local web dashboard extending the existing PatchPilot Next.js app. No Electron/Tauri work during Build Week. Rationale: zero pre-existing desktop code, judge-runnable in one command, PatchPilot views already exist in the web stack.
+The product surface is the CLI plus a local web dashboard, with no Electron/Tauri work. The original plan considered extending PatchPilot's Next.js UI; ADR-014 later established a separate-repository CLI boundary, so the shipped AxiomGate dashboard is instead a zero-dependency loopback server with bundled static assets.
 
 ### ADR-010 - PatchPilot factual model corrected
 
@@ -123,7 +123,7 @@ Deepen genuine Codex usage across official surfaces: (a) Model Director offers G
 
 **Date:** 2026-07-15 · **Status:** Accepted
 
-PatchPilot is a separate pre-existing repository with heavy dependencies (pg, bullmq, openai). Judges clone only AxiomGate, so the Verification Engine integrates by invoking the **published `patchpilot-cli`** (npm, v0.1.3, bin `patchpilot`) via the timeout runner - plus running the target repo's own test/build commands directly. This supersedes the `docs/09` assumption of an in-process typed API over a co-located `packages/core`.
+PatchPilot is a separate pre-existing repository with heavy dependencies (pg, bullmq, openai). Judges clone only AxiomGate, so the Verification Engine integrates by invoking the **published `patchpilot-cli`** (npm, v0.1.3, bin `patchpilot`) via the timeout runner - plus running the target repo's own test/build commands directly. This supersedes the original [`docs/design/09-PATCHPILOT-INTEGRATION.md`](../design/09-PATCHPILOT-INTEGRATION.md) assumption of an in-process typed API over a co-located `packages/core`.
 
 **Consequences:** self-contained for judges (npm resolves the dependency); honest reuse of pre-existing published work (no copy, rewrite, or submodule); clean pre-existing/Build-Week separation for `HACKATHON_DELTA.md`. AxiomGate parses the CLI's JSON output into typed findings; if a needed capability is CLI-only-partial, the target repo's native commands cover the gap. Board task V4 ("PatchPilot regression suite passes") is reinterpreted: PatchPilot is unmodified, so its suite is unaffected; V4 becomes "the published-CLI integration is verified against a real fixture."
 

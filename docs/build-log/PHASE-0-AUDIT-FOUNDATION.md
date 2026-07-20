@@ -1,5 +1,7 @@
 # Phase 0 - Audit and Foundation
 
+> Historical phase plan. Use [TASKS.md](TASKS.md) and the [implementation status](../engineering/21-IMPLEMENTATION-STATUS.md) for current completion claims.
+
 ## Outcome
 
 A verified map of the existing codebase and a low-risk implementation foundation.
@@ -8,7 +10,7 @@ A verified map of the existing codebase and a low-risk implementation foundation
 
 - Complete `docs/engineering/22-PRE-IMPLEMENTATION-ASSESSMENT.md`.
 - Locate all repositories involved, including the PatchPilot monorepo (web/worker/CLI/MCP/core - no desktop app exists).
-- Empirically verify Codex hooks, SDK/App Server, and `exec --json` behavior on the installed version; record in `docs/17` (gate for all enforcement claims).
+- Empirically verify Codex hooks, App Server, and `exec --json` behavior on the installed version; record in [`docs/engineering/17-COMPATIBILITY-ADAPTERS.md`](../engineering/17-COMPATIBILITY-ADAPTERS.md) (gate for all enforcement claims).
 - Record package boundaries, language, framework, build tools, persistence, IPC/API, CI, release, and test commands.
 - Identify pre-existing implementation and baseline commit.
 - Run existing format/lint/type/test/build/security commands.

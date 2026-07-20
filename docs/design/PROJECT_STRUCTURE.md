@@ -18,11 +18,11 @@ docs/
   design/               product and architecture blueprints
   engineering/          decisions, compatibility, quality, and status
   submission/           hackathon plan and rules compliance
-  build-log/            task board, phase history, and templates
+  build-log/            task board, phase history, and agent preflight
 .agents/                Codex skill, verifier agent, and marketplace metadata
 plugins/                versioned AxiomGate Codex plugin bundle
 scripts/                package, replay, receipt, and integrity checks
-.local/                 ignored private artifacts
+.local/                 ignored private artifacts, never tracked
 ```
 
 ## Rule

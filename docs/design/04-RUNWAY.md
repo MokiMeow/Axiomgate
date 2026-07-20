@@ -20,47 +20,19 @@ OpenRouter/multi-model balances, API-budget billing, team pools, multiple provid
 
 ## Normalized capacity source
 
-Every source includes:
+Each live Codex source records `limitId`, a derived window label, `usedPercent`, `resetsAt`, `planType`, credit balance/unlimited state, banked-reset metadata, source `codex-app-server`, confidence `high`, and capture time. Missing fields remain absent; AxiomGate never derives message counts.
 
-- provider;
-- account/profile handle;
-- kind;
-- amount and unit;
-- reset time;
-- expiry time;
-- paid status;
-- activation requirement;
-- source of observation;
-- confidence;
-- last updated time.
+When the App Server is unavailable, `.axiomgate/runway.json` may supply manual plan, reset-count, and reset-expiry fields. Every manual field retains `source`, `confidence`, and `capturedAt`. With neither source available the UI prints `UNKNOWN` plus the reason.
 
 ## Planned capacity versus actual usage
 
-The initial estimate is a **confidence-labelled heuristic** derived from exactly four inputs: task classification (from the contract), selected model tiers and effort (from the model plan), phase count, and token actuals from previous local missions (when any exist). It is presented as a likely range with stated assumptions and is **never presented as provider-authoritative**. With no local history, the estimate is labelled `LOW_CONFIDENCE (no history)`.
+The shipped ledger records actual input, output, and raw usage objects from `codex exec --json`. Runway does not invent a token-to-capacity conversion or provider-authoritative task estimate.
 
-Return:
-
-- likely range (min-max);
-- confidence label and assumptions;
-- key cost drivers;
-- reserved verification capacity.
-
-The ledger then records actuals from `codex exec --json` against this plan. Never present exact precision when unavailable.
+The verification reserve compares real weekly `usedPercent` with the mission's `reservePercent`. An optional projected build percentage is used only when supplied by an observed source; otherwise it is displayed as `UNKNOWN`. A separate ledger check warns when cumulative Builder tokens exceed the configured share before any verification run. Both warnings are advisory and never block execution.
 
 ## Model Director
 
-Recommend models by phase using:
-
-- task ambiguity;
-- security sensitivity;
-- blast radius;
-- repository familiarity;
-- failed attempts;
-- context pressure;
-- remaining capacity;
-- test coverage;
-- deadline;
-- user quality preference.
+The compiler recommends Luna/Light for scouting, Sol/High for normal builds, Sol/Max when a security-sensitive objective has high or critical criteria, Terra/Medium for remediation, and Terra/High for independent verification. Each entry records a rationale; users may override model and effort at the run/review boundary.
 
 Model changes require user awareness. Escalation that increases paid or scarce capacity requires explicit approval.
 
@@ -72,14 +44,10 @@ Track expiring capacity. Remind the user that a banked reset or promotion will e
 
 Detect:
 
-- same failure signature;
-- repeated same command;
-- edit/revert oscillation;
-- unchanged acceptance progress;
-- duplicated parallel work;
-- rising context without new evidence.
+- the same command failing with the same normalized error signature at least three times;
+- at least three consecutive runs with zero file changes and zero new evidence.
 
-Recommend pause, checkpoint, diagnosis, task split, or model escalation.
+Recommend pause and diagnosis, task split, or model escalation. Other loop classes remain future work.
 
 ## Continuity (post-hackathon - do not implement for Build Week)
 
@@ -87,31 +55,26 @@ Before model/session/provider transition: calculate continuity risk, create stru
 
 ## Control modes
 
-- Advisory
-- Ask before paid usage
-- Guarded
-- Hard ceiling
-
-Hard ceilings must create a safe checkpoint before stopping where possible.
+This release is advisory. Paid usage, banked-reset activation, and model changes are never automatic. Guarded budget modes and hard ceilings are post-hackathon work.
 
 ## Ledger
 
-Record estimates, actual observed capacity, interventions, approvals, model changes, expiring capacity decisions, and uncertainty.
+Record actual token usage per run. Capacity observations and manual fallback data remain in the source-labelled Runway snapshot; mission events record warnings, reminders, checkpoints, and loop recommendations.
 
 ## Data-source reality (normative)
 
-Every displayed number carries its source and confidence. Verified reality as of 2026-07-14:
+Every displayed number carries its source and confidence. Verified reality as of 2026-07-16:
 
 | Data | Source | Support level |
 |---|---|---|
 | Per-mission token/reasoning actuals | `codex exec --json` usage output | **Official, reliable - the ledger's foundation** |
-| 5-hour / weekly limit percentages | CLI `/status` (interactive), private `GET /api/codex/usage` (undocumented, may change; first-party surfaces have disagreed publicly) | Observation only, medium confidence, always labelled |
-| Banked resets / promo capacity | ChatGPT UI; announced mechanics (one free reset for Go/Plus/Pro/Business, 30-day validity) | Manual entry + reminder; no API |
-| API billing | Official platform usage/billing endpoints | Supportable |
-| Subscription message bands | Help-center ranges (wide, dynamically adjusted) | Historical/manual, ranges only |
-| Shared workspace pools | None known | Unsupported - say so |
+| 5-hour / weekly limit percentages | Codex App Server `account/rateLimits/read` | First-party source, confidence high; short-lived cache |
+| Reset times and banked resets | Same App Server response, including `rateLimitResetCredits` | First-party source when present; manual fallback supported |
+| Plan type and credit balance/unlimited flag | Same App Server response | First-party source when present |
+| Message counts or token-to-percent conversion | No verified source | Unsupported; never derive or display |
+| Other providers, API billing, and shared workspace pools | No shipped adapter | Unsupported in this release |
 
-Build Week implements: the actuals ledger, the verification reserve, loop detection, one normalized `CapacitySource` type with source+confidence labels, and expiring-capacity reminders. The full 14-scenario normalization matrix is deferred (ADR-008).
+Build Week implements the actuals ledger, live-first/manual-fallback capacity, verification reserve, loop detection, source/confidence labels, expiring-reset reminders, and post-limit resume guidance. Multi-provider normalization is deferred.
 
 ## Post-limit resume plan
 
@@ -119,4 +82,4 @@ When a rate limit interrupts a mission: create a checkpoint, display the observe
 
 ## Honest limitations
 
-Provider subscription data may not be available programmatically. Use source/confidence labels and support manual or user-authorized observations without making scraping essential. Never show an unlabelled quota number: a governance tool that is wrong about the thing it governs loses trust permanently.
+The App Server method is version-sensitive and may be unavailable or return malformed data. AxiomGate degrades to a source-labelled manual snapshot or `UNKNOWN`; it does not scrape dashboards or infer missing values. Never show an unlabelled quota number.

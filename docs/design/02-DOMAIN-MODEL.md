@@ -61,6 +61,7 @@ Each source retains unit, remaining amount, reset/expiry time, observation sourc
 ## Model plan
 
 Phase-specific model, provider, reasoning effort, expected role, budget range, and escalation policy.
+The current display vocabulary is `light | medium | high | xhigh | max`; persisted legacy values such as `low` are accepted only for migration and are normalized on mission update. `multiAgent: false` plus the capability note represents that Codex Ultra is native multi-agent mode, not a reasoning-effort value and not orchestrated by AxiomGate during Build Week.
 
 ## Semantic action
 
@@ -158,7 +159,7 @@ Records whether the requested, approved, runtime-applied, and observed permissio
 
 ## Finding
 
-A verified or candidate issue from tests, security, dependency, or deployment checks. (Browser findings: only if stretch X1 ships. Maintainability findings: diff-size warning via stretch X2 only; full analysis post-hackathon.)
+A verified or candidate issue from tests, build, dependency, or secret checks. Browser and maintainability evidence types are unsupported in this release and remain `UNKNOWN` rather than being represented as completed checks.
 
 ## Evidence
 
@@ -191,21 +192,25 @@ Implementations must start from these shapes so parallel agents do not invent di
   "intentBoundary": "PUBLISH",          // OBSERVE|PLAN|MODIFY_LOCAL|PUBLISH|DEPLOY_PREVIEW|DEPLOY_PRODUCTION
   "acceptanceCriteria": [
     { "id": "ac1", "statement": "5 failed logins lock the account for 15 minutes",
-      "risk": "high", "evidenceTypes": ["test_result"], "verdict": "UNVERIFIED", "evidenceIds": [] }
+      "risk": "high", "evidenceTypes": ["test"], "verdict": "UNVERIFIED", "evidenceIds": [] }
   ],
   "constraints": [], "nonGoals": [],
   "actionPolicy": [
     { "action": "repository.read", "decision": "ALLOW" },
+    { "action": "file.modify", "decision": "ALLOW" },
     { "action": "branch.create", "decision": "ALLOW", "restrict": { "branchPrefix": "agent/" } },
     { "action": "pull_request.create", "decision": "REQUIRE_APPROVAL" },
     { "action": "preview.deploy", "decision": "REQUIRE_APPROVAL", "restrict": { "vercelProject": "..." } },
-    { "action": "production.deploy", "decision": "DENY" }
+    { "action": "production.deploy", "decision": "DENY" },
+    { "action": "verification.run", "decision": "ALLOW" }
   ],
   "modelPlan": [
-    { "phase": "scout", "model": "gpt-5.6-luna", "effort": "low", "rationale": "structured mapping" },
-    { "phase": "build", "model": "gpt-5.6-sol", "effort": "high", "rationale": "security-sensitive" },
-    { "phase": "remediate", "model": "gpt-5.6-terra", "effort": "medium", "rationale": "bounded fixes" }
+    { "phase": "scout", "model": "gpt-5.6-luna", "effort": "light", "rationale": "lightweight structured mapping" },
+    { "phase": "build", "model": "gpt-5.6-sol", "effort": "max", "rationale": "single unbroken reasoning chain at Max for the hardest security-sensitive step", "multiAgent": false, "capabilityNote": "Ultra is native Codex multi-agent mode for hard fan-out tasks; AxiomGate does not orchestrate Ultra during Build Week." },
+    { "phase": "remediate", "model": "gpt-5.6-terra", "effort": "medium", "rationale": "bounded fixes at balanced Medium" },
+    { "phase": "verify", "model": "gpt-5.6-terra", "effort": "high", "rationale": "independent challenge at High; a different tier than the builder reduces correlated blind spots" }
   ],
+  "budgetPolicy": { "reservePercent": 20 },
   "status": "DRAFT", "createdAt": "...", "updatedAt": "..."
 }
 ```
@@ -231,7 +236,7 @@ Implementations must start from these shapes so parallel agents do not invent di
 {
   "id": "apr_...", "actionRequestId": "act_...",
   "boundCommandHash": "sha256:...",      // approval void if execution hash differs
-  "surface": "telegram",                 // dashboard|cli|telegram
+  "surface": "telegram",                 // dashboard|cli|telegram|mcp
   "approver": "user", "singleUse": true,
   "grantedAt": "...", "expiresAt": "...", "consumedAt": null
 }
@@ -253,16 +258,19 @@ Implementations must start from these shapes so parallel agents do not invent di
 ```jsonc
 // BuildReceipt v1 (projection only - derived from stored events)
 {
+  "schemaVersion": 1,
   "missionId": "msn_...", "contractHash": "sha256:...",
+  "contract": { /* complete validated MissionContract */ },
   "repo": { "remote": "...", "branch": "...", "commit": "..." },
   "identities": { "github": "...", "vercel": "..." },
   "modelUsage": [ { "phase": "build", "model": "gpt-5.6-sol", "effort": "high", "tokens": { "input": 0, "output": 0, "reasoning": 0 } } ],
   "capacityLedger": { "estimated": {}, "actual": {}, "sourceLabels": {} },
   "actions": [ /* ActionRequests with decisions, approvals, permissionQuad */ ],
   "permissionQuad": { "requested": "...", "approved": "...", "applied": "...", "observed": "..." },
-  "criteria": [ { "id": "ac1", "verdict": "PASS", "evidenceIds": ["ev_..."] } ],
+  "criteria": [ { "id": "ac1", "verdict": "PASS", "evidenceIds": ["ev_..."], "evidenceHashes": ["sha256:..."] } ],
   "findings": [], "waivers": [],
   "outcome": "COMPLETE",                 // COMPLETE|INCOMPLETE|ABORTED
+  "evidenceRecords": [ { "record": { /* Evidence */ }, "previousHash": "sha256:...", "hash": "sha256:..." } ],
   "evidenceChainHead": "sha256:...", "limitations": [],
   "generatedAt": "..."
 }

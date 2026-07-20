@@ -26,7 +26,7 @@ Open `http://localhost:4319`.
 - **Proof table** - each acceptance criterion → verdict → the machine evidence backing it. Model-sourced "evidence" is flagged inadmissible.
 - **Completion gate** - COMPLETE only when every required criterion is PASS or WAIVED.
 - **Build Receipt** - contract hash, commit, evidence chain head, and an in-page verify readout (the authoritative check is the CLI `axiomgate receipt verify`).
-- **Web approval** - approve/deny a pending action from any device's browser (the phone channel for a headless runtime).
+- **Web approval** - approve or deny a pending action from the same machine through the loopback-only dashboard. Telegram is the supported remote phone channel.
 - **Live capacity** - real weekly usage and plan from the Codex app-server, top-right.
 
 ## Design

@@ -1,5 +1,7 @@
 # Phase 7 - Hardening
 
+> Historical phase plan. Use [TASKS.md](TASKS.md) and the [implementation status](../engineering/21-IMPLEMENTATION-STATUS.md) for current completion claims.
+
 Aligned to board task **S1** (ADR-008).
 
 ## Outcome

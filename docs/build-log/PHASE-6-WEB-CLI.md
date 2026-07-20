@@ -1,6 +1,8 @@
 # Phase 6 - Web Dashboard and CLI
 
-(“Desktop” in older references means the local web dashboard - ADR-009. No Electron/Tauri work.)
+> Historical phase plan. Use [TASKS.md](TASKS.md) and the [implementation status](../engineering/21-IMPLEMENTATION-STATUS.md) for current completion claims.
+
+Historical note: "desktop" in early planning meant the local web dashboard. The shipped dashboard is the zero-dependency loopback server under `apps/web`; no Electron, Tauri, or PatchPilot web code is included.
 
 ## Outcome
 

@@ -28,7 +28,7 @@ User / Web Dashboard / CLI / Telegram
 - Policy evaluation before side effects.
 - Evidence capture after observable actions.
 - Append-only mission events with derived current state.
-- Pluggable persistence behind stable repository interfaces.
+- File-backed JSON/JSONL persistence with strict schemas and deterministic projections.
 - UI driven by domain state, not ad hoc process output.
 - Semantic actions separated from the mechanism used to execute them.
 
@@ -50,11 +50,11 @@ It does not become a package manager. It discovers existing execution mechanisms
 
 ### Execution service
 
-Owns Codex sessions (SDK / `exec --json`), sandbox mapping, and canonical mission state with stop/resume. (Process supervision breadth, worktree and environment leases: post-hackathon - native Codex worktrees suffice.)
+Owns `codex exec --json` sessions, sandbox mapping, and canonical mission state with stop/resume. Process-supervision breadth, worktree leases, and a TypeScript SDK integration remain post-hackathon.
 
 ### Verification service
 
-Owns PatchPilot integration, test plans, findings, remediation cycles, and evidence capture. (Maintainability analysis beyond a diff-size warning: post-hackathon.)
+Owns the published PatchPilot CLI adapter, native check plans, findings, remediation cycles, freshness invalidation, and evidence capture. Maintainability analysis is post-hackathon.
 
 ### Evidence service
 
@@ -84,9 +84,9 @@ An action may be implemented by a native Codex tool, CLI, API adapter, browser w
 
 Policy is enforced at official Codex extension points, not through prompt instructions:
 
-- **Codex hooks** - `PreToolUse` and `PermissionRequest` hooks call the local AxiomGate policy engine before any tool call or approval-worthy action executes. Deny-wins semantics; a hook decision of deny blocks the action. `PostToolUse` records observed results. `PreCompact`/`PostCompact` record context events.
+- **Codex hooks** - `PreToolUse` and `PermissionRequest` call the local AxiomGate policy engine before matching tool calls or approval-worthy actions execute. A machine-JSON deny blocks the action. AxiomGate records each decision itself; `PostToolUse`, `PreCompact`, and `PostCompact` are not part of the shipped hook configuration.
 - **Sandbox and permission profiles** - the mission intent boundary maps to concrete Codex sandbox flags and permission-profile settings at session launch (for example, `MODIFY_LOCAL` → `--sandbox workspace-write`, network off).
-- **App Server / SDK** - sessions are launched and observed through the Codex App Server JSON-RPC protocol or the official TypeScript SDK; `codex exec --json` supplies the event stream and token usage for the ledger.
+- **Codex execution and App Server** - `codex exec --json` launches and observes governed sessions and supplies ledger events and token usage. A separate short-lived App Server process supplies `account/rateLimits/read` capacity data. No TypeScript SDK dependency is shipped.
 - **Fail closed** - a mission refuses to start if the hook configuration hash does not match the mission policy, if the installed Codex version does not support the required hooks, or if hook failure semantics cannot be verified.
 
 Every hook decision (allow, deny, escalate) is persisted as a mission evidence event.
@@ -125,15 +125,7 @@ The mission state is not the raw chat history. It includes:
 
 ## Persistence
 
-Audit the existing codebase before choosing the final store. Requirements:
-
-- local transactional writes;
-- schema migrations;
-- append-only event history;
-- deterministic projections;
-- backup/export;
-- redaction;
-- no secret persistence in mission events.
+The shipped store is local and file-backed under `.axiomgate/`: versioned contract/snapshot JSON, one JSON file per approval, session/checkpoint/run records, and append-only event and ledger JSONL. Strict schemas, atomic approval locks, canonical hashes, deterministic receipt projections, and centralized redaction protect the boundary. A database, general migration framework, and automated backup service are not shipped.
 
 ## Failure model
 
@@ -155,11 +147,11 @@ Do not collapse all failures into generic exceptions or success booleans.
 For the hackathon:
 
 - local web dashboard and CLI (no desktop app - ADR-009);
-- local engine/daemon only when needed;
+- file-backed local engine with no daemon;
 - GitHub and Vercel preview integrations;
 - no required cloud control plane;
 - no production deployment in the judge path.
 
 ## Architecture acceptance
 
-Architecture is accepted only after Phase 0 maps it onto the real existing PatchPilot and repository structure.
+Phase 0 mapping is complete. ADR-014 records the implemented published-CLI PatchPilot boundary, and `docs/engineering/21-IMPLEMENTATION-STATUS.md` is the current evidence-linked status authority.

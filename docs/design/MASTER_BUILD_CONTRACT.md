@@ -92,14 +92,14 @@ Post-hackathon (see "Post-hackathon scope"): full multi-source quota normalizati
 
 Responsibilities:
 
-- enforce policy through official Codex extension points - hooks (`PreToolUse`, `PermissionRequest`, `PostToolUse`; deny-wins; exit-code and JSON-decision blocking) plus sandbox and permission-profile configuration - never through prompt-level requests alone;
+- enforce policy through the verified Codex `PreToolUse` and `PermissionRequest` hooks plus sandbox and permission-profile configuration, never through prompt-level requests alone; the hook always returns machine JSON because bare exit-code denial failed open in the recorded compatibility probe;
 - refuse to start a mission when the enforcement configuration cannot be verified (fail closed);
 - inspect only the execution mechanisms required by the demo action set (general capability discovery: post-hackathon);
 - verify that every publish or deploy target exists and is owned by the profile's account before the action executes (GitHub/Vercel API resolution);
 - normalize those mechanisms into semantic actions such as read repository, create branch, open pull request, deploy preview, or access a database;
 - evaluate mission relevance, trust, required identity, data access, side effects, rollback, and risk;
 - create a mission-specific allow, deny, and approval-required policy without relocating or reinstalling capability packages;
-- reuse PatchPilot's existing prompt-injection checks on untrusted content where applicable (full trust/risk static analysis: post-hackathon; MCP tool-description scanning: stretch X5);
+- treat untrusted commands and mechanism descriptions conservatively; full trust/risk static analysis and MCP tool-description scanning remain post-hackathon work and are not claimed as shipped PatchPilot reuse;
 - resolve local path, Git remote, GitHub identity, Vercel target, environment, and branch;
 - hold credentials outside model-visible context;
 - enforce intent boundaries, semantic approvals, and effective-permission reconciliation;
@@ -110,7 +110,7 @@ Responsibilities:
 Responsibilities:
 
 - make Codex the primary implementation engine;
-- integrate through official Codex interfaces: the App Server JSON-RPC protocol / TypeScript SDK for session control, `codex exec --json` for event and token capture, and `--output-schema` for structured results;
+- integrate through `codex exec --json` for governed sessions, event and token capture, `--output-schema` for verifier results, and the App Server `account/rateLimits/read` method for source-labelled capacity; no TypeScript SDK dependency is shipped;
 - map the mission intent boundary to concrete sandbox and permission-profile flags;
 - use a Builder for implementation and an independent Verifier (fresh session, no builder-context inheritance) for challenge and review; Scout is stretch-only;
 - maintain canonical mission state outside the raw chat transcript, with stop/resume;
@@ -122,11 +122,11 @@ Post-hackathon: custom worktree/branch/port/process leasing (native Codex worktr
 
 Responsibilities:
 
-- integrate the existing PatchPilot engine (a pnpm monorepo: Next.js web dashboard, worker, published CLI, MCP server, and `packages/core` scanners/remediation/receipts - there is no PatchPilot desktop app);
-- run the target repository's own test suite (targeted and full) via the validation runner;
-- scan dependencies and secrets (OSV, Trivy, Gitleaks) and run SAST (Semgrep);
+- invoke the pinned published `patchpilot-cli@0.1.3` dependency scan through the shared timeout runner and parse its output into typed findings; no PatchPilot source or service is embedded;
+- detect and run the target repository's own test and build commands directly;
+- scan dependencies through PatchPilot CLI and secrets through Gitleaks when available or a labelled conservative diff heuristic;
 - perform authorization negative tests from the mission policy;
-- flag risky diffs (size/path heuristic);
+- preserve changed-file and diff hashes in the verification plan and evidence;
 - remediate validated failures via Codex and rerun affected checks;
 - record evidence from systems, not model claims.
 

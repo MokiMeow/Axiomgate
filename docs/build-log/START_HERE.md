@@ -26,7 +26,9 @@ Read these files completely:
 12. `docs/build-log/TASKS.md`
 13. The phase file for the first planned task
 
-Also inspect the existing PatchPilot implementation at its local path (a pnpm monorepo containing `apps/web` (Next.js), `apps/worker`, `apps/cli`, `apps/mcp`, and `packages/core`). Note: this AxiomGate repository is documentation-only at the start of Build Week - there is no pre-existing AxiomGate source code, CI, or package manifest. Do not search for them; record their absence and initialize Git with a baseline commit as the first action.
+Inspect the current AxiomGate implementation under `apps/`, `packages/`, `scripts/`, and `tests/` before proposing changes. PatchPilot remains a separate pre-existing project; AxiomGate integrates only through the published `patchpilot-cli@0.1.3` boundary recorded in ADR-014 and [`packages/axiomgate-core/PATCHPILOT_REUSE.md`](../../packages/axiomgate-core/PATCHPILOT_REUSE.md). Do not assume a local PatchPilot checkout exists, import its source, add a submodule, or describe its internal modules as shipped AxiomGate code.
+
+Historical baseline: AxiomGate was documentation-only at commit `58c1a0a` when Build Week began. That fact belongs in the pre-event assessment and hackathon delta; it is not the repository's current state and must not be used to skip inspection of the implemented product.
 
 ## Required pre-implementation response
 

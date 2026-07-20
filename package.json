@@ -6,6 +6,7 @@
   "scripts": {
     "build": "pnpm -r build",
     "check:links": "node scripts/check-markdown-links.mjs",
+    "check:markdown": "node scripts/check-markdown-quality.mjs",
     "check:punctuation": "node scripts/check-punctuation.mjs",
     "check:skill": "node scripts/check-skill-commands.mjs",
     "demo:check": "pnpm --filter @axiomgate/core build && node demo/scripts/check.mjs",

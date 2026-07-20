@@ -1,5 +1,7 @@
 # Phase 8 - Hackathon Submission
 
+> Historical phase plan. Use [TASKS.md](TASKS.md) and the [implementation status](../engineering/21-IMPLEMENTATION-STATUS.md) for current completion claims and remaining user-owned submission work.
+
 Aligned to board tasks **S2-S4** (ADR-008, ADR-013).
 
 ## Outcome

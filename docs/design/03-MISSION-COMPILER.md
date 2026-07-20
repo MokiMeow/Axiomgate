@@ -6,15 +6,12 @@ Convert an informal request into a stable, testable mission without over-constra
 
 ## Inputs
 
-- user request;
-- project profile;
-- repository instructions;
-- global user policies;
-- relevant semantic actions and available execution mechanisms;
-- existing architecture;
-- current Git state;
-- requested deadline and budget;
-- authorization level.
+- required objective text;
+- governed project path, represented by a project profile ID in the contract;
+- optional intent boundary (default `MODIFY_LOCAL`);
+- optional JSON criteria file containing 3-6 criteria;
+- current resolved identity for the mission snapshot;
+- the built-in action-policy, model-plan, and 20% verification-reserve defaults.
 
 ## Build Week compilation scope (ADR-008)
 
@@ -30,37 +27,27 @@ The Build Week compiler is a schema and an editor, not an NLP system:
 
 ## Instruction compilation (post-hackathon - do not implement for Build Week)
 
-Full discovery and classification of user/project/repository/provider/external/untrusted instruction sources, duplicate-rule and stale-path detection, unsupported-directive analysis, and compiler-side prompt-injection classification. (Prompt-injection scanning of untrusted content is Environment Guard's job - `docs/05`.)
+Full discovery and classification of user/project/repository/provider/external/untrusted instruction sources, duplicate-rule and stale-path detection, unsupported-directive analysis, and compiler-side prompt-injection classification. Prompt-injection handling belongs to the [Environment Guard](05-ENVIRONMENT-GUARD.md).
 
 ## Output contract
 
 A mission contract must include:
 
 - objective;
-- business/user outcome;
 - acceptance criteria;
 - constraints;
 - explicit non-goals;
 - target project/environment;
 - intent boundary;
 - evidence requirements;
-- risk classification;
+- per-criterion risk classification;
 - budget and model policies;
-- capability policy: allowed, denied, and approval-required semantic actions;
-- approval points;
-- rollback expectation.
+- action policy: allowed, denied, and approval-required semantic actions;
+- version, timestamps, status, and canonical hash.
 
 ## User review
 
-Show changes from the original request:
-
-- assumptions introduced;
-- ambiguities resolved;
-- scope reduced;
-- constraints added;
-- evidence required.
-
-The user must be able to edit the mission before execution.
+Creation prints the mission ID, version, boundary, model plan, criteria, contract path, and any direct production-policy conflict. The generated `contract.json` is editable. `axiomgate mission update <id>` revalidates it, migrates legacy model-plan fields, increments the version, re-hashes the contract, refreshes identity, and regenerates the hook snapshot before execution.
 
 ## Versioning
 

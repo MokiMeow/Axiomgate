@@ -1,5 +1,7 @@
 # Phase 3 - Codex Runtime
 
+> Historical phase plan. Use [TASKS.md](TASKS.md) and the [implementation status](../engineering/21-IMPLEMENTATION-STATUS.md) for current completion claims.
+
 Aligned to board tasks **R1-R2** (ADR-008). Worktree/branch/port leases, provider handoffs, target-model validation, and compaction-recovery machinery are **post-hackathon** (see `docs/design/MASTER_BUILD_CONTRACT.md`).
 
 ## Outcome

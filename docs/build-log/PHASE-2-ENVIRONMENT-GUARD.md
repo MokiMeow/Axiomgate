@@ -1,5 +1,7 @@
 # Phase 2 - Environment Guard
 
+> Historical phase plan. Use [TASKS.md](TASKS.md) and the [implementation status](../engineering/21-IMPLEMENTATION-STATUS.md) for current completion claims.
+
 Aligned to board tasks **G1-G5** (core) and **X4-X5** (stretch). Capability-discovery generalization is post-hackathon; the core supports only the execution mechanisms required by the demo mission.
 
 ## Outcome
@@ -20,11 +22,11 @@ Only correctly targeted and explicitly authorized semantic actions can be execut
 ## Stretch subtasks (X4-X5 - only after G1-G5 are verified)
 
 - X4: equivalent semantic action through shell CLI and MCP tool fixture receives the identical policy verdict at the hook.
-- X5: MCP tool descriptions pass through the existing PatchPilot `promptInjection`/`mcpToolGuard` modules before a mechanism becomes eligible for a semantic action.
+- X5: deferred malicious capability-description analysis. ADR-014 prevents importing PatchPilot source; any future implementation needs an explicit supported interface and its own verification evidence.
 
 ## Explicit non-work
 
-Do not build: a skill installer or migration tool; duplicate-skill detection; a central MCP registry; provider configuration generators; an MCP broker or gateway; plugin conversion or marketplace functionality; general trust/risk static analysis of scripts and executables (post-hackathon - see `docs/05`).
+Do not build: a skill installer or migration tool; duplicate-skill detection; a central MCP registry; provider configuration generators; an MCP broker or gateway; plugin conversion or marketplace functionality; general trust/risk static analysis of scripts and executables (post-hackathon; see [`docs/design/05-ENVIRONMENT-GUARD.md`](../design/05-ENVIRONMENT-GUARD.md)).
 
 ## Core tests (G5)
 

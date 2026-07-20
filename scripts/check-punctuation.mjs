@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 
@@ -18,7 +18,9 @@ if (tracked.status !== 0) {
 const failures = [];
 let textFiles = 0;
 for (const relativeFile of tracked.stdout.split("\0").filter(Boolean)) {
-  const content = readFileSync(resolve(repositoryRoot, relativeFile));
+  const absoluteFile = resolve(repositoryRoot, relativeFile);
+  if (!existsSync(absoluteFile)) continue;
+  const content = readFileSync(absoluteFile);
   if (content.includes(0)) continue;
   textFiles += 1;
   const source = content.toString("utf8");

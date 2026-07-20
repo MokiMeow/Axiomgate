@@ -6,14 +6,14 @@ Use Codex deeply and visibly for real repository work while adding governance ar
 
 ## Integration surface (normative)
 
-- **Session control:** the official Codex TypeScript SDK / App Server JSON-RPC protocol. Fall back to `codex exec --json` (prompt via stdin) where the SDK is unnecessary.
+- **Session control:** `codex exec --json` with prompt via stdin, structured events, and a hard timeout. The App Server JSON-RPC integration is limited to the separately documented Runway quota source; no TypeScript SDK dependency is shipped.
 - **Event and token capture:** `codex exec --json` reasoning/token usage feeds the Runway ledger; structured results use `--output-schema`.
-- **Sandbox:** intent boundary → sandbox flags (for example `--sandbox workspace-write`, network disabled below PUBLISH), following the pattern already live-verified in PatchPilot's Codex integration.
+- **Sandbox:** intent boundary maps to verified Codex sandbox flags (for example `--sandbox workspace-write`, with network disabled below `PUBLISH`).
 - **Policy:** hooks configured per mission (see `docs/design/05-ENVIRONMENT-GUARD.md`).
 - **Model plan:** phase-specific GPT-5.6 tier (Sol / Terra / Luna) and reasoning-effort selection, recorded with rationale in the mission state and Build Receipt.
-- **Session identity:** preserve the primary session ID for `/feedback` from day one.
+- **Session identity:** persist Builder and Verifier session IDs with explicit roles in `sessions.json`; the primary thread remains available for user-owned `/feedback` submission.
 
-Phase 0 must verify all of the above empirically against the installed Codex version and record results in `docs/engineering/17-COMPATIBILITY-ADAPTERS.md`.
+The installed-version observations and limitations are recorded in [`docs/engineering/17-COMPATIBILITY-ADAPTERS.md`](../engineering/17-COMPATIBILITY-ADAPTERS.md).
 
 ## Roles
 
@@ -33,14 +33,14 @@ Maps the repository, dependencies, architecture, test commands, and risks using 
 
 1. Load contract.
 2. Resolve project identity.
-3. Confirm authority.
-4. Load the approved capability-policy snapshot and permitted semantic actions.
-5. Create model plan.
-6. Create branch (use a native Codex worktree only if isolation is needed).
-7. Execute bounded phase.
-8. Capture checkpoint on rate-limit interruption or phase end.
-9. Verify phase.
-10. Continue or request intervention.
+3. Compare fresh identity with the mission snapshot.
+4. Verify the snapshot and generated hook configuration hashes.
+5. Select the contract phase's model/effort and boundary-derived sandbox.
+6. Launch the bounded `codex exec --json` session with governance overrides.
+7. Parse events, session ID, commands, errors, and raw token usage into local records.
+8. Capture a checkpoint on rate limit, timeout, interruption, or truncated stream.
+9. Run independent review and machine verification as separate explicit commands.
+10. Resume from the stored session/checkpoint or request intervention.
 
 ## Canonical state
 

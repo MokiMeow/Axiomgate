@@ -1,6 +1,8 @@
 # Phase 5 - Evidence Gate and Approvals
 
-Aligned to board tasks **E1-E2** and **G4** (ADR-008). Telegram and redaction/hashing extend existing PatchPilot modules - do not rebuild.
+> Historical phase plan. Use [TASKS.md](TASKS.md) and the [implementation status](../engineering/21-IMPLEMENTATION-STATUS.md) for current completion claims.
+
+Aligned to board tasks **E1-E2** and **G4** (ADR-008, ADR-014). AxiomGate owns its mission-level approval store, Telegram adapter, redaction, verdict engine, and receipt chain. PatchPilot source is not imported.
 
 ## Outcome
 

@@ -10,15 +10,15 @@ Environment Guard is a policy and identity layer. It is not a skill installer, M
 
 Environment Guard enforces policy through official Codex extension points. This is the layer's spine; without it every table below is decorative.
 
-1. **Hook integration.** AxiomGate manages the Codex hook configuration for the mission. `PreToolUse` and `PermissionRequest` hooks invoke the local policy engine with the tool name, command, arguments, and working directory. The engine returns allow, deny, or escalate-to-approval. Deny-wins. Exit-code and JSON-decision blocking per the official hooks protocol.
+1. **Hook integration.** AxiomGate manages the Codex hook configuration for the mission. `PreToolUse` and `PermissionRequest` invoke the local policy engine with the tool name, input, and working directory. The hook always returns a machine-JSON allow or deny. A policy result of `REQUIRE_APPROVAL` denies with a pending request until an exact matching approval exists. Bare exit-code denial is never used because it failed open in the recorded compatibility probe.
 2. **Approval binding.** When the decision is escalate, the approval record binds the exact command/argument hash observed by the hook, the target, the identity, an expiry, and a single-use flag. If the command, arguments, target, or identity change, the approval is void and the hook denies.
 3. **Sandbox mapping.** Intent boundary → sandbox/permission-profile flags at session launch. The runtime may never widen these mid-mission without a new authorization event.
-4. **Fail closed.** If hooks are unavailable, unverifiable, or fail open on the installed Codex version, the mission does not start. Phase 0 must empirically verify hook failure semantics and record them in the compatibility matrix with version numbers.
+4. **Fail closed.** Missing or mismatched mission snapshots/configuration refuse mission start, and hook parsing/internal errors return JSON deny. `axiomgate verify-enforcement` performs the live installed-version probe; doctor warns after version drift. The compatibility record distinguishes this operational probe from per-mission hash verification.
 5. **Evidence.** Every hook decision is persisted as an evidence event and appears in the Build Receipt, including denials - a blocked action is proof the gate works.
 
 ## Capability discovery
 
-Discover mechanisms already available to the current runtime, such as:
+The architecture can normalize mechanisms such as:
 
 - native Codex tools;
 - operating-system commands;
@@ -30,7 +30,7 @@ Discover mechanisms already available to the current runtime, such as:
 - skill-provided instructions or scripts;
 - local applications and services.
 
-Discovery is read-only by default. Do not install, relocate, copy, deduplicate, convert, update, or reconfigure capabilities merely to make them fit AxiomGate.
+The shipped discovery is intentionally narrow: required local CLIs, Git remotes, GitHub/Vercel identity, project metadata, command classification, and explicitly configured MCP tool matchers. General mechanism inventory is deferred. Discovery is read-only by default; do not install, relocate, copy, deduplicate, convert, update, or reconfigure capabilities merely to make them fit AxiomGate.
 
 ## Semantic action mapping
 
@@ -85,7 +85,7 @@ Example:
 ALLOW             repository.read on fixture-owner/target-app
 ALLOW             branch.create under agent/*
 REQUIRE_APPROVAL  pull_request.create
-ALLOW             preview.deploy to zkauth-preview
+REQUIRE_APPROVAL  preview.deploy to zkauth-preview
 DENY              production.deploy
 DENY              database.migrate on production
 ```
@@ -94,7 +94,7 @@ DENY              database.migrate on production
 
 Inspect untrusted capability descriptions, scripts, command proposals, and external instructions for:
 
-- prompt injection (reuse PatchPilot `packages/core/src/promptInjection.ts` and `mcpToolGuard.ts`);
+- prompt or tool-description injection (deny unknown state-changing semantics and retain full description scanning as deferred X5 work; no PatchPilot source is imported);
 - hidden authority escalation;
 - secret or browser-profile access;
 - unexpected filesystem or network scope;
@@ -115,8 +115,7 @@ Resolve and display:
 - Vercel project;
 - environment;
 - branch;
-- database target;
-- credential handles.
+- branch and configured project target.
 
 Block ambiguity or mismatch by default.
 
@@ -135,7 +134,7 @@ Enforce:
 - Deploy Preview
 - Deploy Production
 
-A proposed action above the current level becomes an approval request, not an automatic operation.
+A proposed action above the mission boundary is denied with an escalation reason. Approval cannot widen the mission boundary; the user must explicitly update the contract first.
 
 ## Semantic approvals
 
@@ -167,7 +166,6 @@ A mismatch fails safely and becomes evidence. A successful command is not proof 
 ## Credential handling
 
 - Store secrets in existing OS/provider stores.
-- Pass scoped handles to models.
 - Resolve credentials only inside trusted adapters.
 - Redact process output.
 - Never serialize raw secrets into mission state or receipts.

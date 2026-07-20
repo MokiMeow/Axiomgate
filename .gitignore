@@ -1,7 +1,5 @@
 # Local/private AxiomGate workspace
-.local/*
-!.local/README.md
-!.local/.gitkeep
+.local/
 .axiomgate/
 .vercel/
 

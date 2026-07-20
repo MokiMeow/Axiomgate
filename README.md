@@ -18,11 +18,11 @@ AxiomGate makes both failures testable: unsafe actions are denied at the hook bo
 
 ## 90-second quickstart
 
-Prepared 0.1.1 package. Publication is pending explicit user confirmation:
+The public package currently resolves through the `latest` tag. Source release 0.1.1 is locally verified and authorized for publication, but this machine must complete `npm login` before it can be published:
 
 ```powershell
-npx -y axiomgate@0.1.1 doctor
-npx -y axiomgate@0.1.1 replay all
+npx -y axiomgate@latest doctor
+npx -y axiomgate@latest replay all
 ```
 
 `replay all` needs no Codex login or cloud credentials. It executes three deterministic regressions through production logic: wrong-target ownership denial, exact-command approval binding, and missing-evidence completion blocking.
@@ -110,7 +110,7 @@ This table is the one-hop entry point for reviewers, AI analysis, and contributo
 | [docs/design](docs/design/) | Product vision, architecture, domain schemas, layer blueprints, naming, and build contract. |
 | [docs/engineering](docs/engineering/) | Decisions, compatibility findings, quality rules, implementation status, and Definition of Done. |
 | [docs/submission](docs/submission/) | Hackathon submission plan and official-rules compliance. |
-| [docs/build-log](docs/build-log/) | Authoritative task board, phase history, agent preflight, and templates. |
+| [docs/build-log](docs/build-log/) | Authoritative task board, phase history, and agent preflight. |
 | [evidence/public](evidence/public/) | Sanitized, judge-facing proof for live and deterministic claims. |
 | [demo](demo/) | Synthetic target application, mission criteria, scripts, and the demonstration runbook. |
 | [.agents](.agents/) | Repository Codex skill, read-only verifier agent, and marketplace metadata. |

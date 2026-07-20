@@ -5,7 +5,7 @@ How Codex and GPT-5.6 are used to build AxiomGate. Updated continuously.
 ## Model policy
 
 - **Implementation:** Codex CLI with **GPT-5.6 Sol, high reasoning effort** (user's default config) in a designated primary session.
-- **Plumbing/spikes:** GPT-5.6 Luna, low effort (cheap verification runs).
+- **Plumbing/spikes:** GPT-5.6 Luna, Light effort (sent to Codex CLI as the verified `low` wire value for cheap verification runs).
 - **Planning/review support:** other tools contributed planning and adversarial review. All core implementation, remediation, runtime proof, and evidence work ran through Codex GPT-5.6 sessions.
 
 ## Session log

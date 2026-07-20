@@ -32,12 +32,12 @@ The second command must report `FAIL · RECEIPT INTEGRITY` and return a non-zero
 
 ## Published-package path
 
-The prepared `axiomgate@0.1.1` clean-machine equivalent is below. Run it after the release is published:
+The current registry-backed clean-machine path follows npm's `latest` tag. Source 0.1.1 is prepared and locally verified; until that version is published, `latest` remains the prior verified release:
 
 ```powershell
-npx -y axiomgate@0.1.1 doctor
-npx -y axiomgate@0.1.1 replay all
-npx -y axiomgate@0.1.1 receipt verify scripts/fixtures/publish-receipt.json
+npx -y axiomgate@latest doctor
+npx -y axiomgate@latest replay all
+npx -y axiomgate@latest receipt verify scripts/fixtures/publish-receipt.json
 ```
 
 The receipt path in the last command assumes this repository is the current directory. No GitHub, Vercel, Telegram, or Codex login is used by replay or offline receipt verification.

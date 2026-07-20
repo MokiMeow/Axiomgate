@@ -1,5 +1,7 @@
 # Phase 1 - Mission Contract and Runway Lite
 
+> Historical phase plan. Use [TASKS.md](TASKS.md) and the [implementation status](../engineering/21-IMPLEMENTATION-STATUS.md) for current completion claims.
+
 Aligned to board tasks **F6** and **R3** (ADR-008). Deferred items live in `docs/design/MASTER_BUILD_CONTRACT.md` "Post-hackathon scope".
 
 ## Outcome
@@ -8,7 +10,7 @@ A user can turn a one-line objective into a versioned, hashed mission contract w
 
 ## Subtasks
 
-- Mission schema, validation, versioning, and hash (from `docs/02` canonical schemas).
+- Mission schema, validation, versioning, and hash (from the [`docs/design/02-DOMAIN-MODEL.md`](../design/02-DOMAIN-MODEL.md) canonical schemas).
 - Contract creation with safe defaults: 3-6 acceptance criteria with evidence types, intent boundary, action policy template.
 - Detect one direct policy conflict (objective vs. profile policy) and surface it; full instruction discovery is deferred.
 - Intent boundary → sandbox/permission-profile mapping.
