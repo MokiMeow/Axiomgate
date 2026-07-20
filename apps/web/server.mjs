@@ -44,6 +44,7 @@ const MIME = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".svg": "image/svg+xml",
   ".woff2": "font/woff2",
@@ -179,7 +180,7 @@ async function loadDashboardData() {
   return resolveDashboardMissions({
     liveMissionIds: ids,
     loadLiveMission: (id) => loadMission(MISSIONS_DIR, id),
-    loadSampleMission: () => readJson(join(SAMPLE_DIR, "mission.json")),
+    loadSampleMissions: () => readJson(join(SAMPLE_DIR, "missions.json"), []),
     demoMode: demoModeEnabled(),
   });
 }
@@ -316,7 +317,7 @@ const server = createServer(async (req, res) => {
   if (path === "/api/missions") {
     const { demo, missions } = await loadDashboardData();
     return json(res, 200, {
-      workspace: WORKSPACE,
+      workspace: demo ? "hosted-demo · SAMPLE" : WORKSPACE,
       demo,
       count: missions.length,
       missions: missions.map((m) => ({

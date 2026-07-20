@@ -37,8 +37,8 @@ check("GET /dashboard", dashboard.includes("missionList"), "dashboard static ent
 const missions = await invoke(missionsHandler);
 check(
   "GET /api/missions",
-  missions.status === 200 && missions.body.demo === true && missions.body.missions[0]?.label === "SAMPLE",
-  "one explicitly labelled SAMPLE mission",
+  missions.status === 200 && missions.body.demo === true && missions.body.count === 8 && missions.body.missions.every((mission) => mission.label === "SAMPLE"),
+  "eight explicitly labelled SAMPLE missions",
 );
 
 const detail = await invoke(missionHandler, { query: { id: "msn_demo_lockout" } });

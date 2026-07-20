@@ -7,7 +7,7 @@ import approveHandler from "../../../api/approve.mjs";
 import capacityHandler from "../../../api/capacity.mjs";
 import missionHandler from "../../../api/mission/[id].mjs";
 import missionsHandler from "../../../api/missions.mjs";
-import { hostedMission } from "../hosting/demo-data.mjs";
+import { hostedMission, hostedMissions } from "../hosting/demo-data.mjs";
 
 function invoke(handler, { method = "GET", query = {} } = {}) {
   const headers = new Map();
@@ -42,13 +42,12 @@ describe("Vercel hosted demo surface", () => {
 
   it("serves a clearly labelled, complete sample mission", async () => {
     const list = await invoke(missionsHandler);
-    expect(list).toMatchObject({
-      status: 200,
-      body: {
-        demo: true,
-        count: 1,
-        missions: [{ id: "msn_demo_lockout", label: "SAMPLE", status: "COMPLETE" }],
-      },
+    expect(list.status).toBe(200);
+    expect(list.body).toMatchObject({ demo: true, count: 8 });
+    expect(list.body.missions[0]).toMatchObject({
+      id: "msn_demo_lockout",
+      label: "SAMPLE",
+      status: "COMPLETE",
     });
 
     const detail = await invoke(missionHandler, {
@@ -67,10 +66,27 @@ describe("Vercel hosted demo surface", () => {
     });
   });
 
-  it("ships an intact synthetic receipt hash chain", () => {
-    expect(verifyBuildReceipt(hostedMission().receipt)).toMatchObject({
-      valid: true,
-    });
+  it("ships eight internally consistent synthetic missions", () => {
+    const missions = hostedMissions();
+    expect(missions).toHaveLength(8);
+    expect(new Set(missions.map((mission) => mission.id)).size).toBe(8);
+    for (const mission of missions) {
+      expect(mission.label).toBe("SAMPLE");
+      expect(verifyBuildReceipt(mission.receipt)).toMatchObject({ valid: true });
+      const verdicts = mission.receipt.criteria.map((criterion) => criterion.verdict);
+      const allProven = verdicts.every((verdict) => verdict === "PASS" || verdict === "WAIVED");
+      expect(mission.receipt.outcome === "COMPLETE").toBe(allProven);
+      if (mission.contract.status === "COMPLETE") {
+        expect(mission.receipt.outcome).toBe("COMPLETE");
+      }
+    }
+    const blockedReceipt = hostedMission("msn_demo_rate_limit_gate").receipt;
+    expect(blockedReceipt.outcome).toBe("INCOMPLETE");
+    expect(blockedReceipt.criteria.some((criterion) => criterion.verdict === "UNVERIFIED")).toBe(true);
+    const waivedReceipt = hostedMission("msn_demo_secret_waiver").receipt;
+    expect(waivedReceipt.outcome).toBe("COMPLETE");
+    expect(waivedReceipt.criteria.some((criterion) => criterion.verdict === "WAIVED")).toBe(true);
+    expect(hostedMission("msn_demo_awaiting_approval").approvals).toHaveLength(1);
   });
 
   it("labels hosted capacity SAMPLE without a live-account claim", async () => {

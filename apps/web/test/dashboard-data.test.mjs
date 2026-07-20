@@ -12,7 +12,7 @@ describe("local dashboard clone, demo, and live separation", () => {
     const result = await resolveDashboardMissions({
       liveMissionIds: [],
       loadLiveMission: async () => null,
-      loadSampleMission: async () => sample,
+      loadSampleMissions: async () => [sample],
       demoMode: false,
     });
     expect(result).toEqual({ demo: false, missions: [] });
@@ -22,10 +22,13 @@ describe("local dashboard clone, demo, and live separation", () => {
     const result = await resolveDashboardMissions({
       liveMissionIds: [],
       loadLiveMission: async () => null,
-      loadSampleMission: async () => sample,
+      loadSampleMissions: async () => [sample, { id: "msn_sample_2" }],
       demoMode: true,
     });
-    expect(result).toEqual({ demo: true, missions: [sample] });
+    expect(result).toEqual({
+      demo: true,
+      missions: [sample, { id: "msn_sample_2", label: "SAMPLE" }],
+    });
   });
 
   it("always prefers real missions and removes the demo banner", async () => {
@@ -33,7 +36,7 @@ describe("local dashboard clone, demo, and live separation", () => {
     const result = await resolveDashboardMissions({
       liveMissionIds: [live.id],
       loadLiveMission: async () => live,
-      loadSampleMission: async () => sample,
+      loadSampleMissions: async () => [sample],
       demoMode: true,
     });
     expect(result).toEqual({ demo: false, missions: [live] });

@@ -1,0 +1,4425 @@
+[
+  {
+    "id": "msn_demo_lockout",
+    "label": "SAMPLE",
+    "sampleNotice": "CURATED DEMO DATA - synthetic and not a live run",
+    "contract": {
+      "id": "msn_demo_lockout",
+      "version": 3,
+      "objective": "Add brute-force lockout to the login endpoint (lock after 5 failed attempts for 15 minutes), preserve existing behavior",
+      "projectProfileId": "sample-target-app",
+      "intentBoundary": "MODIFY_LOCAL",
+      "acceptanceCriteria": [
+        {
+          "id": "criterion_implementation",
+          "statement": "Lockout logic is implemented without unrelated file changes",
+          "risk": "high",
+          "evidenceTypes": [
+            "diff"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_lockout",
+          "statement": "The sixth failed login is locked for 15 minutes after five failures",
+          "risk": "critical",
+          "evidenceTypes": [
+            "lockout_test"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_regression",
+          "statement": "Existing successful-login and validation behavior remains green",
+          "risk": "high",
+          "evidenceTypes": [
+            "test"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_dependencies",
+          "statement": "The inherited lodash advisory is remediated and no vulnerable dependency remains",
+          "risk": "high",
+          "evidenceTypes": [
+            "security_scan"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_secrets",
+          "statement": "The diff contains no credential or secret material",
+          "risk": "critical",
+          "evidenceTypes": [
+            "secret_scan"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        }
+      ],
+      "constraints": [
+        "Synthetic demo users only",
+        "Do not publish or deploy",
+        "Preserve the existing login response contract"
+      ],
+      "nonGoals": [
+        "Production deployment",
+        "Persistent account storage"
+      ],
+      "actionPolicy": [
+        {
+          "action": "repository.read",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "file.modify",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "branch.create",
+          "decision": "ALLOW",
+          "restrict": {
+            "branchPrefix": "agent/"
+          }
+        },
+        {
+          "action": "pull_request.create",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "preview.deploy",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "production.deploy",
+          "decision": "DENY"
+        },
+        {
+          "action": "verification.run",
+          "decision": "ALLOW"
+        }
+      ],
+      "modelPlan": [
+        {
+          "phase": "scout",
+          "model": "gpt-5.6-luna",
+          "effort": "light",
+          "rationale": "Structured repository mapping with low spend"
+        },
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "rationale": "Primary implementation with a sustained reasoning chain"
+        },
+        {
+          "phase": "security escalation note",
+          "model": "gpt-5.6-sol",
+          "effort": "max",
+          "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+          "multiAgent": false,
+          "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+        },
+        {
+          "phase": "remediate",
+          "model": "gpt-5.6-terra",
+          "effort": "medium",
+          "rationale": "Bounded dependency remediation"
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "rationale": "Independent read-only challenge in a fresh session"
+        }
+      ],
+      "budgetPolicy": {
+        "reservePercent": 20
+      },
+      "status": "COMPLETE",
+      "createdAt": "2026-07-20T09:00:00.000Z",
+      "updatedAt": "2026-07-20T09:24:00.000Z",
+      "hash": "sha256:b83f5ffab6c5f2cad7148fec79305b06bab15d0f73ae76f2c246de29fa0f4f5d"
+    },
+    "identity": {
+      "githubLogin": {
+        "value": "sample-owner",
+        "source": "sample",
+        "confidence": "sample",
+        "capturedAt": "2026-07-20T09:00:00.000Z"
+      }
+    },
+    "denials": [
+      {
+        "ts": "2026-07-20T09:05:00.000Z",
+        "hookEvent": "PreToolUse",
+        "toolName": "shell",
+        "commandHash": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
+        "semanticAction": "preview.deploy",
+        "command": "vercel deploy --scope sample-unowned-team",
+        "decision": "DENY",
+        "reasons": [
+          "SAMPLE replay: deploy target exists but is not owned by the expected sample profile (EXISTS_NOT_OWNED)."
+        ],
+        "missionId": "msn_demo_lockout",
+        "sessionId": "session_demo_builder",
+        "label": "SAMPLE"
+      }
+    ],
+    "evidence": [
+      {
+        "id": "ev_demo_diff",
+        "missionId": "msn_demo_lockout",
+        "criterionId": "criterion_implementation",
+        "source": "command",
+        "command": "git diff --check",
+        "exitCode": 0,
+        "outputHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "outputRef": "sample://evidence/ev_demo_diff",
+        "capturedAt": "2026-07-20T09:15:00.000Z",
+        "freshForCommit": "demo9f3a1c7e2",
+        "label": "REPLAY",
+        "redacted": true
+      },
+      {
+        "id": "ev_demo_lockout",
+        "missionId": "msn_demo_lockout",
+        "criterionId": "criterion_lockout",
+        "source": "command",
+        "command": "npm run test:lockout",
+        "exitCode": 0,
+        "outputHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        "outputRef": "sample://evidence/ev_demo_lockout",
+        "capturedAt": "2026-07-20T09:16:00.000Z",
+        "freshForCommit": "demo9f3a1c7e2",
+        "label": "REPLAY",
+        "redacted": true
+      },
+      {
+        "id": "ev_demo_regression",
+        "missionId": "msn_demo_lockout",
+        "criterionId": "criterion_regression",
+        "source": "command",
+        "command": "npm test",
+        "exitCode": 0,
+        "outputHash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+        "outputRef": "sample://evidence/ev_demo_regression",
+        "capturedAt": "2026-07-20T09:17:00.000Z",
+        "freshForCommit": "demo9f3a1c7e2",
+        "label": "REPLAY",
+        "redacted": true
+      },
+      {
+        "id": "ev_demo_dependency",
+        "missionId": "msn_demo_lockout",
+        "criterionId": "criterion_dependencies",
+        "source": "api",
+        "command": "patchpilot scan .",
+        "exitCode": 0,
+        "outputHash": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+        "outputRef": "sample://evidence/ev_demo_dependency",
+        "capturedAt": "2026-07-20T09:22:00.000Z",
+        "freshForCommit": "demo9f3a1c7e2",
+        "label": "REPLAY",
+        "redacted": true
+      },
+      {
+        "id": "ev_demo_secrets",
+        "missionId": "msn_demo_lockout",
+        "criterionId": "criterion_secrets",
+        "source": "command",
+        "command": "builtin-secret-scan --diff",
+        "exitCode": 0,
+        "outputHash": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+        "outputRef": "sample://evidence/ev_demo_secrets",
+        "capturedAt": "2026-07-20T09:23:00.000Z",
+        "freshForCommit": "demo9f3a1c7e2",
+        "label": "REPLAY",
+        "redacted": true
+      }
+    ],
+    "events": [
+      {
+        "type": "mission.planned",
+        "ts": "2026-07-20T09:00:00.000Z",
+        "missionId": "msn_demo_lockout",
+        "label": "SAMPLE"
+      },
+      {
+        "ts": "2026-07-20T09:05:00.000Z",
+        "hookEvent": "PreToolUse",
+        "toolName": "shell",
+        "commandHash": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
+        "semanticAction": "preview.deploy",
+        "command": "vercel deploy --scope sample-unowned-team",
+        "decision": "DENY",
+        "reasons": [
+          "SAMPLE replay: deploy target exists but is not owned by the expected sample profile (EXISTS_NOT_OWNED)."
+        ],
+        "missionId": "msn_demo_lockout",
+        "sessionId": "session_demo_builder",
+        "label": "SAMPLE"
+      },
+      {
+        "type": "run.completed",
+        "ts": "2026-07-20T09:18:00.000Z",
+        "missionId": "msn_demo_lockout",
+        "role": "builder",
+        "status": "PASS",
+        "label": "SAMPLE"
+      },
+      {
+        "type": "verification.completed",
+        "ts": "2026-07-20T09:19:00.000Z",
+        "missionId": "msn_demo_lockout",
+        "status": "FAIL",
+        "findingId": "finding_demo_lodash",
+        "label": "SAMPLE"
+      },
+      {
+        "type": "remediation.completed",
+        "ts": "2026-07-20T09:22:00.000Z",
+        "missionId": "msn_demo_lockout",
+        "findingId": "finding_demo_lodash",
+        "status": "PASS",
+        "label": "SAMPLE"
+      },
+      {
+        "type": "proof.completed",
+        "ts": "2026-07-20T09:25:00.000Z",
+        "missionId": "msn_demo_lockout",
+        "outcome": "COMPLETE",
+        "label": "SAMPLE"
+      }
+    ],
+    "ledger": [
+      {
+        "role": "builder",
+        "phase": "build",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "usage": {
+          "input_tokens": 18420,
+          "output_tokens": 2240,
+          "reasoning_output_tokens": 920
+        },
+        "label": "SAMPLE"
+      },
+      {
+        "role": "builder",
+        "phase": "remediate",
+        "model": "gpt-5.6-terra",
+        "effort": "medium",
+        "usage": {
+          "input_tokens": 6140,
+          "output_tokens": 760,
+          "reasoning_output_tokens": 210
+        },
+        "label": "SAMPLE"
+      },
+      {
+        "role": "verifier",
+        "phase": "verify",
+        "model": "gpt-5.6-terra",
+        "effort": "high",
+        "usage": {
+          "input_tokens": 8900,
+          "output_tokens": 1100,
+          "reasoning_output_tokens": 430
+        },
+        "label": "SAMPLE"
+      }
+    ],
+    "sessions": [
+      {
+        "id": "session_demo_builder",
+        "role": "builder",
+        "label": "SAMPLE"
+      },
+      {
+        "id": "session_demo_verifier",
+        "role": "verifier",
+        "sandbox": "read-only",
+        "fresh": true,
+        "label": "SAMPLE"
+      }
+    ],
+    "findings": [
+      {
+        "id": "finding_demo_lodash",
+        "checkId": "dependency_scan",
+        "criterionIds": [
+          "criterion_dependencies"
+        ],
+        "title": "Inherited lodash advisory",
+        "detail": "Sample initial scan found lodash 4.17.4; governed remediation upgraded it and the targeted rerun passed.",
+        "severity": "high",
+        "status": "resolved",
+        "cve": "CVE-2021-23337",
+        "advisory": "GHSA-35jh-r3h4-6jhm",
+        "ecosystem": "npm",
+        "package": "lodash",
+        "version": "4.17.4",
+        "fixedVersion": "4.17.21",
+        "reachability": "unknown"
+      }
+    ],
+    "runs": [
+      {
+        "id": "run_demo_build",
+        "role": "builder",
+        "status": "SUCCESS",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "startedAt": "2026-07-20T09:08:00.000Z",
+        "endedAt": "2026-07-20T09:18:00.000Z",
+        "label": "SAMPLE"
+      },
+      {
+        "id": "run_demo_remediate",
+        "role": "remediate",
+        "status": "SUCCESS",
+        "model": "gpt-5.6-terra",
+        "effort": "medium",
+        "startedAt": "2026-07-20T09:20:00.000Z",
+        "endedAt": "2026-07-20T09:22:00.000Z",
+        "label": "SAMPLE"
+      },
+      {
+        "id": "run_demo_verify",
+        "role": "verifier",
+        "status": "SUCCESS",
+        "model": "gpt-5.6-terra",
+        "effort": "high",
+        "sandbox": "read-only",
+        "startedAt": "2026-07-20T09:22:30.000Z",
+        "endedAt": "2026-07-20T09:24:00.000Z",
+        "label": "SAMPLE"
+      }
+    ],
+    "verifications": [
+      {
+        "id": "verify_demo_initial",
+        "overall": "FAIL",
+        "findingIds": [
+          "finding_demo_lodash"
+        ],
+        "startedAt": "2026-07-20T09:18:10.000Z",
+        "endedAt": "2026-07-20T09:19:00.000Z",
+        "label": "SAMPLE"
+      },
+      {
+        "id": "verify_demo_targeted",
+        "overall": "PASS",
+        "resolvedFindingIds": [
+          "finding_demo_lodash"
+        ],
+        "startedAt": "2026-07-20T09:22:10.000Z",
+        "endedAt": "2026-07-20T09:23:30.000Z",
+        "label": "SAMPLE"
+      }
+    ],
+    "approvals": [],
+    "receipt": {
+      "schemaVersion": 1,
+      "missionId": "msn_demo_lockout",
+      "contract": {
+        "id": "msn_demo_lockout",
+        "version": 3,
+        "hash": "sha256:b83f5ffab6c5f2cad7148fec79305b06bab15d0f73ae76f2c246de29fa0f4f5d",
+        "objective": "Add brute-force lockout to the login endpoint (lock after 5 failed attempts for 15 minutes), preserve existing behavior",
+        "projectProfileId": "sample-target-app",
+        "intentBoundary": "MODIFY_LOCAL",
+        "acceptanceCriteria": [
+          {
+            "id": "criterion_implementation",
+            "statement": "Lockout logic is implemented without unrelated file changes",
+            "risk": "high",
+            "evidenceTypes": [
+              "diff"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_lockout",
+            "statement": "The sixth failed login is locked for 15 minutes after five failures",
+            "risk": "critical",
+            "evidenceTypes": [
+              "lockout_test"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_regression",
+            "statement": "Existing successful-login and validation behavior remains green",
+            "risk": "high",
+            "evidenceTypes": [
+              "test"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_dependencies",
+            "statement": "The inherited lodash advisory is remediated and no vulnerable dependency remains",
+            "risk": "high",
+            "evidenceTypes": [
+              "security_scan"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_secrets",
+            "statement": "The diff contains no credential or secret material",
+            "risk": "critical",
+            "evidenceTypes": [
+              "secret_scan"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          }
+        ],
+        "constraints": [
+          "Synthetic demo users only",
+          "Do not publish or deploy",
+          "Preserve the existing login response contract"
+        ],
+        "nonGoals": [
+          "Production deployment",
+          "Persistent account storage"
+        ],
+        "actionPolicy": [
+          {
+            "action": "repository.read",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "file.modify",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "branch.create",
+            "decision": "ALLOW",
+            "restrict": {
+              "branchPrefix": "agent/"
+            }
+          },
+          {
+            "action": "pull_request.create",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "preview.deploy",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "production.deploy",
+            "decision": "DENY"
+          },
+          {
+            "action": "verification.run",
+            "decision": "ALLOW"
+          }
+        ],
+        "modelPlan": [
+          {
+            "phase": "scout",
+            "model": "gpt-5.6-luna",
+            "effort": "light",
+            "rationale": "Structured repository mapping with low spend"
+          },
+          {
+            "phase": "build",
+            "model": "gpt-5.6-sol",
+            "effort": "high",
+            "rationale": "Primary implementation with a sustained reasoning chain"
+          },
+          {
+            "phase": "security escalation note",
+            "model": "gpt-5.6-sol",
+            "effort": "max",
+            "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+            "multiAgent": false,
+            "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+          },
+          {
+            "phase": "remediate",
+            "model": "gpt-5.6-terra",
+            "effort": "medium",
+            "rationale": "Bounded dependency remediation"
+          },
+          {
+            "phase": "verify",
+            "model": "gpt-5.6-terra",
+            "effort": "high",
+            "rationale": "Independent read-only challenge in a fresh session"
+          }
+        ],
+        "budgetPolicy": {
+          "reservePercent": 20
+        },
+        "status": "COMPLETE",
+        "createdAt": "2026-07-20T09:00:00.000Z",
+        "updatedAt": "2026-07-20T09:24:00.000Z"
+      },
+      "contractHash": "sha256:b83f5ffab6c5f2cad7148fec79305b06bab15d0f73ae76f2c246de29fa0f4f5d",
+      "repo": {
+        "remote": "https://example.invalid/axiomgate/sample-target-app.git",
+        "branch": "agent/demo-lockout",
+        "commit": "demo9f3a1c7e2"
+      },
+      "identities": {
+        "github": "sample-owner",
+        "vercel": "SAMPLE_NOT_CONNECTED"
+      },
+      "modelUsage": [
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "tokens": {
+            "input": 18420,
+            "output": 2240,
+            "reasoning": 920
+          }
+        },
+        {
+          "phase": "remediate",
+          "model": "gpt-5.6-terra",
+          "effort": "medium",
+          "tokens": {
+            "input": 6140,
+            "output": 760,
+            "reasoning": 210
+          }
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "tokens": {
+            "input": 8900,
+            "output": 1100,
+            "reasoning": 430
+          }
+        }
+      ],
+      "capacityLedger": {
+        "estimated": {
+          "totalTokens": 42000
+        },
+        "actual": {
+          "totalTokens": 37540
+        },
+        "sourceLabels": {
+          "capacity": "SAMPLE",
+          "tokenUsage": "SAMPLE"
+        }
+      },
+      "actions": [],
+      "permissionQuad": {
+        "requested": "0/0",
+        "approved": "0/0",
+        "applied": "0/0",
+        "observed": "0/0"
+      },
+      "criteria": [
+        {
+          "id": "criterion_implementation",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_demo_diff"
+          ],
+          "evidenceHashes": [
+            "sha256:c877561a006a6ebd4f10bbd7f7bc0bf4f78ebf71d313f4055558c29cc39bb9e9"
+          ]
+        },
+        {
+          "id": "criterion_lockout",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_demo_lockout"
+          ],
+          "evidenceHashes": [
+            "sha256:ad46e48c42eef999a6175f9a00188bfb4cddd0b4f49c2177a0e00445d2183586"
+          ]
+        },
+        {
+          "id": "criterion_regression",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_demo_regression"
+          ],
+          "evidenceHashes": [
+            "sha256:6594fe1b54e125d1b42ead29f7f495201da5dc17af7a3ef75516fc6ee3c12a90"
+          ]
+        },
+        {
+          "id": "criterion_dependencies",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_demo_dependency"
+          ],
+          "evidenceHashes": [
+            "sha256:25e69e05a3694632a866837a27bb360b0a862f45c94a7caf0dfb4191fda0c5ff"
+          ]
+        },
+        {
+          "id": "criterion_secrets",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_demo_secrets"
+          ],
+          "evidenceHashes": [
+            "sha256:c83c59cebd0bfe5276da846acee3c7ee24f8414617dd9ec5e136a49e997c44c2"
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "finding_demo_lodash",
+          "checkId": "dependency_scan",
+          "criterionIds": [
+            "criterion_dependencies"
+          ],
+          "title": "Inherited lodash advisory",
+          "detail": "Sample initial scan found lodash 4.17.4; governed remediation upgraded it and the targeted rerun passed.",
+          "severity": "high",
+          "status": "resolved",
+          "cve": "CVE-2021-23337",
+          "advisory": "GHSA-35jh-r3h4-6jhm",
+          "ecosystem": "npm",
+          "package": "lodash",
+          "version": "4.17.4",
+          "fixedVersion": "4.17.21",
+          "reachability": "unknown"
+        }
+      ],
+      "waivers": [],
+      "outcome": "COMPLETE",
+      "evidenceRecords": [
+        {
+          "record": {
+            "id": "ev_demo_diff",
+            "missionId": "msn_demo_lockout",
+            "criterionId": "criterion_implementation",
+            "source": "command",
+            "command": "git diff --check",
+            "exitCode": 0,
+            "outputHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+            "outputRef": "sample://evidence/ev_demo_diff",
+            "capturedAt": "2026-07-20T09:15:00.000Z",
+            "freshForCommit": "demo9f3a1c7e2",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "hash": "sha256:c877561a006a6ebd4f10bbd7f7bc0bf4f78ebf71d313f4055558c29cc39bb9e9"
+        },
+        {
+          "record": {
+            "id": "ev_demo_lockout",
+            "missionId": "msn_demo_lockout",
+            "criterionId": "criterion_lockout",
+            "source": "command",
+            "command": "npm run test:lockout",
+            "exitCode": 0,
+            "outputHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+            "outputRef": "sample://evidence/ev_demo_lockout",
+            "capturedAt": "2026-07-20T09:16:00.000Z",
+            "freshForCommit": "demo9f3a1c7e2",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:c877561a006a6ebd4f10bbd7f7bc0bf4f78ebf71d313f4055558c29cc39bb9e9",
+          "hash": "sha256:ad46e48c42eef999a6175f9a00188bfb4cddd0b4f49c2177a0e00445d2183586"
+        },
+        {
+          "record": {
+            "id": "ev_demo_regression",
+            "missionId": "msn_demo_lockout",
+            "criterionId": "criterion_regression",
+            "source": "command",
+            "command": "npm test",
+            "exitCode": 0,
+            "outputHash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+            "outputRef": "sample://evidence/ev_demo_regression",
+            "capturedAt": "2026-07-20T09:17:00.000Z",
+            "freshForCommit": "demo9f3a1c7e2",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:ad46e48c42eef999a6175f9a00188bfb4cddd0b4f49c2177a0e00445d2183586",
+          "hash": "sha256:6594fe1b54e125d1b42ead29f7f495201da5dc17af7a3ef75516fc6ee3c12a90"
+        },
+        {
+          "record": {
+            "id": "ev_demo_dependency",
+            "missionId": "msn_demo_lockout",
+            "criterionId": "criterion_dependencies",
+            "source": "api",
+            "command": "patchpilot scan .",
+            "exitCode": 0,
+            "outputHash": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+            "outputRef": "sample://evidence/ev_demo_dependency",
+            "capturedAt": "2026-07-20T09:22:00.000Z",
+            "freshForCommit": "demo9f3a1c7e2",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:6594fe1b54e125d1b42ead29f7f495201da5dc17af7a3ef75516fc6ee3c12a90",
+          "hash": "sha256:25e69e05a3694632a866837a27bb360b0a862f45c94a7caf0dfb4191fda0c5ff"
+        },
+        {
+          "record": {
+            "id": "ev_demo_secrets",
+            "missionId": "msn_demo_lockout",
+            "criterionId": "criterion_secrets",
+            "source": "command",
+            "command": "builtin-secret-scan --diff",
+            "exitCode": 0,
+            "outputHash": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+            "outputRef": "sample://evidence/ev_demo_secrets",
+            "capturedAt": "2026-07-20T09:23:00.000Z",
+            "freshForCommit": "demo9f3a1c7e2",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:25e69e05a3694632a866837a27bb360b0a862f45c94a7caf0dfb4191fda0c5ff",
+          "hash": "sha256:c83c59cebd0bfe5276da846acee3c7ee24f8414617dd9ec5e136a49e997c44c2"
+        }
+      ],
+      "evidenceChainHead": "sha256:c83c59cebd0bfe5276da846acee3c7ee24f8414617dd9ec5e136a49e997c44c2",
+      "limitations": [
+        "Curated synthetic hosted-demo receipt; it does not represent a live account or deployment."
+      ],
+      "generatedAt": "2026-07-20T09:25:00.000Z"
+    }
+  },
+  {
+    "id": "msn_demo_rate_limit_gate",
+    "label": "SAMPLE",
+    "sampleNotice": "CURATED DEMO DATA - synthetic and not a live run",
+    "contract": {
+      "id": "msn_demo_rate_limit_gate",
+      "version": 1,
+      "objective": "Add per-IP rate limiting to the password reset endpoint without changing valid requests",
+      "projectProfileId": "sample-rate_limit_gate",
+      "intentBoundary": "MODIFY_LOCAL",
+      "acceptanceCriteria": [
+        {
+          "id": "criterion_rate_limit_gate_1",
+          "statement": "Rate limiting engages after the configured threshold",
+          "risk": "high",
+          "evidenceTypes": [
+            "test"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_rate_limit_gate_2",
+          "statement": "Valid reset requests preserve their existing response",
+          "risk": "high",
+          "evidenceTypes": [
+            "test"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_rate_limit_gate_3",
+          "statement": "The implementation is scoped to the reset route",
+          "risk": "medium",
+          "evidenceTypes": [
+            "diff"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_rate_limit_gate_4",
+          "statement": "The dependency scan has no new finding",
+          "risk": "high",
+          "evidenceTypes": [
+            "security_scan"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_rate_limit_gate_5",
+          "statement": "A retry-after response is verified end to end",
+          "risk": "high",
+          "evidenceTypes": [
+            "api_response"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        }
+      ],
+      "constraints": [
+        "Synthetic demo users only",
+        "Do not publish or deploy",
+        "Preserve the existing login response contract"
+      ],
+      "nonGoals": [
+        "Production deployment",
+        "Persistent account storage"
+      ],
+      "actionPolicy": [
+        {
+          "action": "repository.read",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "file.modify",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "branch.create",
+          "decision": "ALLOW",
+          "restrict": {
+            "branchPrefix": "agent/"
+          }
+        },
+        {
+          "action": "pull_request.create",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "preview.deploy",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "production.deploy",
+          "decision": "DENY"
+        },
+        {
+          "action": "verification.run",
+          "decision": "ALLOW"
+        }
+      ],
+      "modelPlan": [
+        {
+          "phase": "scout",
+          "model": "gpt-5.6-luna",
+          "effort": "light",
+          "rationale": "Structured repository mapping with low spend"
+        },
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "rationale": "Primary implementation with a sustained reasoning chain"
+        },
+        {
+          "phase": "security escalation note",
+          "model": "gpt-5.6-sol",
+          "effort": "max",
+          "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+          "multiAgent": false,
+          "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+        },
+        {
+          "phase": "remediate",
+          "model": "gpt-5.6-terra",
+          "effort": "medium",
+          "rationale": "Bounded dependency remediation"
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "rationale": "Independent read-only challenge in a fresh session"
+        }
+      ],
+      "budgetPolicy": {
+        "reservePercent": 20
+      },
+      "status": "VERIFYING",
+      "createdAt": "2026-07-20T08:00:00.000Z",
+      "updatedAt": "2026-07-20T08:18:00.000Z",
+      "hash": "sha256:d1983490456433fc2b3c2976040cbd9515705415593cf62c5da4690ee253e8fc"
+    },
+    "identity": {
+      "githubLogin": {
+        "value": "sample-owner",
+        "source": "sample",
+        "confidence": "sample",
+        "capturedAt": "2026-07-20T08:00:00.000Z"
+      }
+    },
+    "denials": [],
+    "evidence": [
+      {
+        "id": "ev_rate_limit_gate_1_1",
+        "missionId": "msn_demo_rate_limit_gate",
+        "criterionId": "criterion_rate_limit_gate_1",
+        "source": "command",
+        "command": "npm test",
+        "exitCode": 0,
+        "outputHash": "sha256:fabcc006ea2cc80f770782a4255840362637add61e4a0816885f14b7ba606a66",
+        "outputRef": "sample://evidence/rate_limit_gate/criterion_rate_limit_gate_1/test",
+        "capturedAt": "2026-07-20T08:18:00.000Z",
+        "freshForCommit": "demo-rate_limit_gate-commit",
+        "label": "REPLAY",
+        "redacted": true
+      },
+      {
+        "id": "ev_rate_limit_gate_2_1",
+        "missionId": "msn_demo_rate_limit_gate",
+        "criterionId": "criterion_rate_limit_gate_2",
+        "source": "command",
+        "command": "npm test",
+        "exitCode": 0,
+        "outputHash": "sha256:a3d415ab49306a8576202f526565371ccd1a3d22fa8bfc854e20ee8d03003cbc",
+        "outputRef": "sample://evidence/rate_limit_gate/criterion_rate_limit_gate_2/test",
+        "capturedAt": "2026-07-20T08:18:00.000Z",
+        "freshForCommit": "demo-rate_limit_gate-commit",
+        "label": "REPLAY",
+        "redacted": true
+      },
+      {
+        "id": "ev_rate_limit_gate_3_1",
+        "missionId": "msn_demo_rate_limit_gate",
+        "criterionId": "criterion_rate_limit_gate_3",
+        "source": "command",
+        "command": "git diff --check",
+        "exitCode": 0,
+        "outputHash": "sha256:16cbe9445518c526ac01d11cc59f2853e054508a5f67e00e4d74ac344aead5a2",
+        "outputRef": "sample://evidence/rate_limit_gate/criterion_rate_limit_gate_3/diff",
+        "capturedAt": "2026-07-20T08:18:00.000Z",
+        "freshForCommit": "demo-rate_limit_gate-commit",
+        "label": "REPLAY",
+        "redacted": true
+      },
+      {
+        "id": "ev_rate_limit_gate_4_1",
+        "missionId": "msn_demo_rate_limit_gate",
+        "criterionId": "criterion_rate_limit_gate_4",
+        "source": "command",
+        "command": "patchpilot scan .",
+        "exitCode": 0,
+        "outputHash": "sha256:4f0b60895fc4a363b69fbee8cbfa036cd06c2f883418ebdd99cd4e391f841648",
+        "outputRef": "sample://evidence/rate_limit_gate/criterion_rate_limit_gate_4/security_scan",
+        "capturedAt": "2026-07-20T08:18:00.000Z",
+        "freshForCommit": "demo-rate_limit_gate-commit",
+        "label": "REPLAY",
+        "redacted": true
+      }
+    ],
+    "events": [
+      {
+        "type": "mission.planned",
+        "ts": "2026-07-20T08:00:00.000Z",
+        "missionId": "msn_demo_rate_limit_gate",
+        "label": "SAMPLE"
+      },
+      {
+        "type": "verification.completed",
+        "ts": "2026-07-20T08:18:00.000Z",
+        "missionId": "msn_demo_rate_limit_gate",
+        "status": "PASS",
+        "label": "SAMPLE"
+      },
+      {
+        "type": "proof.evaluated",
+        "ts": "2026-07-20T08:18:00.000Z",
+        "missionId": "msn_demo_rate_limit_gate",
+        "outcome": "INCOMPLETE",
+        "label": "SAMPLE"
+      }
+    ],
+    "ledger": [
+      {
+        "role": "builder",
+        "phase": "build",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "usage": {
+          "input_tokens": 7200,
+          "output_tokens": 840,
+          "reasoning_output_tokens": 260
+        },
+        "label": "SAMPLE"
+      },
+      {
+        "role": "verifier",
+        "phase": "verify",
+        "model": "gpt-5.6-terra",
+        "effort": "high",
+        "usage": {
+          "input_tokens": 3100,
+          "output_tokens": 420,
+          "reasoning_output_tokens": 150
+        },
+        "label": "SAMPLE"
+      }
+    ],
+    "sessions": [
+      {
+        "id": "session_rate_limit_gate_builder",
+        "role": "builder",
+        "label": "SAMPLE"
+      },
+      {
+        "id": "session_rate_limit_gate_verifier",
+        "role": "verifier",
+        "sandbox": "read-only",
+        "fresh": true,
+        "label": "SAMPLE"
+      }
+    ],
+    "findings": [],
+    "runs": [
+      {
+        "id": "run_rate_limit_gate_build",
+        "role": "builder",
+        "status": "SUCCESS",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "startedAt": "2026-07-20T08:00:00.000Z",
+        "endedAt": "2026-07-20T08:18:00.000Z",
+        "label": "SAMPLE"
+      }
+    ],
+    "verifications": [
+      {
+        "id": "verify_rate_limit_gate_1",
+        "overall": "PASS",
+        "findingIds": [],
+        "startedAt": "2026-07-20T08:18:00.000Z",
+        "endedAt": "2026-07-20T08:18:00.000Z",
+        "label": "SAMPLE"
+      }
+    ],
+    "approvals": [],
+    "receipt": {
+      "schemaVersion": 1,
+      "missionId": "msn_demo_rate_limit_gate",
+      "contract": {
+        "id": "msn_demo_rate_limit_gate",
+        "version": 1,
+        "hash": "sha256:d1983490456433fc2b3c2976040cbd9515705415593cf62c5da4690ee253e8fc",
+        "objective": "Add per-IP rate limiting to the password reset endpoint without changing valid requests",
+        "projectProfileId": "sample-rate_limit_gate",
+        "intentBoundary": "MODIFY_LOCAL",
+        "acceptanceCriteria": [
+          {
+            "id": "criterion_rate_limit_gate_1",
+            "statement": "Rate limiting engages after the configured threshold",
+            "risk": "high",
+            "evidenceTypes": [
+              "test"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_rate_limit_gate_2",
+            "statement": "Valid reset requests preserve their existing response",
+            "risk": "high",
+            "evidenceTypes": [
+              "test"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_rate_limit_gate_3",
+            "statement": "The implementation is scoped to the reset route",
+            "risk": "medium",
+            "evidenceTypes": [
+              "diff"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_rate_limit_gate_4",
+            "statement": "The dependency scan has no new finding",
+            "risk": "high",
+            "evidenceTypes": [
+              "security_scan"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_rate_limit_gate_5",
+            "statement": "A retry-after response is verified end to end",
+            "risk": "high",
+            "evidenceTypes": [
+              "api_response"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          }
+        ],
+        "constraints": [
+          "Synthetic demo users only",
+          "Do not publish or deploy",
+          "Preserve the existing login response contract"
+        ],
+        "nonGoals": [
+          "Production deployment",
+          "Persistent account storage"
+        ],
+        "actionPolicy": [
+          {
+            "action": "repository.read",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "file.modify",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "branch.create",
+            "decision": "ALLOW",
+            "restrict": {
+              "branchPrefix": "agent/"
+            }
+          },
+          {
+            "action": "pull_request.create",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "preview.deploy",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "production.deploy",
+            "decision": "DENY"
+          },
+          {
+            "action": "verification.run",
+            "decision": "ALLOW"
+          }
+        ],
+        "modelPlan": [
+          {
+            "phase": "scout",
+            "model": "gpt-5.6-luna",
+            "effort": "light",
+            "rationale": "Structured repository mapping with low spend"
+          },
+          {
+            "phase": "build",
+            "model": "gpt-5.6-sol",
+            "effort": "high",
+            "rationale": "Primary implementation with a sustained reasoning chain"
+          },
+          {
+            "phase": "security escalation note",
+            "model": "gpt-5.6-sol",
+            "effort": "max",
+            "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+            "multiAgent": false,
+            "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+          },
+          {
+            "phase": "remediate",
+            "model": "gpt-5.6-terra",
+            "effort": "medium",
+            "rationale": "Bounded dependency remediation"
+          },
+          {
+            "phase": "verify",
+            "model": "gpt-5.6-terra",
+            "effort": "high",
+            "rationale": "Independent read-only challenge in a fresh session"
+          }
+        ],
+        "budgetPolicy": {
+          "reservePercent": 20
+        },
+        "status": "VERIFYING",
+        "createdAt": "2026-07-20T08:00:00.000Z",
+        "updatedAt": "2026-07-20T08:18:00.000Z"
+      },
+      "contractHash": "sha256:d1983490456433fc2b3c2976040cbd9515705415593cf62c5da4690ee253e8fc",
+      "repo": {
+        "remote": "https://example.invalid/axiomgate/rate_limit_gate.git",
+        "branch": "agent/rate_limit_gate",
+        "commit": "demo-rate_limit_gate-commit"
+      },
+      "identities": {
+        "github": "sample-owner",
+        "vercel": "SAMPLE_NOT_CONNECTED"
+      },
+      "modelUsage": [
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "tokens": {
+            "input": 7200,
+            "output": 840,
+            "reasoning": 260
+          }
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "tokens": {
+            "input": 3100,
+            "output": 420,
+            "reasoning": 150
+          }
+        }
+      ],
+      "capacityLedger": {
+        "estimated": {
+          "totalTokens": 16000
+        },
+        "actual": {
+          "totalTokens": 11810
+        },
+        "sourceLabels": {
+          "capacity": "SAMPLE",
+          "tokenUsage": "SAMPLE"
+        }
+      },
+      "actions": [],
+      "permissionQuad": {
+        "requested": "0/0",
+        "approved": "0/0",
+        "applied": "0/0",
+        "observed": "0/0"
+      },
+      "criteria": [
+        {
+          "id": "criterion_rate_limit_gate_1",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_rate_limit_gate_1_1"
+          ],
+          "evidenceHashes": [
+            "sha256:1e75185e518613303ec00ab37034fdba9c04afe833aa7daa60cbe618fa6a2e75"
+          ]
+        },
+        {
+          "id": "criterion_rate_limit_gate_2",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_rate_limit_gate_2_1"
+          ],
+          "evidenceHashes": [
+            "sha256:585bc5fa30e6aa25bc0604dfb5f9a03f827b8c72bd1328097ba1a1ab06912e44"
+          ]
+        },
+        {
+          "id": "criterion_rate_limit_gate_3",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_rate_limit_gate_3_1"
+          ],
+          "evidenceHashes": [
+            "sha256:0ca3b07ba223b0d444207ce692124790281d6b2001dcf09f5b13ca9abb5118f4"
+          ]
+        },
+        {
+          "id": "criterion_rate_limit_gate_4",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_rate_limit_gate_4_1"
+          ],
+          "evidenceHashes": [
+            "sha256:643f3906c179b2a13b5bf5749fe46522e8b4e2feea7b34c990b48f7ecfb36f6f"
+          ]
+        },
+        {
+          "id": "criterion_rate_limit_gate_5",
+          "verdict": "UNVERIFIED",
+          "evidenceIds": [],
+          "evidenceHashes": []
+        }
+      ],
+      "findings": [],
+      "waivers": [],
+      "outcome": "INCOMPLETE",
+      "evidenceRecords": [
+        {
+          "record": {
+            "id": "ev_rate_limit_gate_1_1",
+            "missionId": "msn_demo_rate_limit_gate",
+            "criterionId": "criterion_rate_limit_gate_1",
+            "source": "command",
+            "command": "npm test",
+            "exitCode": 0,
+            "outputHash": "sha256:fabcc006ea2cc80f770782a4255840362637add61e4a0816885f14b7ba606a66",
+            "outputRef": "sample://evidence/rate_limit_gate/criterion_rate_limit_gate_1/test",
+            "capturedAt": "2026-07-20T08:18:00.000Z",
+            "freshForCommit": "demo-rate_limit_gate-commit",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "hash": "sha256:1e75185e518613303ec00ab37034fdba9c04afe833aa7daa60cbe618fa6a2e75"
+        },
+        {
+          "record": {
+            "id": "ev_rate_limit_gate_2_1",
+            "missionId": "msn_demo_rate_limit_gate",
+            "criterionId": "criterion_rate_limit_gate_2",
+            "source": "command",
+            "command": "npm test",
+            "exitCode": 0,
+            "outputHash": "sha256:a3d415ab49306a8576202f526565371ccd1a3d22fa8bfc854e20ee8d03003cbc",
+            "outputRef": "sample://evidence/rate_limit_gate/criterion_rate_limit_gate_2/test",
+            "capturedAt": "2026-07-20T08:18:00.000Z",
+            "freshForCommit": "demo-rate_limit_gate-commit",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:1e75185e518613303ec00ab37034fdba9c04afe833aa7daa60cbe618fa6a2e75",
+          "hash": "sha256:585bc5fa30e6aa25bc0604dfb5f9a03f827b8c72bd1328097ba1a1ab06912e44"
+        },
+        {
+          "record": {
+            "id": "ev_rate_limit_gate_3_1",
+            "missionId": "msn_demo_rate_limit_gate",
+            "criterionId": "criterion_rate_limit_gate_3",
+            "source": "command",
+            "command": "git diff --check",
+            "exitCode": 0,
+            "outputHash": "sha256:16cbe9445518c526ac01d11cc59f2853e054508a5f67e00e4d74ac344aead5a2",
+            "outputRef": "sample://evidence/rate_limit_gate/criterion_rate_limit_gate_3/diff",
+            "capturedAt": "2026-07-20T08:18:00.000Z",
+            "freshForCommit": "demo-rate_limit_gate-commit",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:585bc5fa30e6aa25bc0604dfb5f9a03f827b8c72bd1328097ba1a1ab06912e44",
+          "hash": "sha256:0ca3b07ba223b0d444207ce692124790281d6b2001dcf09f5b13ca9abb5118f4"
+        },
+        {
+          "record": {
+            "id": "ev_rate_limit_gate_4_1",
+            "missionId": "msn_demo_rate_limit_gate",
+            "criterionId": "criterion_rate_limit_gate_4",
+            "source": "command",
+            "command": "patchpilot scan .",
+            "exitCode": 0,
+            "outputHash": "sha256:4f0b60895fc4a363b69fbee8cbfa036cd06c2f883418ebdd99cd4e391f841648",
+            "outputRef": "sample://evidence/rate_limit_gate/criterion_rate_limit_gate_4/security_scan",
+            "capturedAt": "2026-07-20T08:18:00.000Z",
+            "freshForCommit": "demo-rate_limit_gate-commit",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:0ca3b07ba223b0d444207ce692124790281d6b2001dcf09f5b13ca9abb5118f4",
+          "hash": "sha256:643f3906c179b2a13b5bf5749fe46522e8b4e2feea7b34c990b48f7ecfb36f6f"
+        }
+      ],
+      "evidenceChainHead": "sha256:643f3906c179b2a13b5bf5749fe46522e8b4e2feea7b34c990b48f7ecfb36f6f",
+      "limitations": [
+        "Curated synthetic hosted-demo receipt; it does not represent a live account or deployment."
+      ],
+      "generatedAt": "2026-07-20T08:18:00.000Z"
+    }
+  },
+  {
+    "id": "msn_demo_wrong_target",
+    "label": "SAMPLE",
+    "sampleNotice": "CURATED DEMO DATA - synthetic and not a live run",
+    "contract": {
+      "id": "msn_demo_wrong_target",
+      "version": 1,
+      "objective": "Publish a preview of the account settings validation change",
+      "projectProfileId": "sample-wrong_target",
+      "intentBoundary": "DEPLOY_PREVIEW",
+      "acceptanceCriteria": [
+        {
+          "id": "criterion_wrong_target_1",
+          "statement": "Account settings validation passes",
+          "risk": "medium",
+          "evidenceTypes": [
+            "test"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_wrong_target_2",
+          "statement": "The preview target is owned by the expected profile",
+          "risk": "critical",
+          "evidenceTypes": [
+            "api_response"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_wrong_target_3",
+          "statement": "The preview build succeeds",
+          "risk": "medium",
+          "evidenceTypes": [
+            "build"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_wrong_target_4",
+          "statement": "The diff contains no secret",
+          "risk": "critical",
+          "evidenceTypes": [
+            "secret_scan"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        }
+      ],
+      "constraints": [
+        "Synthetic demo users only",
+        "Do not publish or deploy",
+        "Preserve the existing login response contract"
+      ],
+      "nonGoals": [
+        "Production deployment",
+        "Persistent account storage"
+      ],
+      "actionPolicy": [
+        {
+          "action": "repository.read",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "file.modify",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "branch.create",
+          "decision": "ALLOW",
+          "restrict": {
+            "branchPrefix": "agent/"
+          }
+        },
+        {
+          "action": "pull_request.create",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "preview.deploy",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "production.deploy",
+          "decision": "DENY"
+        },
+        {
+          "action": "verification.run",
+          "decision": "ALLOW"
+        }
+      ],
+      "modelPlan": [
+        {
+          "phase": "scout",
+          "model": "gpt-5.6-luna",
+          "effort": "light",
+          "rationale": "Structured repository mapping with low spend"
+        },
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "rationale": "Primary implementation with a sustained reasoning chain"
+        },
+        {
+          "phase": "security escalation note",
+          "model": "gpt-5.6-sol",
+          "effort": "max",
+          "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+          "multiAgent": false,
+          "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+        },
+        {
+          "phase": "remediate",
+          "model": "gpt-5.6-terra",
+          "effort": "medium",
+          "rationale": "Bounded dependency remediation"
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "rationale": "Independent read-only challenge in a fresh session"
+        }
+      ],
+      "budgetPolicy": {
+        "reservePercent": 20
+      },
+      "status": "RUNNING",
+      "createdAt": "2026-07-20T07:30:00.000Z",
+      "updatedAt": "2026-07-20T07:42:00.000Z",
+      "hash": "sha256:af59fe2dda33ad2030e6ebb6faa1a0e218f40618cd86b681b43d351e4eb5db27"
+    },
+    "identity": {
+      "githubLogin": {
+        "value": "sample-owner",
+        "source": "sample",
+        "confidence": "sample",
+        "capturedAt": "2026-07-20T07:30:00.000Z"
+      }
+    },
+    "denials": [
+      {
+        "ts": "2026-07-20T07:42:00.000Z",
+        "hookEvent": "PreToolUse",
+        "toolName": "shell",
+        "commandHash": "sha256:89b4cd6d98ae264b6564cf7914acd3ad67336889886d0a8b3061d76f333ec2d3",
+        "semanticAction": "preview.deploy",
+        "command": "vercel deploy --scope sample-unowned-team",
+        "decision": "DENY",
+        "reasons": [
+          "SAMPLE replay: deploy target exists but is not owned by the expected profile (EXISTS_NOT_OWNED)."
+        ],
+        "missionId": "msn_demo_wrong_target",
+        "sessionId": "session_wrong_target_builder",
+        "label": "SAMPLE"
+      }
+    ],
+    "evidence": [
+      {
+        "id": "ev_wrong_target_1_1",
+        "missionId": "msn_demo_wrong_target",
+        "criterionId": "criterion_wrong_target_1",
+        "source": "command",
+        "command": "npm test",
+        "exitCode": 0,
+        "outputHash": "sha256:fda51ee7760f88a37c2944aaaa147b8eb05dddbfe79393146b0678b909cd54d2",
+        "outputRef": "sample://evidence/wrong_target/criterion_wrong_target_1/test",
+        "capturedAt": "2026-07-20T07:42:00.000Z",
+        "freshForCommit": "demo-wrong_target-commit",
+        "label": "REPLAY",
+        "redacted": true
+      },
+      {
+        "id": "ev_wrong_target_4_1",
+        "missionId": "msn_demo_wrong_target",
+        "criterionId": "criterion_wrong_target_4",
+        "source": "command",
+        "command": "builtin-secret-scan --diff",
+        "exitCode": 0,
+        "outputHash": "sha256:c5a2a36d95ce178e43d46735fd8a5560d4cfb423f3a822041ff13b640262f3ff",
+        "outputRef": "sample://evidence/wrong_target/criterion_wrong_target_4/secret_scan",
+        "capturedAt": "2026-07-20T07:42:00.000Z",
+        "freshForCommit": "demo-wrong_target-commit",
+        "label": "REPLAY",
+        "redacted": true
+      }
+    ],
+    "events": [
+      {
+        "type": "mission.planned",
+        "ts": "2026-07-20T07:30:00.000Z",
+        "missionId": "msn_demo_wrong_target",
+        "label": "SAMPLE"
+      },
+      {
+        "ts": "2026-07-20T07:42:00.000Z",
+        "hookEvent": "PreToolUse",
+        "toolName": "shell",
+        "commandHash": "sha256:89b4cd6d98ae264b6564cf7914acd3ad67336889886d0a8b3061d76f333ec2d3",
+        "semanticAction": "preview.deploy",
+        "command": "vercel deploy --scope sample-unowned-team",
+        "decision": "DENY",
+        "reasons": [
+          "SAMPLE replay: deploy target exists but is not owned by the expected profile (EXISTS_NOT_OWNED)."
+        ],
+        "missionId": "msn_demo_wrong_target",
+        "sessionId": "session_wrong_target_builder",
+        "label": "SAMPLE"
+      },
+      {
+        "type": "proof.evaluated",
+        "ts": "2026-07-20T07:42:00.000Z",
+        "missionId": "msn_demo_wrong_target",
+        "outcome": "INCOMPLETE",
+        "label": "SAMPLE"
+      }
+    ],
+    "ledger": [
+      {
+        "role": "builder",
+        "phase": "build",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "usage": {
+          "input_tokens": 7200,
+          "output_tokens": 840,
+          "reasoning_output_tokens": 260
+        },
+        "label": "SAMPLE"
+      },
+      {
+        "role": "verifier",
+        "phase": "verify",
+        "model": "gpt-5.6-terra",
+        "effort": "high",
+        "usage": {
+          "input_tokens": 3100,
+          "output_tokens": 420,
+          "reasoning_output_tokens": 150
+        },
+        "label": "SAMPLE"
+      }
+    ],
+    "sessions": [
+      {
+        "id": "session_wrong_target_builder",
+        "role": "builder",
+        "label": "SAMPLE"
+      },
+      {
+        "id": "session_wrong_target_verifier",
+        "role": "verifier",
+        "sandbox": "read-only",
+        "fresh": true,
+        "label": "SAMPLE"
+      }
+    ],
+    "findings": [],
+    "runs": [
+      {
+        "id": "run_wrong_target_build",
+        "role": "builder",
+        "status": "SUCCESS",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "startedAt": "2026-07-20T07:30:00.000Z",
+        "endedAt": "2026-07-20T07:42:00.000Z",
+        "label": "SAMPLE"
+      }
+    ],
+    "verifications": [],
+    "approvals": [],
+    "receipt": {
+      "schemaVersion": 1,
+      "missionId": "msn_demo_wrong_target",
+      "contract": {
+        "id": "msn_demo_wrong_target",
+        "version": 1,
+        "hash": "sha256:af59fe2dda33ad2030e6ebb6faa1a0e218f40618cd86b681b43d351e4eb5db27",
+        "objective": "Publish a preview of the account settings validation change",
+        "projectProfileId": "sample-wrong_target",
+        "intentBoundary": "DEPLOY_PREVIEW",
+        "acceptanceCriteria": [
+          {
+            "id": "criterion_wrong_target_1",
+            "statement": "Account settings validation passes",
+            "risk": "medium",
+            "evidenceTypes": [
+              "test"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_wrong_target_2",
+            "statement": "The preview target is owned by the expected profile",
+            "risk": "critical",
+            "evidenceTypes": [
+              "api_response"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_wrong_target_3",
+            "statement": "The preview build succeeds",
+            "risk": "medium",
+            "evidenceTypes": [
+              "build"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_wrong_target_4",
+            "statement": "The diff contains no secret",
+            "risk": "critical",
+            "evidenceTypes": [
+              "secret_scan"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          }
+        ],
+        "constraints": [
+          "Synthetic demo users only",
+          "Do not publish or deploy",
+          "Preserve the existing login response contract"
+        ],
+        "nonGoals": [
+          "Production deployment",
+          "Persistent account storage"
+        ],
+        "actionPolicy": [
+          {
+            "action": "repository.read",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "file.modify",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "branch.create",
+            "decision": "ALLOW",
+            "restrict": {
+              "branchPrefix": "agent/"
+            }
+          },
+          {
+            "action": "pull_request.create",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "preview.deploy",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "production.deploy",
+            "decision": "DENY"
+          },
+          {
+            "action": "verification.run",
+            "decision": "ALLOW"
+          }
+        ],
+        "modelPlan": [
+          {
+            "phase": "scout",
+            "model": "gpt-5.6-luna",
+            "effort": "light",
+            "rationale": "Structured repository mapping with low spend"
+          },
+          {
+            "phase": "build",
+            "model": "gpt-5.6-sol",
+            "effort": "high",
+            "rationale": "Primary implementation with a sustained reasoning chain"
+          },
+          {
+            "phase": "security escalation note",
+            "model": "gpt-5.6-sol",
+            "effort": "max",
+            "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+            "multiAgent": false,
+            "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+          },
+          {
+            "phase": "remediate",
+            "model": "gpt-5.6-terra",
+            "effort": "medium",
+            "rationale": "Bounded dependency remediation"
+          },
+          {
+            "phase": "verify",
+            "model": "gpt-5.6-terra",
+            "effort": "high",
+            "rationale": "Independent read-only challenge in a fresh session"
+          }
+        ],
+        "budgetPolicy": {
+          "reservePercent": 20
+        },
+        "status": "RUNNING",
+        "createdAt": "2026-07-20T07:30:00.000Z",
+        "updatedAt": "2026-07-20T07:42:00.000Z"
+      },
+      "contractHash": "sha256:af59fe2dda33ad2030e6ebb6faa1a0e218f40618cd86b681b43d351e4eb5db27",
+      "repo": {
+        "remote": "https://example.invalid/axiomgate/wrong_target.git",
+        "branch": "agent/wrong_target",
+        "commit": "demo-wrong_target-commit"
+      },
+      "identities": {
+        "github": "sample-owner",
+        "vercel": "SAMPLE_NOT_CONNECTED"
+      },
+      "modelUsage": [
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "tokens": {
+            "input": 7200,
+            "output": 840,
+            "reasoning": 260
+          }
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "tokens": {
+            "input": 3100,
+            "output": 420,
+            "reasoning": 150
+          }
+        }
+      ],
+      "capacityLedger": {
+        "estimated": {
+          "totalTokens": 16000
+        },
+        "actual": {
+          "totalTokens": 11810
+        },
+        "sourceLabels": {
+          "capacity": "SAMPLE",
+          "tokenUsage": "SAMPLE"
+        }
+      },
+      "actions": [],
+      "permissionQuad": {
+        "requested": "0/0",
+        "approved": "0/0",
+        "applied": "0/0",
+        "observed": "0/0"
+      },
+      "criteria": [
+        {
+          "id": "criterion_wrong_target_1",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_wrong_target_1_1"
+          ],
+          "evidenceHashes": [
+            "sha256:df66eec80f98e9d3977759d983b2001adc7992202d4c1673d929c14efb00afe2"
+          ]
+        },
+        {
+          "id": "criterion_wrong_target_2",
+          "verdict": "UNVERIFIED",
+          "evidenceIds": [],
+          "evidenceHashes": []
+        },
+        {
+          "id": "criterion_wrong_target_3",
+          "verdict": "UNVERIFIED",
+          "evidenceIds": [],
+          "evidenceHashes": []
+        },
+        {
+          "id": "criterion_wrong_target_4",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_wrong_target_4_1"
+          ],
+          "evidenceHashes": [
+            "sha256:dde2223be242de22e6db81af5225f46806191bce8eabc290bc4a8d79e1b6c184"
+          ]
+        }
+      ],
+      "findings": [],
+      "waivers": [],
+      "outcome": "INCOMPLETE",
+      "evidenceRecords": [
+        {
+          "record": {
+            "id": "ev_wrong_target_1_1",
+            "missionId": "msn_demo_wrong_target",
+            "criterionId": "criterion_wrong_target_1",
+            "source": "command",
+            "command": "npm test",
+            "exitCode": 0,
+            "outputHash": "sha256:fda51ee7760f88a37c2944aaaa147b8eb05dddbfe79393146b0678b909cd54d2",
+            "outputRef": "sample://evidence/wrong_target/criterion_wrong_target_1/test",
+            "capturedAt": "2026-07-20T07:42:00.000Z",
+            "freshForCommit": "demo-wrong_target-commit",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "hash": "sha256:df66eec80f98e9d3977759d983b2001adc7992202d4c1673d929c14efb00afe2"
+        },
+        {
+          "record": {
+            "id": "ev_wrong_target_4_1",
+            "missionId": "msn_demo_wrong_target",
+            "criterionId": "criterion_wrong_target_4",
+            "source": "command",
+            "command": "builtin-secret-scan --diff",
+            "exitCode": 0,
+            "outputHash": "sha256:c5a2a36d95ce178e43d46735fd8a5560d4cfb423f3a822041ff13b640262f3ff",
+            "outputRef": "sample://evidence/wrong_target/criterion_wrong_target_4/secret_scan",
+            "capturedAt": "2026-07-20T07:42:00.000Z",
+            "freshForCommit": "demo-wrong_target-commit",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:df66eec80f98e9d3977759d983b2001adc7992202d4c1673d929c14efb00afe2",
+          "hash": "sha256:dde2223be242de22e6db81af5225f46806191bce8eabc290bc4a8d79e1b6c184"
+        }
+      ],
+      "evidenceChainHead": "sha256:dde2223be242de22e6db81af5225f46806191bce8eabc290bc4a8d79e1b6c184",
+      "limitations": [
+        "Curated synthetic hosted-demo receipt; it does not represent a live account or deployment."
+      ],
+      "generatedAt": "2026-07-20T07:42:00.000Z"
+    }
+  },
+  {
+    "id": "msn_demo_governed_state",
+    "label": "SAMPLE",
+    "sampleNotice": "CURATED DEMO DATA - synthetic and not a live run",
+    "contract": {
+      "id": "msn_demo_governed_state",
+      "version": 1,
+      "objective": "Update session validation while preserving AxiomGate governance state",
+      "projectProfileId": "sample-governed_state",
+      "intentBoundary": "MODIFY_LOCAL",
+      "acceptanceCriteria": [
+        {
+          "id": "criterion_governed_state_1",
+          "statement": "Session validation change passes unit tests",
+          "risk": "medium",
+          "evidenceTypes": [
+            "test"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_governed_state_2",
+          "statement": "Governed mission state remains untouched",
+          "risk": "critical",
+          "evidenceTypes": [
+            "hook_decision"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_governed_state_3",
+          "statement": "The final diff is scoped to application code",
+          "risk": "high",
+          "evidenceTypes": [
+            "diff"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        }
+      ],
+      "constraints": [
+        "Synthetic demo users only",
+        "Do not publish or deploy",
+        "Preserve the existing login response contract"
+      ],
+      "nonGoals": [
+        "Production deployment",
+        "Persistent account storage"
+      ],
+      "actionPolicy": [
+        {
+          "action": "repository.read",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "file.modify",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "branch.create",
+          "decision": "ALLOW",
+          "restrict": {
+            "branchPrefix": "agent/"
+          }
+        },
+        {
+          "action": "pull_request.create",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "preview.deploy",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "production.deploy",
+          "decision": "DENY"
+        },
+        {
+          "action": "verification.run",
+          "decision": "ALLOW"
+        }
+      ],
+      "modelPlan": [
+        {
+          "phase": "scout",
+          "model": "gpt-5.6-luna",
+          "effort": "light",
+          "rationale": "Structured repository mapping with low spend"
+        },
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "rationale": "Primary implementation with a sustained reasoning chain"
+        },
+        {
+          "phase": "security escalation note",
+          "model": "gpt-5.6-sol",
+          "effort": "max",
+          "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+          "multiAgent": false,
+          "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+        },
+        {
+          "phase": "remediate",
+          "model": "gpt-5.6-terra",
+          "effort": "medium",
+          "rationale": "Bounded dependency remediation"
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "rationale": "Independent read-only challenge in a fresh session"
+        }
+      ],
+      "budgetPolicy": {
+        "reservePercent": 20
+      },
+      "status": "RUNNING",
+      "createdAt": "2026-07-20T07:00:00.000Z",
+      "updatedAt": "2026-07-20T07:11:00.000Z",
+      "hash": "sha256:0a2973536c5268e76218e6103d0535f2f91200e1f351cf9f5d0d7e342cc37cb2"
+    },
+    "identity": {
+      "githubLogin": {
+        "value": "sample-owner",
+        "source": "sample",
+        "confidence": "sample",
+        "capturedAt": "2026-07-20T07:00:00.000Z"
+      }
+    },
+    "denials": [
+      {
+        "ts": "2026-07-20T07:11:00.000Z",
+        "hookEvent": "PreToolUse",
+        "toolName": "shell",
+        "commandHash": "sha256:4a88931c7b7d5d1c8cdeb5b3501faed9614beabcc6eb1ccb4f0f8fb6b90d8139",
+        "semanticAction": "file.modify",
+        "command": "write .axiomgate/missions/msn_demo_governed_state/contract.json",
+        "decision": "DENY",
+        "reasons": [
+          "SAMPLE replay: writes to governed .axiomgate state are hard-denied outside the trusted internal mutation path."
+        ],
+        "missionId": "msn_demo_governed_state",
+        "sessionId": "session_governed_state_builder",
+        "label": "SAMPLE"
+      }
+    ],
+    "evidence": [
+      {
+        "id": "ev_governed_state_2_1",
+        "missionId": "msn_demo_governed_state",
+        "criterionId": "criterion_governed_state_2",
+        "source": "hook",
+        "command": "axiomgate hook sample-check",
+        "exitCode": 0,
+        "outputHash": "sha256:cf460ebc396ec2cf2d2e8c2182b8943c647af2e6fb5fe7e7f0a77ac69fdede11",
+        "outputRef": "sample://evidence/governed_state/criterion_governed_state_2/hook_decision",
+        "capturedAt": "2026-07-20T07:11:00.000Z",
+        "freshForCommit": "demo-governed_state-commit",
+        "label": "REPLAY",
+        "redacted": true
+      }
+    ],
+    "events": [
+      {
+        "type": "mission.planned",
+        "ts": "2026-07-20T07:00:00.000Z",
+        "missionId": "msn_demo_governed_state",
+        "label": "SAMPLE"
+      },
+      {
+        "ts": "2026-07-20T07:11:00.000Z",
+        "hookEvent": "PreToolUse",
+        "toolName": "shell",
+        "commandHash": "sha256:4a88931c7b7d5d1c8cdeb5b3501faed9614beabcc6eb1ccb4f0f8fb6b90d8139",
+        "semanticAction": "file.modify",
+        "command": "write .axiomgate/missions/msn_demo_governed_state/contract.json",
+        "decision": "DENY",
+        "reasons": [
+          "SAMPLE replay: writes to governed .axiomgate state are hard-denied outside the trusted internal mutation path."
+        ],
+        "missionId": "msn_demo_governed_state",
+        "sessionId": "session_governed_state_builder",
+        "label": "SAMPLE"
+      },
+      {
+        "type": "proof.evaluated",
+        "ts": "2026-07-20T07:11:00.000Z",
+        "missionId": "msn_demo_governed_state",
+        "outcome": "INCOMPLETE",
+        "label": "SAMPLE"
+      }
+    ],
+    "ledger": [
+      {
+        "role": "builder",
+        "phase": "build",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "usage": {
+          "input_tokens": 7200,
+          "output_tokens": 840,
+          "reasoning_output_tokens": 260
+        },
+        "label": "SAMPLE"
+      },
+      {
+        "role": "verifier",
+        "phase": "verify",
+        "model": "gpt-5.6-terra",
+        "effort": "high",
+        "usage": {
+          "input_tokens": 3100,
+          "output_tokens": 420,
+          "reasoning_output_tokens": 150
+        },
+        "label": "SAMPLE"
+      }
+    ],
+    "sessions": [
+      {
+        "id": "session_governed_state_builder",
+        "role": "builder",
+        "label": "SAMPLE"
+      },
+      {
+        "id": "session_governed_state_verifier",
+        "role": "verifier",
+        "sandbox": "read-only",
+        "fresh": true,
+        "label": "SAMPLE"
+      }
+    ],
+    "findings": [],
+    "runs": [
+      {
+        "id": "run_governed_state_build",
+        "role": "builder",
+        "status": "SUCCESS",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "startedAt": "2026-07-20T07:00:00.000Z",
+        "endedAt": "2026-07-20T07:11:00.000Z",
+        "label": "SAMPLE"
+      }
+    ],
+    "verifications": [],
+    "approvals": [],
+    "receipt": {
+      "schemaVersion": 1,
+      "missionId": "msn_demo_governed_state",
+      "contract": {
+        "id": "msn_demo_governed_state",
+        "version": 1,
+        "hash": "sha256:0a2973536c5268e76218e6103d0535f2f91200e1f351cf9f5d0d7e342cc37cb2",
+        "objective": "Update session validation while preserving AxiomGate governance state",
+        "projectProfileId": "sample-governed_state",
+        "intentBoundary": "MODIFY_LOCAL",
+        "acceptanceCriteria": [
+          {
+            "id": "criterion_governed_state_1",
+            "statement": "Session validation change passes unit tests",
+            "risk": "medium",
+            "evidenceTypes": [
+              "test"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_governed_state_2",
+            "statement": "Governed mission state remains untouched",
+            "risk": "critical",
+            "evidenceTypes": [
+              "hook_decision"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_governed_state_3",
+            "statement": "The final diff is scoped to application code",
+            "risk": "high",
+            "evidenceTypes": [
+              "diff"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          }
+        ],
+        "constraints": [
+          "Synthetic demo users only",
+          "Do not publish or deploy",
+          "Preserve the existing login response contract"
+        ],
+        "nonGoals": [
+          "Production deployment",
+          "Persistent account storage"
+        ],
+        "actionPolicy": [
+          {
+            "action": "repository.read",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "file.modify",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "branch.create",
+            "decision": "ALLOW",
+            "restrict": {
+              "branchPrefix": "agent/"
+            }
+          },
+          {
+            "action": "pull_request.create",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "preview.deploy",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "production.deploy",
+            "decision": "DENY"
+          },
+          {
+            "action": "verification.run",
+            "decision": "ALLOW"
+          }
+        ],
+        "modelPlan": [
+          {
+            "phase": "scout",
+            "model": "gpt-5.6-luna",
+            "effort": "light",
+            "rationale": "Structured repository mapping with low spend"
+          },
+          {
+            "phase": "build",
+            "model": "gpt-5.6-sol",
+            "effort": "high",
+            "rationale": "Primary implementation with a sustained reasoning chain"
+          },
+          {
+            "phase": "security escalation note",
+            "model": "gpt-5.6-sol",
+            "effort": "max",
+            "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+            "multiAgent": false,
+            "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+          },
+          {
+            "phase": "remediate",
+            "model": "gpt-5.6-terra",
+            "effort": "medium",
+            "rationale": "Bounded dependency remediation"
+          },
+          {
+            "phase": "verify",
+            "model": "gpt-5.6-terra",
+            "effort": "high",
+            "rationale": "Independent read-only challenge in a fresh session"
+          }
+        ],
+        "budgetPolicy": {
+          "reservePercent": 20
+        },
+        "status": "RUNNING",
+        "createdAt": "2026-07-20T07:00:00.000Z",
+        "updatedAt": "2026-07-20T07:11:00.000Z"
+      },
+      "contractHash": "sha256:0a2973536c5268e76218e6103d0535f2f91200e1f351cf9f5d0d7e342cc37cb2",
+      "repo": {
+        "remote": "https://example.invalid/axiomgate/governed_state.git",
+        "branch": "agent/governed_state",
+        "commit": "demo-governed_state-commit"
+      },
+      "identities": {
+        "github": "sample-owner",
+        "vercel": "SAMPLE_NOT_CONNECTED"
+      },
+      "modelUsage": [
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "tokens": {
+            "input": 7200,
+            "output": 840,
+            "reasoning": 260
+          }
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "tokens": {
+            "input": 3100,
+            "output": 420,
+            "reasoning": 150
+          }
+        }
+      ],
+      "capacityLedger": {
+        "estimated": {
+          "totalTokens": 16000
+        },
+        "actual": {
+          "totalTokens": 11810
+        },
+        "sourceLabels": {
+          "capacity": "SAMPLE",
+          "tokenUsage": "SAMPLE"
+        }
+      },
+      "actions": [],
+      "permissionQuad": {
+        "requested": "0/0",
+        "approved": "0/0",
+        "applied": "0/0",
+        "observed": "0/0"
+      },
+      "criteria": [
+        {
+          "id": "criterion_governed_state_1",
+          "verdict": "UNVERIFIED",
+          "evidenceIds": [],
+          "evidenceHashes": []
+        },
+        {
+          "id": "criterion_governed_state_2",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_governed_state_2_1"
+          ],
+          "evidenceHashes": [
+            "sha256:c598fd9be531ba538cd36e70cdff321876611708d05ea6bd29c24a810aa0fdc4"
+          ]
+        },
+        {
+          "id": "criterion_governed_state_3",
+          "verdict": "UNVERIFIED",
+          "evidenceIds": [],
+          "evidenceHashes": []
+        }
+      ],
+      "findings": [],
+      "waivers": [],
+      "outcome": "INCOMPLETE",
+      "evidenceRecords": [
+        {
+          "record": {
+            "id": "ev_governed_state_2_1",
+            "missionId": "msn_demo_governed_state",
+            "criterionId": "criterion_governed_state_2",
+            "source": "hook",
+            "command": "axiomgate hook sample-check",
+            "exitCode": 0,
+            "outputHash": "sha256:cf460ebc396ec2cf2d2e8c2182b8943c647af2e6fb5fe7e7f0a77ac69fdede11",
+            "outputRef": "sample://evidence/governed_state/criterion_governed_state_2/hook_decision",
+            "capturedAt": "2026-07-20T07:11:00.000Z",
+            "freshForCommit": "demo-governed_state-commit",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "hash": "sha256:c598fd9be531ba538cd36e70cdff321876611708d05ea6bd29c24a810aa0fdc4"
+        }
+      ],
+      "evidenceChainHead": "sha256:c598fd9be531ba538cd36e70cdff321876611708d05ea6bd29c24a810aa0fdc4",
+      "limitations": [
+        "Curated synthetic hosted-demo receipt; it does not represent a live account or deployment."
+      ],
+      "generatedAt": "2026-07-20T07:11:00.000Z"
+    }
+  },
+  {
+    "id": "msn_demo_dependency_fix",
+    "label": "SAMPLE",
+    "sampleNotice": "CURATED DEMO DATA - synthetic and not a live run",
+    "contract": {
+      "id": "msn_demo_dependency_fix",
+      "version": 1,
+      "objective": "Upgrade the inherited lodash dependency and rerun the affected checks",
+      "projectProfileId": "sample-dependency_fix",
+      "intentBoundary": "MODIFY_LOCAL",
+      "acceptanceCriteria": [
+        {
+          "id": "criterion_dependency_fix_1",
+          "statement": "The lockfile change is limited to lodash",
+          "risk": "medium",
+          "evidenceTypes": [
+            "diff"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_dependency_fix_2",
+          "statement": "The dependency advisory is cleared",
+          "risk": "high",
+          "evidenceTypes": [
+            "security_scan"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_dependency_fix_3",
+          "statement": "The application test suite remains green",
+          "risk": "medium",
+          "evidenceTypes": [
+            "test"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        }
+      ],
+      "constraints": [
+        "Synthetic demo users only",
+        "Do not publish or deploy",
+        "Preserve the existing login response contract"
+      ],
+      "nonGoals": [
+        "Production deployment",
+        "Persistent account storage"
+      ],
+      "actionPolicy": [
+        {
+          "action": "repository.read",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "file.modify",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "branch.create",
+          "decision": "ALLOW",
+          "restrict": {
+            "branchPrefix": "agent/"
+          }
+        },
+        {
+          "action": "pull_request.create",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "preview.deploy",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "production.deploy",
+          "decision": "DENY"
+        },
+        {
+          "action": "verification.run",
+          "decision": "ALLOW"
+        }
+      ],
+      "modelPlan": [
+        {
+          "phase": "scout",
+          "model": "gpt-5.6-luna",
+          "effort": "light",
+          "rationale": "Structured repository mapping with low spend"
+        },
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "rationale": "Primary implementation with a sustained reasoning chain"
+        },
+        {
+          "phase": "security escalation note",
+          "model": "gpt-5.6-sol",
+          "effort": "max",
+          "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+          "multiAgent": false,
+          "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+        },
+        {
+          "phase": "remediate",
+          "model": "gpt-5.6-terra",
+          "effort": "medium",
+          "rationale": "Bounded dependency remediation"
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "rationale": "Independent read-only challenge in a fresh session"
+        }
+      ],
+      "budgetPolicy": {
+        "reservePercent": 20
+      },
+      "status": "COMPLETE",
+      "createdAt": "2026-07-20T06:20:00.000Z",
+      "updatedAt": "2026-07-20T06:38:00.000Z",
+      "hash": "sha256:0398cc81a8275bd278c1c5a82f4a2fe14026a5f35974e27f2f13842f2284c8e0"
+    },
+    "identity": {
+      "githubLogin": {
+        "value": "sample-owner",
+        "source": "sample",
+        "confidence": "sample",
+        "capturedAt": "2026-07-20T06:20:00.000Z"
+      }
+    },
+    "denials": [],
+    "evidence": [
+      {
+        "id": "ev_dependency_fix_1_1",
+        "missionId": "msn_demo_dependency_fix",
+        "criterionId": "criterion_dependency_fix_1",
+        "source": "command",
+        "command": "git diff --check",
+        "exitCode": 0,
+        "outputHash": "sha256:02e8239ddeeb6a5ef81b7679589d1d940cd432da2c2fd096b8007064b4f2810e",
+        "outputRef": "sample://evidence/dependency_fix/criterion_dependency_fix_1/diff",
+        "capturedAt": "2026-07-20T06:38:00.000Z",
+        "freshForCommit": "demo-dependency_fix-commit",
+        "label": "REPLAY",
+        "redacted": true
+      },
+      {
+        "id": "ev_dependency_fix_2_1",
+        "missionId": "msn_demo_dependency_fix",
+        "criterionId": "criterion_dependency_fix_2",
+        "source": "command",
+        "command": "patchpilot scan .",
+        "exitCode": 0,
+        "outputHash": "sha256:be9904a74928499922dfe2eca212ed3b5de7c5dbeaf9b12c79cd2b32966da235",
+        "outputRef": "sample://evidence/dependency_fix/criterion_dependency_fix_2/security_scan",
+        "capturedAt": "2026-07-20T06:38:00.000Z",
+        "freshForCommit": "demo-dependency_fix-commit",
+        "label": "REPLAY",
+        "redacted": true
+      },
+      {
+        "id": "ev_dependency_fix_3_1",
+        "missionId": "msn_demo_dependency_fix",
+        "criterionId": "criterion_dependency_fix_3",
+        "source": "command",
+        "command": "npm test",
+        "exitCode": 0,
+        "outputHash": "sha256:2442a386eb9aa8984a0942c721feb6b519c7bd4394ac533b2d1920d4abb7cda8",
+        "outputRef": "sample://evidence/dependency_fix/criterion_dependency_fix_3/test",
+        "capturedAt": "2026-07-20T06:38:00.000Z",
+        "freshForCommit": "demo-dependency_fix-commit",
+        "label": "REPLAY",
+        "redacted": true
+      }
+    ],
+    "events": [
+      {
+        "type": "mission.planned",
+        "ts": "2026-07-20T06:20:00.000Z",
+        "missionId": "msn_demo_dependency_fix",
+        "label": "SAMPLE"
+      },
+      {
+        "type": "verification.completed",
+        "ts": "2026-07-20T06:38:00.000Z",
+        "missionId": "msn_demo_dependency_fix",
+        "status": "FAIL",
+        "label": "SAMPLE"
+      },
+      {
+        "type": "verification.completed",
+        "ts": "2026-07-20T06:38:00.000Z",
+        "missionId": "msn_demo_dependency_fix",
+        "status": "PASS",
+        "label": "SAMPLE"
+      },
+      {
+        "type": "proof.evaluated",
+        "ts": "2026-07-20T06:38:00.000Z",
+        "missionId": "msn_demo_dependency_fix",
+        "outcome": "COMPLETE",
+        "label": "SAMPLE"
+      }
+    ],
+    "ledger": [
+      {
+        "role": "builder",
+        "phase": "build",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "usage": {
+          "input_tokens": 7200,
+          "output_tokens": 840,
+          "reasoning_output_tokens": 260
+        },
+        "label": "SAMPLE"
+      },
+      {
+        "role": "verifier",
+        "phase": "verify",
+        "model": "gpt-5.6-terra",
+        "effort": "high",
+        "usage": {
+          "input_tokens": 3100,
+          "output_tokens": 420,
+          "reasoning_output_tokens": 150
+        },
+        "label": "SAMPLE"
+      }
+    ],
+    "sessions": [
+      {
+        "id": "session_dependency_fix_builder",
+        "role": "builder",
+        "label": "SAMPLE"
+      },
+      {
+        "id": "session_dependency_fix_verifier",
+        "role": "verifier",
+        "sandbox": "read-only",
+        "fresh": true,
+        "label": "SAMPLE"
+      }
+    ],
+    "findings": [
+      {
+        "id": "finding_dependency_lodash",
+        "checkId": "dependency_scan",
+        "criterionIds": [
+          "criterion_dependency_fix_2"
+        ],
+        "title": "Inherited lodash advisory",
+        "detail": "The SAMPLE initial scan found lodash 4.17.4; governed remediation upgraded it and the targeted rerun passed.",
+        "severity": "high",
+        "status": "resolved",
+        "cve": "CVE-2021-23337",
+        "advisory": "GHSA-35jh-r3h4-6jhm",
+        "ecosystem": "npm",
+        "package": "lodash",
+        "version": "4.17.4",
+        "fixedVersion": "4.17.21",
+        "reachability": "unknown"
+      }
+    ],
+    "runs": [
+      {
+        "id": "run_dependency_fix_build",
+        "role": "builder",
+        "status": "SUCCESS",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "startedAt": "2026-07-20T06:20:00.000Z",
+        "endedAt": "2026-07-20T06:38:00.000Z",
+        "label": "SAMPLE"
+      }
+    ],
+    "verifications": [
+      {
+        "id": "verify_dependency_fix_1",
+        "overall": "FAIL",
+        "findingIds": [
+          "finding_dependency_lodash"
+        ],
+        "startedAt": "2026-07-20T06:38:00.000Z",
+        "endedAt": "2026-07-20T06:38:00.000Z",
+        "label": "SAMPLE"
+      },
+      {
+        "id": "verify_dependency_fix_2",
+        "overall": "PASS",
+        "findingIds": [
+          "finding_dependency_lodash"
+        ],
+        "startedAt": "2026-07-20T06:38:00.000Z",
+        "endedAt": "2026-07-20T06:38:00.000Z",
+        "label": "SAMPLE"
+      }
+    ],
+    "approvals": [],
+    "receipt": {
+      "schemaVersion": 1,
+      "missionId": "msn_demo_dependency_fix",
+      "contract": {
+        "id": "msn_demo_dependency_fix",
+        "version": 1,
+        "hash": "sha256:0398cc81a8275bd278c1c5a82f4a2fe14026a5f35974e27f2f13842f2284c8e0",
+        "objective": "Upgrade the inherited lodash dependency and rerun the affected checks",
+        "projectProfileId": "sample-dependency_fix",
+        "intentBoundary": "MODIFY_LOCAL",
+        "acceptanceCriteria": [
+          {
+            "id": "criterion_dependency_fix_1",
+            "statement": "The lockfile change is limited to lodash",
+            "risk": "medium",
+            "evidenceTypes": [
+              "diff"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_dependency_fix_2",
+            "statement": "The dependency advisory is cleared",
+            "risk": "high",
+            "evidenceTypes": [
+              "security_scan"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_dependency_fix_3",
+            "statement": "The application test suite remains green",
+            "risk": "medium",
+            "evidenceTypes": [
+              "test"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          }
+        ],
+        "constraints": [
+          "Synthetic demo users only",
+          "Do not publish or deploy",
+          "Preserve the existing login response contract"
+        ],
+        "nonGoals": [
+          "Production deployment",
+          "Persistent account storage"
+        ],
+        "actionPolicy": [
+          {
+            "action": "repository.read",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "file.modify",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "branch.create",
+            "decision": "ALLOW",
+            "restrict": {
+              "branchPrefix": "agent/"
+            }
+          },
+          {
+            "action": "pull_request.create",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "preview.deploy",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "production.deploy",
+            "decision": "DENY"
+          },
+          {
+            "action": "verification.run",
+            "decision": "ALLOW"
+          }
+        ],
+        "modelPlan": [
+          {
+            "phase": "scout",
+            "model": "gpt-5.6-luna",
+            "effort": "light",
+            "rationale": "Structured repository mapping with low spend"
+          },
+          {
+            "phase": "build",
+            "model": "gpt-5.6-sol",
+            "effort": "high",
+            "rationale": "Primary implementation with a sustained reasoning chain"
+          },
+          {
+            "phase": "security escalation note",
+            "model": "gpt-5.6-sol",
+            "effort": "max",
+            "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+            "multiAgent": false,
+            "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+          },
+          {
+            "phase": "remediate",
+            "model": "gpt-5.6-terra",
+            "effort": "medium",
+            "rationale": "Bounded dependency remediation"
+          },
+          {
+            "phase": "verify",
+            "model": "gpt-5.6-terra",
+            "effort": "high",
+            "rationale": "Independent read-only challenge in a fresh session"
+          }
+        ],
+        "budgetPolicy": {
+          "reservePercent": 20
+        },
+        "status": "COMPLETE",
+        "createdAt": "2026-07-20T06:20:00.000Z",
+        "updatedAt": "2026-07-20T06:38:00.000Z"
+      },
+      "contractHash": "sha256:0398cc81a8275bd278c1c5a82f4a2fe14026a5f35974e27f2f13842f2284c8e0",
+      "repo": {
+        "remote": "https://example.invalid/axiomgate/dependency_fix.git",
+        "branch": "agent/dependency_fix",
+        "commit": "demo-dependency_fix-commit"
+      },
+      "identities": {
+        "github": "sample-owner",
+        "vercel": "SAMPLE_NOT_CONNECTED"
+      },
+      "modelUsage": [
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "tokens": {
+            "input": 7200,
+            "output": 840,
+            "reasoning": 260
+          }
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "tokens": {
+            "input": 3100,
+            "output": 420,
+            "reasoning": 150
+          }
+        }
+      ],
+      "capacityLedger": {
+        "estimated": {
+          "totalTokens": 16000
+        },
+        "actual": {
+          "totalTokens": 11810
+        },
+        "sourceLabels": {
+          "capacity": "SAMPLE",
+          "tokenUsage": "SAMPLE"
+        }
+      },
+      "actions": [],
+      "permissionQuad": {
+        "requested": "0/0",
+        "approved": "0/0",
+        "applied": "0/0",
+        "observed": "0/0"
+      },
+      "criteria": [
+        {
+          "id": "criterion_dependency_fix_1",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_dependency_fix_1_1"
+          ],
+          "evidenceHashes": [
+            "sha256:90f5ea8e72dc7ce1f37aefcc8f1718a73f8506888680d67f40f7fdb4aad7f88e"
+          ]
+        },
+        {
+          "id": "criterion_dependency_fix_2",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_dependency_fix_2_1"
+          ],
+          "evidenceHashes": [
+            "sha256:6a76de89eac723d67fc9439666ec9403e9ea88144189ff763f9c624ec71e1a92"
+          ]
+        },
+        {
+          "id": "criterion_dependency_fix_3",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_dependency_fix_3_1"
+          ],
+          "evidenceHashes": [
+            "sha256:3058c67be78bf4ec1fbff9f7b90323bc2b0503d10584b140a407f3162ab9af67"
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "finding_dependency_lodash",
+          "checkId": "dependency_scan",
+          "criterionIds": [
+            "criterion_dependency_fix_2"
+          ],
+          "title": "Inherited lodash advisory",
+          "detail": "The SAMPLE initial scan found lodash 4.17.4; governed remediation upgraded it and the targeted rerun passed.",
+          "severity": "high",
+          "status": "resolved",
+          "cve": "CVE-2021-23337",
+          "advisory": "GHSA-35jh-r3h4-6jhm",
+          "ecosystem": "npm",
+          "package": "lodash",
+          "version": "4.17.4",
+          "fixedVersion": "4.17.21",
+          "reachability": "unknown"
+        }
+      ],
+      "waivers": [],
+      "outcome": "COMPLETE",
+      "evidenceRecords": [
+        {
+          "record": {
+            "id": "ev_dependency_fix_1_1",
+            "missionId": "msn_demo_dependency_fix",
+            "criterionId": "criterion_dependency_fix_1",
+            "source": "command",
+            "command": "git diff --check",
+            "exitCode": 0,
+            "outputHash": "sha256:02e8239ddeeb6a5ef81b7679589d1d940cd432da2c2fd096b8007064b4f2810e",
+            "outputRef": "sample://evidence/dependency_fix/criterion_dependency_fix_1/diff",
+            "capturedAt": "2026-07-20T06:38:00.000Z",
+            "freshForCommit": "demo-dependency_fix-commit",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "hash": "sha256:90f5ea8e72dc7ce1f37aefcc8f1718a73f8506888680d67f40f7fdb4aad7f88e"
+        },
+        {
+          "record": {
+            "id": "ev_dependency_fix_2_1",
+            "missionId": "msn_demo_dependency_fix",
+            "criterionId": "criterion_dependency_fix_2",
+            "source": "command",
+            "command": "patchpilot scan .",
+            "exitCode": 0,
+            "outputHash": "sha256:be9904a74928499922dfe2eca212ed3b5de7c5dbeaf9b12c79cd2b32966da235",
+            "outputRef": "sample://evidence/dependency_fix/criterion_dependency_fix_2/security_scan",
+            "capturedAt": "2026-07-20T06:38:00.000Z",
+            "freshForCommit": "demo-dependency_fix-commit",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:90f5ea8e72dc7ce1f37aefcc8f1718a73f8506888680d67f40f7fdb4aad7f88e",
+          "hash": "sha256:6a76de89eac723d67fc9439666ec9403e9ea88144189ff763f9c624ec71e1a92"
+        },
+        {
+          "record": {
+            "id": "ev_dependency_fix_3_1",
+            "missionId": "msn_demo_dependency_fix",
+            "criterionId": "criterion_dependency_fix_3",
+            "source": "command",
+            "command": "npm test",
+            "exitCode": 0,
+            "outputHash": "sha256:2442a386eb9aa8984a0942c721feb6b519c7bd4394ac533b2d1920d4abb7cda8",
+            "outputRef": "sample://evidence/dependency_fix/criterion_dependency_fix_3/test",
+            "capturedAt": "2026-07-20T06:38:00.000Z",
+            "freshForCommit": "demo-dependency_fix-commit",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:6a76de89eac723d67fc9439666ec9403e9ea88144189ff763f9c624ec71e1a92",
+          "hash": "sha256:3058c67be78bf4ec1fbff9f7b90323bc2b0503d10584b140a407f3162ab9af67"
+        }
+      ],
+      "evidenceChainHead": "sha256:3058c67be78bf4ec1fbff9f7b90323bc2b0503d10584b140a407f3162ab9af67",
+      "limitations": [
+        "Curated synthetic hosted-demo receipt; it does not represent a live account or deployment."
+      ],
+      "generatedAt": "2026-07-20T06:38:00.000Z"
+    }
+  },
+  {
+    "id": "msn_demo_secret_waiver",
+    "label": "SAMPLE",
+    "sampleNotice": "CURATED DEMO DATA - synthetic and not a live run",
+    "contract": {
+      "id": "msn_demo_secret_waiver",
+      "version": 1,
+      "objective": "Verify webhook secret rotation readiness without changing a provider account",
+      "projectProfileId": "sample-secret_waiver",
+      "intentBoundary": "MODIFY_LOCAL",
+      "acceptanceCriteria": [
+        {
+          "id": "criterion_secret_waiver_1",
+          "statement": "Local secret references are redacted and valid",
+          "risk": "critical",
+          "evidenceTypes": [
+            "secret_scan"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_secret_waiver_2",
+          "statement": "The external provider confirms the rotated value",
+          "risk": "critical",
+          "evidenceTypes": [
+            "api_response"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        }
+      ],
+      "constraints": [
+        "Synthetic demo users only",
+        "Do not publish or deploy",
+        "Preserve the existing login response contract"
+      ],
+      "nonGoals": [
+        "Production deployment",
+        "Persistent account storage"
+      ],
+      "actionPolicy": [
+        {
+          "action": "repository.read",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "file.modify",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "branch.create",
+          "decision": "ALLOW",
+          "restrict": {
+            "branchPrefix": "agent/"
+          }
+        },
+        {
+          "action": "pull_request.create",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "preview.deploy",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "production.deploy",
+          "decision": "DENY"
+        },
+        {
+          "action": "verification.run",
+          "decision": "ALLOW"
+        }
+      ],
+      "modelPlan": [
+        {
+          "phase": "scout",
+          "model": "gpt-5.6-luna",
+          "effort": "light",
+          "rationale": "Structured repository mapping with low spend"
+        },
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "rationale": "Primary implementation with a sustained reasoning chain"
+        },
+        {
+          "phase": "security escalation note",
+          "model": "gpt-5.6-sol",
+          "effort": "max",
+          "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+          "multiAgent": false,
+          "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+        },
+        {
+          "phase": "remediate",
+          "model": "gpt-5.6-terra",
+          "effort": "medium",
+          "rationale": "Bounded dependency remediation"
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "rationale": "Independent read-only challenge in a fresh session"
+        }
+      ],
+      "budgetPolicy": {
+        "reservePercent": 20
+      },
+      "status": "COMPLETE",
+      "createdAt": "2026-07-20T05:40:00.000Z",
+      "updatedAt": "2026-07-20T05:55:00.000Z",
+      "hash": "sha256:89b454a487c401e142efbca9cff77ae76cebe315052790c7772d913d0e87b386"
+    },
+    "identity": {
+      "githubLogin": {
+        "value": "sample-owner",
+        "source": "sample",
+        "confidence": "sample",
+        "capturedAt": "2026-07-20T05:40:00.000Z"
+      }
+    },
+    "denials": [],
+    "evidence": [
+      {
+        "id": "ev_secret_waiver_1_1",
+        "missionId": "msn_demo_secret_waiver",
+        "criterionId": "criterion_secret_waiver_1",
+        "source": "command",
+        "command": "builtin-secret-scan --diff",
+        "exitCode": 0,
+        "outputHash": "sha256:bf63c8d0ad39575675d777f26b9393125c94061f158b7f4002ad7e7f5fe7a440",
+        "outputRef": "sample://evidence/secret_waiver/criterion_secret_waiver_1/secret_scan",
+        "capturedAt": "2026-07-20T05:55:00.000Z",
+        "freshForCommit": "demo-secret_waiver-commit",
+        "label": "REPLAY",
+        "redacted": true
+      }
+    ],
+    "events": [
+      {
+        "type": "mission.planned",
+        "ts": "2026-07-20T05:40:00.000Z",
+        "missionId": "msn_demo_secret_waiver",
+        "label": "SAMPLE"
+      },
+      {
+        "type": "proof.evaluated",
+        "ts": "2026-07-20T05:55:00.000Z",
+        "missionId": "msn_demo_secret_waiver",
+        "outcome": "COMPLETE",
+        "label": "SAMPLE"
+      }
+    ],
+    "ledger": [
+      {
+        "role": "builder",
+        "phase": "build",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "usage": {
+          "input_tokens": 7200,
+          "output_tokens": 840,
+          "reasoning_output_tokens": 260
+        },
+        "label": "SAMPLE"
+      },
+      {
+        "role": "verifier",
+        "phase": "verify",
+        "model": "gpt-5.6-terra",
+        "effort": "high",
+        "usage": {
+          "input_tokens": 3100,
+          "output_tokens": 420,
+          "reasoning_output_tokens": 150
+        },
+        "label": "SAMPLE"
+      }
+    ],
+    "sessions": [
+      {
+        "id": "session_secret_waiver_builder",
+        "role": "builder",
+        "label": "SAMPLE"
+      },
+      {
+        "id": "session_secret_waiver_verifier",
+        "role": "verifier",
+        "sandbox": "read-only",
+        "fresh": true,
+        "label": "SAMPLE"
+      }
+    ],
+    "findings": [],
+    "runs": [
+      {
+        "id": "run_secret_waiver_build",
+        "role": "builder",
+        "status": "SUCCESS",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "startedAt": "2026-07-20T05:40:00.000Z",
+        "endedAt": "2026-07-20T05:55:00.000Z",
+        "label": "SAMPLE"
+      }
+    ],
+    "verifications": [],
+    "approvals": [],
+    "receipt": {
+      "schemaVersion": 1,
+      "missionId": "msn_demo_secret_waiver",
+      "contract": {
+        "id": "msn_demo_secret_waiver",
+        "version": 1,
+        "hash": "sha256:89b454a487c401e142efbca9cff77ae76cebe315052790c7772d913d0e87b386",
+        "objective": "Verify webhook secret rotation readiness without changing a provider account",
+        "projectProfileId": "sample-secret_waiver",
+        "intentBoundary": "MODIFY_LOCAL",
+        "acceptanceCriteria": [
+          {
+            "id": "criterion_secret_waiver_1",
+            "statement": "Local secret references are redacted and valid",
+            "risk": "critical",
+            "evidenceTypes": [
+              "secret_scan"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_secret_waiver_2",
+            "statement": "The external provider confirms the rotated value",
+            "risk": "critical",
+            "evidenceTypes": [
+              "api_response"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          }
+        ],
+        "constraints": [
+          "Synthetic demo users only",
+          "Do not publish or deploy",
+          "Preserve the existing login response contract"
+        ],
+        "nonGoals": [
+          "Production deployment",
+          "Persistent account storage"
+        ],
+        "actionPolicy": [
+          {
+            "action": "repository.read",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "file.modify",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "branch.create",
+            "decision": "ALLOW",
+            "restrict": {
+              "branchPrefix": "agent/"
+            }
+          },
+          {
+            "action": "pull_request.create",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "preview.deploy",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "production.deploy",
+            "decision": "DENY"
+          },
+          {
+            "action": "verification.run",
+            "decision": "ALLOW"
+          }
+        ],
+        "modelPlan": [
+          {
+            "phase": "scout",
+            "model": "gpt-5.6-luna",
+            "effort": "light",
+            "rationale": "Structured repository mapping with low spend"
+          },
+          {
+            "phase": "build",
+            "model": "gpt-5.6-sol",
+            "effort": "high",
+            "rationale": "Primary implementation with a sustained reasoning chain"
+          },
+          {
+            "phase": "security escalation note",
+            "model": "gpt-5.6-sol",
+            "effort": "max",
+            "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+            "multiAgent": false,
+            "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+          },
+          {
+            "phase": "remediate",
+            "model": "gpt-5.6-terra",
+            "effort": "medium",
+            "rationale": "Bounded dependency remediation"
+          },
+          {
+            "phase": "verify",
+            "model": "gpt-5.6-terra",
+            "effort": "high",
+            "rationale": "Independent read-only challenge in a fresh session"
+          }
+        ],
+        "budgetPolicy": {
+          "reservePercent": 20
+        },
+        "status": "COMPLETE",
+        "createdAt": "2026-07-20T05:40:00.000Z",
+        "updatedAt": "2026-07-20T05:55:00.000Z"
+      },
+      "contractHash": "sha256:89b454a487c401e142efbca9cff77ae76cebe315052790c7772d913d0e87b386",
+      "repo": {
+        "remote": "https://example.invalid/axiomgate/secret_waiver.git",
+        "branch": "agent/secret_waiver",
+        "commit": "demo-secret_waiver-commit"
+      },
+      "identities": {
+        "github": "sample-owner",
+        "vercel": "SAMPLE_NOT_CONNECTED"
+      },
+      "modelUsage": [
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "tokens": {
+            "input": 7200,
+            "output": 840,
+            "reasoning": 260
+          }
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "tokens": {
+            "input": 3100,
+            "output": 420,
+            "reasoning": 150
+          }
+        }
+      ],
+      "capacityLedger": {
+        "estimated": {
+          "totalTokens": 16000
+        },
+        "actual": {
+          "totalTokens": 11810
+        },
+        "sourceLabels": {
+          "capacity": "SAMPLE",
+          "tokenUsage": "SAMPLE"
+        }
+      },
+      "actions": [],
+      "permissionQuad": {
+        "requested": "0/0",
+        "approved": "0/0",
+        "applied": "0/0",
+        "observed": "0/0"
+      },
+      "criteria": [
+        {
+          "id": "criterion_secret_waiver_1",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_secret_waiver_1_1"
+          ],
+          "evidenceHashes": [
+            "sha256:bc4c4ef38f98ae6b583b49c344f93186ba9dacad650b2a177b0f4e36c41b9784"
+          ]
+        },
+        {
+          "id": "criterion_secret_waiver_2",
+          "verdict": "WAIVED",
+          "evidenceIds": [],
+          "evidenceHashes": []
+        }
+      ],
+      "findings": [],
+      "waivers": [
+        {
+          "criterionId": "criterion_secret_waiver_2",
+          "reason": "SAMPLE waiver: hosted demo has no provider account and performs no credential mutation.",
+          "approver": "sample-owner",
+          "riskAccepted": "Provider-side rotation remains a user-owned production action.",
+          "ts": "2026-07-20T05:55:00.000Z"
+        }
+      ],
+      "outcome": "COMPLETE",
+      "evidenceRecords": [
+        {
+          "record": {
+            "id": "ev_secret_waiver_1_1",
+            "missionId": "msn_demo_secret_waiver",
+            "criterionId": "criterion_secret_waiver_1",
+            "source": "command",
+            "command": "builtin-secret-scan --diff",
+            "exitCode": 0,
+            "outputHash": "sha256:bf63c8d0ad39575675d777f26b9393125c94061f158b7f4002ad7e7f5fe7a440",
+            "outputRef": "sample://evidence/secret_waiver/criterion_secret_waiver_1/secret_scan",
+            "capturedAt": "2026-07-20T05:55:00.000Z",
+            "freshForCommit": "demo-secret_waiver-commit",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "hash": "sha256:bc4c4ef38f98ae6b583b49c344f93186ba9dacad650b2a177b0f4e36c41b9784"
+        }
+      ],
+      "evidenceChainHead": "sha256:bc4c4ef38f98ae6b583b49c344f93186ba9dacad650b2a177b0f4e36c41b9784",
+      "limitations": [
+        "Curated synthetic hosted-demo receipt; it does not represent a live account or deployment."
+      ],
+      "generatedAt": "2026-07-20T05:55:00.000Z"
+    }
+  },
+  {
+    "id": "msn_demo_awaiting_approval",
+    "label": "SAMPLE",
+    "sampleNotice": "CURATED DEMO DATA - synthetic and not a live run",
+    "contract": {
+      "id": "msn_demo_awaiting_approval",
+      "version": 1,
+      "objective": "Add registration input validation and open a review pull request",
+      "projectProfileId": "sample-awaiting_approval",
+      "intentBoundary": "PUBLISH",
+      "acceptanceCriteria": [
+        {
+          "id": "criterion_awaiting_approval_1",
+          "statement": "Malformed registration input is rejected",
+          "risk": "high",
+          "evidenceTypes": [
+            "test"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_awaiting_approval_2",
+          "statement": "Existing registration behavior remains green",
+          "risk": "medium",
+          "evidenceTypes": [
+            "test"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_awaiting_approval_3",
+          "statement": "The approved pull request action is observed",
+          "risk": "high",
+          "evidenceTypes": [
+            "api_response"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        }
+      ],
+      "constraints": [
+        "Synthetic demo users only",
+        "Do not publish or deploy",
+        "Preserve the existing login response contract"
+      ],
+      "nonGoals": [
+        "Production deployment",
+        "Persistent account storage"
+      ],
+      "actionPolicy": [
+        {
+          "action": "repository.read",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "file.modify",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "branch.create",
+          "decision": "ALLOW",
+          "restrict": {
+            "branchPrefix": "agent/"
+          }
+        },
+        {
+          "action": "pull_request.create",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "preview.deploy",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "production.deploy",
+          "decision": "DENY"
+        },
+        {
+          "action": "verification.run",
+          "decision": "ALLOW"
+        }
+      ],
+      "modelPlan": [
+        {
+          "phase": "scout",
+          "model": "gpt-5.6-luna",
+          "effort": "light",
+          "rationale": "Structured repository mapping with low spend"
+        },
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "rationale": "Primary implementation with a sustained reasoning chain"
+        },
+        {
+          "phase": "security escalation note",
+          "model": "gpt-5.6-sol",
+          "effort": "max",
+          "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+          "multiAgent": false,
+          "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+        },
+        {
+          "phase": "remediate",
+          "model": "gpt-5.6-terra",
+          "effort": "medium",
+          "rationale": "Bounded dependency remediation"
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "rationale": "Independent read-only challenge in a fresh session"
+        }
+      ],
+      "budgetPolicy": {
+        "reservePercent": 20
+      },
+      "status": "AWAITING_APPROVAL",
+      "createdAt": "2026-07-20T05:00:00.000Z",
+      "updatedAt": "2026-07-20T05:18:00.000Z",
+      "hash": "sha256:1c817722ba812ee52c3d5e748a18499c7704c7893913fe62ace321614bab72a8"
+    },
+    "identity": {
+      "githubLogin": {
+        "value": "sample-owner",
+        "source": "sample",
+        "confidence": "sample",
+        "capturedAt": "2026-07-20T05:00:00.000Z"
+      }
+    },
+    "denials": [],
+    "evidence": [
+      {
+        "id": "ev_awaiting_approval_1_1",
+        "missionId": "msn_demo_awaiting_approval",
+        "criterionId": "criterion_awaiting_approval_1",
+        "source": "command",
+        "command": "npm test",
+        "exitCode": 0,
+        "outputHash": "sha256:48f7a1906192b6128dfdd336ff44918d71fc3704ae3af12dab0ca2330fb3a46b",
+        "outputRef": "sample://evidence/awaiting_approval/criterion_awaiting_approval_1/test",
+        "capturedAt": "2026-07-20T05:18:00.000Z",
+        "freshForCommit": "demo-awaiting_approval-commit",
+        "label": "REPLAY",
+        "redacted": true
+      },
+      {
+        "id": "ev_awaiting_approval_2_1",
+        "missionId": "msn_demo_awaiting_approval",
+        "criterionId": "criterion_awaiting_approval_2",
+        "source": "command",
+        "command": "npm test",
+        "exitCode": 0,
+        "outputHash": "sha256:5ea1651aa3553876c315e2ec26a352f787c5b0d0ef3074b4556d5fe16230ec69",
+        "outputRef": "sample://evidence/awaiting_approval/criterion_awaiting_approval_2/test",
+        "capturedAt": "2026-07-20T05:18:00.000Z",
+        "freshForCommit": "demo-awaiting_approval-commit",
+        "label": "REPLAY",
+        "redacted": true
+      }
+    ],
+    "events": [
+      {
+        "type": "mission.planned",
+        "ts": "2026-07-20T05:00:00.000Z",
+        "missionId": "msn_demo_awaiting_approval",
+        "label": "SAMPLE"
+      },
+      {
+        "type": "proof.evaluated",
+        "ts": "2026-07-20T05:18:00.000Z",
+        "missionId": "msn_demo_awaiting_approval",
+        "outcome": "INCOMPLETE",
+        "label": "SAMPLE"
+      }
+    ],
+    "ledger": [
+      {
+        "role": "builder",
+        "phase": "build",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "usage": {
+          "input_tokens": 7200,
+          "output_tokens": 840,
+          "reasoning_output_tokens": 260
+        },
+        "label": "SAMPLE"
+      },
+      {
+        "role": "verifier",
+        "phase": "verify",
+        "model": "gpt-5.6-terra",
+        "effort": "high",
+        "usage": {
+          "input_tokens": 3100,
+          "output_tokens": 420,
+          "reasoning_output_tokens": 150
+        },
+        "label": "SAMPLE"
+      }
+    ],
+    "sessions": [
+      {
+        "id": "session_awaiting_approval_builder",
+        "role": "builder",
+        "label": "SAMPLE"
+      },
+      {
+        "id": "session_awaiting_approval_verifier",
+        "role": "verifier",
+        "sandbox": "read-only",
+        "fresh": true,
+        "label": "SAMPLE"
+      }
+    ],
+    "findings": [],
+    "runs": [
+      {
+        "id": "run_awaiting_approval_build",
+        "role": "builder",
+        "status": "SUCCESS",
+        "model": "gpt-5.6-sol",
+        "effort": "high",
+        "startedAt": "2026-07-20T05:00:00.000Z",
+        "endedAt": "2026-07-20T05:18:00.000Z",
+        "label": "SAMPLE"
+      }
+    ],
+    "verifications": [],
+    "approvals": [
+      {
+        "request": {
+          "id": "act_awaiting_approval_publish",
+          "missionId": "msn_demo_awaiting_approval",
+          "semanticAction": "pull_request.create",
+          "mechanism": "gh cli",
+          "target": {
+            "type": "github_repo",
+            "owner": "sample-owner",
+            "repo": "sample-awaiting_approval",
+            "verifiedOwnership": true,
+            "branch": "agent/awaiting_approval"
+          },
+          "identity": {
+            "githubLogin": "sample-owner",
+            "source": "sample"
+          },
+          "rawCommandHash": "sha256:dce17cffb791e0cb1c6aa577305320ac37e6bd930f976314cc14ca38e7c8c3f6",
+          "intentBoundaryRequired": "PUBLISH",
+          "risk": "medium",
+          "rollback": "Close the SAMPLE pull request without merging",
+          "decision": "AWAITING_APPROVAL",
+          "requestedAt": "2026-07-20T05:18:00.000Z",
+          "expiresAt": "2026-07-30T12:00:00.000Z"
+        },
+        "reasons": [
+          "SAMPLE policy requires one-time approval before creating a pull request."
+        ],
+        "displayCommand": "gh pr create --title 'Validate registration input'",
+        "status": "PENDING",
+        "createdAt": "2026-07-20T05:18:00.000Z",
+        "expiresAt": "2026-07-30T12:00:00.000Z",
+        "approval": null,
+        "deniedAt": null,
+        "deniedBy": null,
+        "deniedSurface": null
+      }
+    ],
+    "receipt": {
+      "schemaVersion": 1,
+      "missionId": "msn_demo_awaiting_approval",
+      "contract": {
+        "id": "msn_demo_awaiting_approval",
+        "version": 1,
+        "hash": "sha256:1c817722ba812ee52c3d5e748a18499c7704c7893913fe62ace321614bab72a8",
+        "objective": "Add registration input validation and open a review pull request",
+        "projectProfileId": "sample-awaiting_approval",
+        "intentBoundary": "PUBLISH",
+        "acceptanceCriteria": [
+          {
+            "id": "criterion_awaiting_approval_1",
+            "statement": "Malformed registration input is rejected",
+            "risk": "high",
+            "evidenceTypes": [
+              "test"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_awaiting_approval_2",
+            "statement": "Existing registration behavior remains green",
+            "risk": "medium",
+            "evidenceTypes": [
+              "test"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_awaiting_approval_3",
+            "statement": "The approved pull request action is observed",
+            "risk": "high",
+            "evidenceTypes": [
+              "api_response"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          }
+        ],
+        "constraints": [
+          "Synthetic demo users only",
+          "Do not publish or deploy",
+          "Preserve the existing login response contract"
+        ],
+        "nonGoals": [
+          "Production deployment",
+          "Persistent account storage"
+        ],
+        "actionPolicy": [
+          {
+            "action": "repository.read",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "file.modify",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "branch.create",
+            "decision": "ALLOW",
+            "restrict": {
+              "branchPrefix": "agent/"
+            }
+          },
+          {
+            "action": "pull_request.create",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "preview.deploy",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "production.deploy",
+            "decision": "DENY"
+          },
+          {
+            "action": "verification.run",
+            "decision": "ALLOW"
+          }
+        ],
+        "modelPlan": [
+          {
+            "phase": "scout",
+            "model": "gpt-5.6-luna",
+            "effort": "light",
+            "rationale": "Structured repository mapping with low spend"
+          },
+          {
+            "phase": "build",
+            "model": "gpt-5.6-sol",
+            "effort": "high",
+            "rationale": "Primary implementation with a sustained reasoning chain"
+          },
+          {
+            "phase": "security escalation note",
+            "model": "gpt-5.6-sol",
+            "effort": "max",
+            "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+            "multiAgent": false,
+            "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+          },
+          {
+            "phase": "remediate",
+            "model": "gpt-5.6-terra",
+            "effort": "medium",
+            "rationale": "Bounded dependency remediation"
+          },
+          {
+            "phase": "verify",
+            "model": "gpt-5.6-terra",
+            "effort": "high",
+            "rationale": "Independent read-only challenge in a fresh session"
+          }
+        ],
+        "budgetPolicy": {
+          "reservePercent": 20
+        },
+        "status": "AWAITING_APPROVAL",
+        "createdAt": "2026-07-20T05:00:00.000Z",
+        "updatedAt": "2026-07-20T05:18:00.000Z"
+      },
+      "contractHash": "sha256:1c817722ba812ee52c3d5e748a18499c7704c7893913fe62ace321614bab72a8",
+      "repo": {
+        "remote": "https://example.invalid/axiomgate/awaiting_approval.git",
+        "branch": "agent/awaiting_approval",
+        "commit": "demo-awaiting_approval-commit"
+      },
+      "identities": {
+        "github": "sample-owner",
+        "vercel": "SAMPLE_NOT_CONNECTED"
+      },
+      "modelUsage": [
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "tokens": {
+            "input": 7200,
+            "output": 840,
+            "reasoning": 260
+          }
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "tokens": {
+            "input": 3100,
+            "output": 420,
+            "reasoning": 150
+          }
+        }
+      ],
+      "capacityLedger": {
+        "estimated": {
+          "totalTokens": 16000
+        },
+        "actual": {
+          "totalTokens": 11810
+        },
+        "sourceLabels": {
+          "capacity": "SAMPLE",
+          "tokenUsage": "SAMPLE"
+        }
+      },
+      "actions": [],
+      "permissionQuad": {
+        "requested": "0/0",
+        "approved": "0/0",
+        "applied": "0/0",
+        "observed": "0/0"
+      },
+      "criteria": [
+        {
+          "id": "criterion_awaiting_approval_1",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_awaiting_approval_1_1"
+          ],
+          "evidenceHashes": [
+            "sha256:1ff1dbcf337404cf3828620339d8d124e2d518fdc42c3d36e9ef2333393fe4b2"
+          ]
+        },
+        {
+          "id": "criterion_awaiting_approval_2",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_awaiting_approval_2_1"
+          ],
+          "evidenceHashes": [
+            "sha256:96fd6407abe494318df1433d62e00770c76aa2bc2e6eb92ca749d4cf6c1007b3"
+          ]
+        },
+        {
+          "id": "criterion_awaiting_approval_3",
+          "verdict": "UNVERIFIED",
+          "evidenceIds": [],
+          "evidenceHashes": []
+        }
+      ],
+      "findings": [],
+      "waivers": [],
+      "outcome": "INCOMPLETE",
+      "evidenceRecords": [
+        {
+          "record": {
+            "id": "ev_awaiting_approval_1_1",
+            "missionId": "msn_demo_awaiting_approval",
+            "criterionId": "criterion_awaiting_approval_1",
+            "source": "command",
+            "command": "npm test",
+            "exitCode": 0,
+            "outputHash": "sha256:48f7a1906192b6128dfdd336ff44918d71fc3704ae3af12dab0ca2330fb3a46b",
+            "outputRef": "sample://evidence/awaiting_approval/criterion_awaiting_approval_1/test",
+            "capturedAt": "2026-07-20T05:18:00.000Z",
+            "freshForCommit": "demo-awaiting_approval-commit",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "hash": "sha256:1ff1dbcf337404cf3828620339d8d124e2d518fdc42c3d36e9ef2333393fe4b2"
+        },
+        {
+          "record": {
+            "id": "ev_awaiting_approval_2_1",
+            "missionId": "msn_demo_awaiting_approval",
+            "criterionId": "criterion_awaiting_approval_2",
+            "source": "command",
+            "command": "npm test",
+            "exitCode": 0,
+            "outputHash": "sha256:5ea1651aa3553876c315e2ec26a352f787c5b0d0ef3074b4556d5fe16230ec69",
+            "outputRef": "sample://evidence/awaiting_approval/criterion_awaiting_approval_2/test",
+            "capturedAt": "2026-07-20T05:18:00.000Z",
+            "freshForCommit": "demo-awaiting_approval-commit",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:1ff1dbcf337404cf3828620339d8d124e2d518fdc42c3d36e9ef2333393fe4b2",
+          "hash": "sha256:96fd6407abe494318df1433d62e00770c76aa2bc2e6eb92ca749d4cf6c1007b3"
+        }
+      ],
+      "evidenceChainHead": "sha256:96fd6407abe494318df1433d62e00770c76aa2bc2e6eb92ca749d4cf6c1007b3",
+      "limitations": [
+        "Curated synthetic hosted-demo receipt; it does not represent a live account or deployment."
+      ],
+      "generatedAt": "2026-07-20T05:18:00.000Z"
+    }
+  },
+  {
+    "id": "msn_demo_observe_audit",
+    "label": "SAMPLE",
+    "sampleNotice": "CURATED DEMO DATA - synthetic and not a live run",
+    "contract": {
+      "id": "msn_demo_observe_audit",
+      "version": 1,
+      "objective": "Audit login configuration and document the current trust boundary",
+      "projectProfileId": "sample-observe_audit",
+      "intentBoundary": "OBSERVE",
+      "acceptanceCriteria": [
+        {
+          "id": "criterion_observe_audit_1",
+          "statement": "Repository configuration is inspected without mutation",
+          "risk": "medium",
+          "evidenceTypes": [
+            "command"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        },
+        {
+          "id": "criterion_observe_audit_2",
+          "statement": "The trust-boundary note matches the observed files",
+          "risk": "medium",
+          "evidenceTypes": [
+            "diff"
+          ],
+          "verdict": "UNVERIFIED",
+          "evidenceIds": []
+        }
+      ],
+      "constraints": [
+        "Synthetic demo users only",
+        "Do not publish or deploy",
+        "Preserve the existing login response contract"
+      ],
+      "nonGoals": [
+        "Production deployment",
+        "Persistent account storage"
+      ],
+      "actionPolicy": [
+        {
+          "action": "repository.read",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "file.modify",
+          "decision": "ALLOW"
+        },
+        {
+          "action": "branch.create",
+          "decision": "ALLOW",
+          "restrict": {
+            "branchPrefix": "agent/"
+          }
+        },
+        {
+          "action": "pull_request.create",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "preview.deploy",
+          "decision": "REQUIRE_APPROVAL"
+        },
+        {
+          "action": "production.deploy",
+          "decision": "DENY"
+        },
+        {
+          "action": "verification.run",
+          "decision": "ALLOW"
+        }
+      ],
+      "modelPlan": [
+        {
+          "phase": "scout",
+          "model": "gpt-5.6-luna",
+          "effort": "light",
+          "rationale": "Structured repository mapping with low spend"
+        },
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "rationale": "Primary implementation with a sustained reasoning chain"
+        },
+        {
+          "phase": "security escalation note",
+          "model": "gpt-5.6-sol",
+          "effort": "max",
+          "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+          "multiAgent": false,
+          "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+        },
+        {
+          "phase": "remediate",
+          "model": "gpt-5.6-terra",
+          "effort": "medium",
+          "rationale": "Bounded dependency remediation"
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "rationale": "Independent read-only challenge in a fresh session"
+        }
+      ],
+      "budgetPolicy": {
+        "reservePercent": 20
+      },
+      "status": "COMPLETE",
+      "createdAt": "2026-07-20T04:20:00.000Z",
+      "updatedAt": "2026-07-20T04:31:00.000Z",
+      "hash": "sha256:ba1103f7f5871a66e923d6d096d527e9057ab46287f64547bb046c36d3b3eac0"
+    },
+    "identity": {
+      "githubLogin": {
+        "value": "sample-owner",
+        "source": "sample",
+        "confidence": "sample",
+        "capturedAt": "2026-07-20T04:20:00.000Z"
+      }
+    },
+    "denials": [],
+    "evidence": [
+      {
+        "id": "ev_observe_audit_1_1",
+        "missionId": "msn_demo_observe_audit",
+        "criterionId": "criterion_observe_audit_1",
+        "source": "command",
+        "command": "node sample-check.mjs",
+        "exitCode": 0,
+        "outputHash": "sha256:9995855e7a8d7ab3023a7faa9d972ca9cfb2df7dfbc26645c15499773de75b1c",
+        "outputRef": "sample://evidence/observe_audit/criterion_observe_audit_1/command",
+        "capturedAt": "2026-07-20T04:31:00.000Z",
+        "freshForCommit": "demo-observe_audit-commit",
+        "label": "REPLAY",
+        "redacted": true
+      },
+      {
+        "id": "ev_observe_audit_2_1",
+        "missionId": "msn_demo_observe_audit",
+        "criterionId": "criterion_observe_audit_2",
+        "source": "command",
+        "command": "git diff --check",
+        "exitCode": 0,
+        "outputHash": "sha256:eccb479396d663ae4f08933361ddfc400e3537ed4db74118859e82dcadfb36bf",
+        "outputRef": "sample://evidence/observe_audit/criterion_observe_audit_2/diff",
+        "capturedAt": "2026-07-20T04:31:00.000Z",
+        "freshForCommit": "demo-observe_audit-commit",
+        "label": "REPLAY",
+        "redacted": true
+      }
+    ],
+    "events": [
+      {
+        "type": "mission.planned",
+        "ts": "2026-07-20T04:20:00.000Z",
+        "missionId": "msn_demo_observe_audit",
+        "label": "SAMPLE"
+      },
+      {
+        "type": "proof.evaluated",
+        "ts": "2026-07-20T04:31:00.000Z",
+        "missionId": "msn_demo_observe_audit",
+        "outcome": "COMPLETE",
+        "label": "SAMPLE"
+      }
+    ],
+    "ledger": [],
+    "sessions": [],
+    "findings": [],
+    "runs": [],
+    "verifications": [],
+    "approvals": [],
+    "receipt": {
+      "schemaVersion": 1,
+      "missionId": "msn_demo_observe_audit",
+      "contract": {
+        "id": "msn_demo_observe_audit",
+        "version": 1,
+        "hash": "sha256:ba1103f7f5871a66e923d6d096d527e9057ab46287f64547bb046c36d3b3eac0",
+        "objective": "Audit login configuration and document the current trust boundary",
+        "projectProfileId": "sample-observe_audit",
+        "intentBoundary": "OBSERVE",
+        "acceptanceCriteria": [
+          {
+            "id": "criterion_observe_audit_1",
+            "statement": "Repository configuration is inspected without mutation",
+            "risk": "medium",
+            "evidenceTypes": [
+              "command"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          },
+          {
+            "id": "criterion_observe_audit_2",
+            "statement": "The trust-boundary note matches the observed files",
+            "risk": "medium",
+            "evidenceTypes": [
+              "diff"
+            ],
+            "verdict": "UNVERIFIED",
+            "evidenceIds": []
+          }
+        ],
+        "constraints": [
+          "Synthetic demo users only",
+          "Do not publish or deploy",
+          "Preserve the existing login response contract"
+        ],
+        "nonGoals": [
+          "Production deployment",
+          "Persistent account storage"
+        ],
+        "actionPolicy": [
+          {
+            "action": "repository.read",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "file.modify",
+            "decision": "ALLOW"
+          },
+          {
+            "action": "branch.create",
+            "decision": "ALLOW",
+            "restrict": {
+              "branchPrefix": "agent/"
+            }
+          },
+          {
+            "action": "pull_request.create",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "preview.deploy",
+            "decision": "REQUIRE_APPROVAL"
+          },
+          {
+            "action": "production.deploy",
+            "decision": "DENY"
+          },
+          {
+            "action": "verification.run",
+            "decision": "ALLOW"
+          }
+        ],
+        "modelPlan": [
+          {
+            "phase": "scout",
+            "model": "gpt-5.6-luna",
+            "effort": "light",
+            "rationale": "Structured repository mapping with low spend"
+          },
+          {
+            "phase": "build",
+            "model": "gpt-5.6-sol",
+            "effort": "high",
+            "rationale": "Primary implementation with a sustained reasoning chain"
+          },
+          {
+            "phase": "security escalation note",
+            "model": "gpt-5.6-sol",
+            "effort": "max",
+            "rationale": "Recommended only for the hardest security-sensitive step; this sample used High",
+            "multiAgent": false,
+            "capabilityNote": "Ultra is native Codex multi-agent mode and was not orchestrated by AxiomGate"
+          },
+          {
+            "phase": "remediate",
+            "model": "gpt-5.6-terra",
+            "effort": "medium",
+            "rationale": "Bounded dependency remediation"
+          },
+          {
+            "phase": "verify",
+            "model": "gpt-5.6-terra",
+            "effort": "high",
+            "rationale": "Independent read-only challenge in a fresh session"
+          }
+        ],
+        "budgetPolicy": {
+          "reservePercent": 20
+        },
+        "status": "COMPLETE",
+        "createdAt": "2026-07-20T04:20:00.000Z",
+        "updatedAt": "2026-07-20T04:31:00.000Z"
+      },
+      "contractHash": "sha256:ba1103f7f5871a66e923d6d096d527e9057ab46287f64547bb046c36d3b3eac0",
+      "repo": {
+        "remote": "https://example.invalid/axiomgate/observe_audit.git",
+        "branch": "agent/observe_audit",
+        "commit": "demo-observe_audit-commit"
+      },
+      "identities": {
+        "github": "sample-owner",
+        "vercel": "SAMPLE_NOT_CONNECTED"
+      },
+      "modelUsage": [
+        {
+          "phase": "build",
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "tokens": {
+            "input": 7200,
+            "output": 840,
+            "reasoning": 260
+          }
+        },
+        {
+          "phase": "verify",
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "tokens": {
+            "input": 3100,
+            "output": 420,
+            "reasoning": 150
+          }
+        }
+      ],
+      "capacityLedger": {
+        "estimated": {
+          "totalTokens": 16000
+        },
+        "actual": {
+          "totalTokens": 11810
+        },
+        "sourceLabels": {
+          "capacity": "SAMPLE",
+          "tokenUsage": "SAMPLE"
+        }
+      },
+      "actions": [],
+      "permissionQuad": {
+        "requested": "0/0",
+        "approved": "0/0",
+        "applied": "0/0",
+        "observed": "0/0"
+      },
+      "criteria": [
+        {
+          "id": "criterion_observe_audit_1",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_observe_audit_1_1"
+          ],
+          "evidenceHashes": [
+            "sha256:e65e78aaf97d191e9a84b9f7eefd62bd5637bd8dcb3614f5f302af2c777ace42"
+          ]
+        },
+        {
+          "id": "criterion_observe_audit_2",
+          "verdict": "PASS",
+          "evidenceIds": [
+            "ev_observe_audit_2_1"
+          ],
+          "evidenceHashes": [
+            "sha256:e3cad0a44f99df6c1a34374431daa3a5b47e2bf9caafd23f21112ceedaded279"
+          ]
+        }
+      ],
+      "findings": [],
+      "waivers": [],
+      "outcome": "COMPLETE",
+      "evidenceRecords": [
+        {
+          "record": {
+            "id": "ev_observe_audit_1_1",
+            "missionId": "msn_demo_observe_audit",
+            "criterionId": "criterion_observe_audit_1",
+            "source": "command",
+            "command": "node sample-check.mjs",
+            "exitCode": 0,
+            "outputHash": "sha256:9995855e7a8d7ab3023a7faa9d972ca9cfb2df7dfbc26645c15499773de75b1c",
+            "outputRef": "sample://evidence/observe_audit/criterion_observe_audit_1/command",
+            "capturedAt": "2026-07-20T04:31:00.000Z",
+            "freshForCommit": "demo-observe_audit-commit",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "hash": "sha256:e65e78aaf97d191e9a84b9f7eefd62bd5637bd8dcb3614f5f302af2c777ace42"
+        },
+        {
+          "record": {
+            "id": "ev_observe_audit_2_1",
+            "missionId": "msn_demo_observe_audit",
+            "criterionId": "criterion_observe_audit_2",
+            "source": "command",
+            "command": "git diff --check",
+            "exitCode": 0,
+            "outputHash": "sha256:eccb479396d663ae4f08933361ddfc400e3537ed4db74118859e82dcadfb36bf",
+            "outputRef": "sample://evidence/observe_audit/criterion_observe_audit_2/diff",
+            "capturedAt": "2026-07-20T04:31:00.000Z",
+            "freshForCommit": "demo-observe_audit-commit",
+            "label": "REPLAY",
+            "redacted": true
+          },
+          "previousHash": "sha256:e65e78aaf97d191e9a84b9f7eefd62bd5637bd8dcb3614f5f302af2c777ace42",
+          "hash": "sha256:e3cad0a44f99df6c1a34374431daa3a5b47e2bf9caafd23f21112ceedaded279"
+        }
+      ],
+      "evidenceChainHead": "sha256:e3cad0a44f99df6c1a34374431daa3a5b47e2bf9caafd23f21112ceedaded279",
+      "limitations": [
+        "Curated synthetic hosted-demo receipt; it does not represent a live account or deployment."
+      ],
+      "generatedAt": "2026-07-20T04:31:00.000Z"
+    }
+  }
+]

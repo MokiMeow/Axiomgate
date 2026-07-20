@@ -1,21 +1,26 @@
 import { readFileSync } from "node:fs";
 
-const mission = Object.freeze(
-  JSON.parse(readFileSync(new URL("../sample/mission.json", import.meta.url), "utf8")),
+const missions = Object.freeze(
+  JSON.parse(readFileSync(new URL("../sample/missions.json", import.meta.url), "utf8")),
 );
 const capacity = Object.freeze(
   JSON.parse(readFileSync(new URL("../sample/capacity.json", import.meta.url), "utf8")),
 );
 
-export function hostedMission() {
-  return structuredClone(mission);
+export function hostedMissions() {
+  return structuredClone(missions);
 }
 
 export function hostedCapacity() {
   return structuredClone(capacity);
 }
 
-export function hostedMissionSummary() {
+export function hostedMission(id) {
+  const mission = missions.find((candidate) => candidate.id === id);
+  return mission === undefined ? null : structuredClone(mission);
+}
+
+export function hostedMissionSummary(mission) {
   return {
     id: mission.id,
     objective: mission.contract.objective,
@@ -24,7 +29,7 @@ export function hostedMissionSummary() {
     label: "SAMPLE",
     criteria: mission.contract.acceptanceCriteria.length,
     denials: mission.denials.length,
-    pendingApprovals: 0,
+    pendingApprovals: mission.approvals.length,
   };
 }
 

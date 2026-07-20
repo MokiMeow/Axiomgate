@@ -9,7 +9,7 @@ export function demoModeEnabled(value = process.env.AXIOMGATE_DEMO) {
 export async function resolveDashboardMissions({
   liveMissionIds,
   loadLiveMission,
-  loadSampleMission,
+  loadSampleMissions,
   demoMode = false,
 }) {
   if (liveMissionIds.length > 0) {
@@ -26,9 +26,12 @@ export async function resolveDashboardMissions({
     return { demo: false, missions: [] };
   }
 
-  const sample = await loadSampleMission();
+  const samples = await loadSampleMissions();
+  const missions = Array.isArray(samples)
+    ? samples.filter(Boolean).map((sample) => ({ ...sample, label: "SAMPLE" }))
+    : [];
   return {
-    demo: sample !== null,
-    missions: sample === null ? [] : [{ ...sample, label: "SAMPLE" }],
+    demo: missions.length > 0,
+    missions,
   };
 }

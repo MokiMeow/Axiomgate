@@ -1,4 +1,5 @@
 import {
+  hostedMissions,
   hostedMissionSummary,
   methodNotAllowed,
   sendJson,
@@ -6,11 +7,11 @@ import {
 
 export default function handler(req, res) {
   if (req.method !== "GET") return methodNotAllowed(res);
-  const mission = hostedMissionSummary();
+  const missions = hostedMissions();
   return sendJson(res, 200, {
     workspace: "hosted-demo",
     demo: true,
-    count: 1,
-    missions: [mission],
+    count: missions.length,
+    missions: missions.map(hostedMissionSummary),
   });
 }
