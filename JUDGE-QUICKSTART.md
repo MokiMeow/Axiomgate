@@ -72,5 +72,5 @@ The relay uses Bot API long polling only: it opens no webhook or public listener
 
 - The three built-in scenarios are labelled `REPLAY` and use deterministic synthetic data.
 - The headline evidence pack is labelled `LIVE` where real Codex, test, and scan execution occurred.
-- Windows is verified. macOS and Linux are not yet tested.
+- Verified on Windows 11 with Node.js 20 or later. See the platform matrix in the [README](README.md#judge-path-and-platform-support).
 - Production deployment is outside Build Week scope and is refused.
