@@ -50,18 +50,22 @@ export function validateApprovalIntent(body) {
   return { ok: true, value: { missionId, actionRequestId, decision } };
 }
 
+export function isAllowedDashboardHost(host, port) {
+  if (typeof host !== "string") return false;
+  const suffix = port === 80 ? "" : `:${port}`;
+  return [
+    `localhost${suffix}`,
+    `127.0.0.1${suffix}`,
+    ...(port === 80 ? ["localhost:80", "127.0.0.1:80"] : []),
+  ].includes(host.toLowerCase());
+}
+
 export function isAllowedDashboardOrigin(origin, port) {
-  if (origin === undefined) return true;
-  try {
-    const parsed = new URL(origin);
-    return (
-      parsed.protocol === "http:" &&
-      (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") &&
-      parsed.port === String(port)
-    );
-  } catch {
-    return false;
-  }
+  // Browsers serialize origins without paths, credentials, or a default port.
+  // Exact comparison also rejects URL-parser aliases such as decimal IPs.
+  if (origin === undefined) return true; // Non-browser read clients are supported.
+  const suffix = port === 80 ? "" : `:${port}`;
+  return origin === `http://localhost${suffix}` || origin === `http://127.0.0.1${suffix}`;
 }
 
 export function existingApprovalDirectory(missionsDir, missionId) {

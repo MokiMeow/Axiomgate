@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-11-07 - Source hardening (not an npm release)
+
+- Hardened all local dashboard routes against untrusted Host/Origin values and
+  contained malformed URLs and unexpected request failures.
+- Required exact same-origin JSON approval POSTs, explicit read/write methods,
+  bounded body rejection, frame protection, and non-leaking storage failures.
+- Added real HTTP regression tests for canonical approval success, repeated
+  decisions, rejected writes, malformed input, and continued server availability.
+- Made two Windows-specific test fixtures platform-neutral without dropping checks.
+- Updated affected pinned Zod and Vitest dependencies and Vite 7 patches after
+  current advisory research; preserved the separate published PatchPilot boundary.
+- Added locked Linux/Windows CI with immutable action revisions and read-only
+  permissions. No npm publication, credential change, or deployment was performed.
+
 ## 2026-07-20 - 0.1.3
 
 - Added optional `TELEGRAM_USER_ID` actor allowlists for group and supergroup approval callbacks.

@@ -142,7 +142,7 @@ The optional live path requires the judge's own Codex authentication. GitHub and
 
 ## Security and privacy
 
-- The dashboard binds to loopback, serves only its packaged public directory, validates same-origin approval writes, bounds request bodies, and confines mission paths.
+- The dashboard binds to loopback, validates exact local Host and Origin headers before routing, requires same-origin JSON approval writes, bounds request bodies, and confines mission paths. [Local HTTP compatibility and security](apps/web/README.md#local-http-security-boundary).
 - External commands use the shared timeout runner. Hook stdout stays machine-JSON only; internal failures deny rather than silently fail open.
 - Persisted command, verifier, verification, and deploy-target diagnostics pass through centralized credential redaction before hashing or storage.
 - `.local/`, `.axiomgate/`, `.vercel/`, dependency trees, build output, environment files, tarballs, and raw run logs are excluded from Git.
@@ -150,6 +150,18 @@ The optional live path requires the judge's own Codex authentication. GitHub and
 - Demo users, IDs, tokens, and wrong-target profiles are synthetic. Presenter substitutions are explicitly labelled in [demo/DEMO-RUNBOOK.md](demo/DEMO-RUNBOOK.md).
 
 See the [threat model](docs/design/10-SECURITY-THREAT-MODEL.md), [negative guard suite](packages/axiomgate-core/test/negative-guard.test.ts), and [public evidence index](evidence/public/README.md).
+
+## Continuous verification
+
+The [CI workflow](.github/workflows/ci.yml) runs the locked Node 24/pnpm build,
+type checks, full tests, high/critical dependency audit, documentation checks, deterministic replay, hosted-demo
+harness, and fresh packed-CLI verification on Linux and Windows. The local HTTP
+suite exercises a real server against synthetic workspace state. Live provider
+authentication remains an explicit opt-in test and is not claimed by CI.
+
+Source dependencies are pinned to patched versions after current advisory review;
+run `pnpm audit` to check the current registry data. This does not change the
+already-published npm 0.1.3 artifact or claim that an audit proves code is secure.
 
 ## Submission evidence
 

@@ -7,13 +7,14 @@
 //   node apps/web/server.mjs [--workspace <path>] [--port 4319]
 //   AXIOMGATE_WORKSPACE=<path> node apps/web/server.mjs
 import { createServer } from "node:http";
-import { readFile, readdir, stat } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { existsSync, statSync } from "node:fs";
 import { join, extname, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { approve, deny, readCodexRateLimits } from "@axiomgate/core";
 import {
   applyDashboardApproval,
+  isAllowedDashboardHost,
   isAllowedDashboardOrigin,
   isPendingApproval,
   resolveMissionDirectory,
@@ -251,26 +252,67 @@ async function serveStatic(res, urlPath) {
   }
 }
 
+class RequestBodyError extends Error {
+  constructor(message, statusCode = 400) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+
 async function readBody(req, limitBytes = 64 * 1024) {
   const chunks = [];
   let length = 0;
-  for await (const c of req) {
+  // Keep the socket alive long enough to return a bounded, explicit rejection.
+  for await (const c of req.iterator({ destroyOnReturn: false })) {
     length += c.length;
     if (length > limitBytes) {
-      throw new Error("request body exceeds 64 KiB");
+      req.resume();
+      throw new RequestBodyError("request body exceeds 64 KiB", 413);
     }
     chunks.push(c);
   }
   try {
     return JSON.parse(Buffer.concat(chunks).toString() || "{}");
   } catch {
-    throw new Error("request body is not valid JSON");
+    throw new RequestBodyError("request body is not valid JSON");
   }
 }
 
-const server = createServer(async (req, res) => {
-  const url = new URL(req.url, `http://localhost:${PORT}`);
-  const path = url.pathname;
+async function handleRequest(req, res) {
+  res.setHeader("x-content-type-options", "nosniff");
+  res.setHeader("x-frame-options", "DENY");
+  res.setHeader("content-security-policy", "frame-ancestors 'none'");
+  res.setHeader("referrer-policy", "no-referrer");
+
+  // Loopback binding does not stop DNS rebinding. Check the authority before
+  // reading mission data, probing Codex, serving assets, or mutating approvals.
+  const port = req.socket.localPort;
+  if (!isAllowedDashboardHost(req.headers.host, port)) {
+    return json(res, 403, { ok: false, error: "untrusted dashboard host" });
+  }
+  if (!isAllowedDashboardOrigin(req.headers.origin, port)) {
+    return json(res, 403, { ok: false, error: "cross-origin request refused" });
+  }
+
+  let path;
+  try {
+    // This is an origin server, not a proxy. Reject ambiguous absolute/network
+    // targets and malformed encodings instead of letting URL parsing kill it.
+    if (!req.url?.startsWith("/") || req.url.startsWith("//") || /[\\#]/u.test(req.url)) {
+      throw new Error("invalid request target");
+    }
+    const url = new URL(req.url, `http://127.0.0.1:${port}`);
+    path = decodeURIComponent(url.pathname);
+    if (path.includes("\0")) throw new Error("invalid request target");
+  } catch {
+    return json(res, 400, { ok: false, error: "invalid request target" });
+  }
+
+  const allowedMethods = path === "/api/approve" ? ["POST"] : ["GET", "HEAD"];
+  if (!allowedMethods.includes(req.method)) {
+    res.setHeader("allow", allowedMethods.join(", "));
+    return json(res, 405, { ok: false, error: "method not allowed" });
+  }
 
   if (path === "/api/missions") {
     const { demo, missions } = await loadDashboardData();
@@ -292,7 +334,7 @@ const server = createServer(async (req, res) => {
   }
 
   if (path.startsWith("/api/mission/")) {
-    const id = decodeURIComponent(path.split("/").pop());
+    const id = path.slice("/api/mission/".length);
     const { missions: all } = await loadDashboardData();
     const m = all.find((x) => x.id === id);
     if (!m) return json(res, 404, { error: "mission not found" });
@@ -309,41 +351,63 @@ const server = createServer(async (req, res) => {
     return json(res, 200, { capacity: cap, source: cap ? "codex-app-server" : "unavailable" });
   }
 
-  // Web approval channel (the phone surface): approve/deny from any browser.
-  if (path === "/api/approve" && req.method === "POST") {
+  // Browser approval channel: only the same local origin may mutate state.
+  if (path === "/api/approve") {
     try {
-      if (!isAllowedDashboardOrigin(req.headers.origin, PORT)) {
+      const expectedOrigin = new URL(`http://${req.headers.host}`).origin;
+      if (req.headers.origin !== expectedOrigin) {
         return json(res, 403, { ok: false, error: "cross-origin request refused" });
       }
+      const contentType = req.headers["content-type"]?.split(";", 1)[0].trim().toLowerCase();
+      if (contentType !== "application/json") {
+        return json(res, 415, { ok: false, error: "application/json content type required" });
+      }
       const parsed = validateApprovalIntent(await readBody(req));
-      if (!parsed.ok) throw new Error(parsed.reason);
+      if (!parsed.ok) return json(res, 400, { ok: false, error: parsed.reason });
       const missionDir = resolveMissionDirectory(
         MISSIONS_DIR,
         parsed.value.missionId,
       );
       if (missionDir === null || !existsSync(missionDir)) {
-        throw new Error("mission not found");
+        return json(res, 404, { ok: false, error: "mission not found" });
       }
       const mutation = applyDashboardApproval(missionDir, parsed.value, {
         approve,
         deny,
       });
       if (!mutation.ok) {
-        return json(res, 409, { ok: false, error: mutation.reason });
+        const knownRejection = [
+          "request is approved", "request is denied", "approval request expired",
+        ].includes(mutation.reason);
+        return json(res, knownRejection ? 409 : 500, {
+          ok: false,
+          error: knownRejection ? mutation.reason : "approval record unavailable",
+        });
       }
       return json(res, 200, mutation);
     } catch (e) {
-      return json(res, 400, { ok: false, error: String(e.message || e) });
+      return json(res, e instanceof RequestBodyError ? e.statusCode : 500, {
+        ok: false,
+        error: e instanceof RequestBodyError ? e.message : "approval request failed",
+      });
     }
   }
 
   return serveStatic(res, path);
+}
+
+const server = createServer((req, res) => {
+  handleRequest(req, res).catch(() => {
+    // Do not expose filesystem paths or raw exceptions to HTTP clients.
+    if (res.headersSent) res.destroy();
+    else json(res, 500, { ok: false, error: "dashboard request failed" });
+  });
 });
 
 server.listen(PORT, "127.0.0.1", async () => {
   const live = (await listMissionIds()).length > 0;
   const demo = demoModeEnabled();
-  console.log(`AxiomGate dashboard → http://localhost:${PORT}`);
+  console.log(`AxiomGate dashboard → http://localhost:${server.address().port}`);
   console.log(`workspace: ${WORKSPACE}`);
   console.log(
     live

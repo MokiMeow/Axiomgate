@@ -1,8 +1,9 @@
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
   applyDashboardApproval,
+  isAllowedDashboardHost,
   isAllowedDashboardOrigin,
   isPendingApproval,
   isPathWithin,
@@ -28,7 +29,7 @@ describe("local dashboard security boundaries", () => {
   );
 
   it("rejects static paths outside the public root, including sibling prefixes", () => {
-    const publicDir = join("C:", "workspace", "public");
+    const publicDir = resolve("workspace", "public");
     expect(resolveStaticPath(publicDir, "/../public-secrets/token.txt")).toBeNull();
     expect(resolveStaticPath(publicDir, "/dashboard/index.html")).toBe(
       join(publicDir, "dashboard", "index.html"),
@@ -65,6 +66,33 @@ describe("local dashboard security boundaries", () => {
     expect(isAllowedDashboardOrigin("http://127.0.0.1:4319", 4319)).toBe(true);
     expect(isAllowedDashboardOrigin("https://attacker.example", 4319)).toBe(false);
     expect(isAllowedDashboardOrigin("http://localhost:9999", 4319)).toBe(false);
+  });
+
+  it("accepts exact local Host headers including the default HTTP port", () => {
+    expect(isAllowedDashboardHost("localhost:4319", 4319)).toBe(true);
+    expect(isAllowedDashboardHost("LOCALHOST:4319", 4319)).toBe(true);
+    expect(isAllowedDashboardHost("127.0.0.1:4319", 4319)).toBe(true);
+    expect(isAllowedDashboardHost("localhost", 80)).toBe(true);
+    expect(isAllowedDashboardHost("localhost:80", 80)).toBe(true);
+    expect(isAllowedDashboardOrigin("http://localhost", 80)).toBe(true);
+  });
+
+  it.each([
+    undefined, null, ["localhost:4319"], "", "localhost", "localhost:9999",
+    "localhost:4319.attacker.example", "localhost.:4319", "127.1:4319",
+    "2130706433:4319", "attacker.example:4319", "localhost:4319@attacker.example",
+    "localhost:4319/path", "localhost:4319,attacker.example",
+  ])("rejects untrusted or ambiguous Host %s", (host) => {
+    expect(isAllowedDashboardHost(host, 4319)).toBe(false);
+  });
+
+  it.each([
+    null, ["http://localhost:4319"], "null", "http://localhost:4319/",
+    "http://user@localhost:4319", "http://localhost:4319?query",
+    "http://localhost:4319#fragment", "http://127.1:4319",
+    "http://2130706433:4319", "http://localhost:04319", "https://localhost:4319",
+  ])("rejects non-serialized or untrusted Origin %s", (origin) => {
+    expect(isAllowedDashboardOrigin(origin, 4319)).toBe(false);
   });
 
   it("routes web decisions through the canonical approval mutations", () => {

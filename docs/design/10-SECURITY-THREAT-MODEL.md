@@ -74,6 +74,16 @@ Loops, repeated agents, or model escalation consume unexpected capacity.
 
 Secrets or private fixtures enter prompts, logs, screenshots, receipts, or Git.
 
+### Browser access to the loopback dashboard
+
+A remote page can attempt cross-origin requests or DNS rebinding against a local
+HTTP listener. Binding to loopback is necessary but does not validate the browser's
+requested authority. The dashboard validates exact loopback Host and supplied
+Origin before every route, requires same-origin JSON for approval POSTs, rejects
+framing, and contains malformed or unexpected request errors. Local processes
+running as the user are not authenticated by these HTTP controls. Public proxies
+and tunnels remain unsupported.
+
 ### Supply-chain compromise
 
 A dependency, installer, script, binary, or external capability is malicious.

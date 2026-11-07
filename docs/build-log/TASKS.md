@@ -70,3 +70,11 @@ This board is authoritative. Where a phase file conflicts, this board wins. Dead
 ## Deferred beyond Build Week (ADR-008)
 
 - [~] Desktop (Electron/Tauri) app · full quota-scenario normalization (weekly/rolling/promo/team/multi-provider) · context-pressure and compaction management · model/provider transition safety and handoff packs · custom worktree/branch/port/process leases · general browser/e2e orchestration · console/network capture · maintainability engine · capability-discovery generalization · instruction-compilation NLP · non-Codex provider adapters · cross-provider portability proof · remaining 9 replay scenarios · MCP registry/gateway (ADR-004) · production deploy paths.
+
+## Post-event hardening (2026-11-07)
+
+- [-] H1 Local HTTP boundary and maintained verification (ADR-018): reject hostile
+  Host/Origin, malformed URLs, unsafe methods and approval content types; preserve
+  canonical approval semantics; update affected dependencies; pass full tests,
+  package/replay/hosting/docs gates and registry audit; verify Linux/Windows CI.
+  [Assessment](../engineering/22-PRE-IMPLEMENTATION-ASSESSMENT.md).

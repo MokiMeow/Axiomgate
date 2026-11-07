@@ -16,6 +16,8 @@ Raw evidence begins under `.local/` and is promoted only after review.
 
 ## Current-state entry points
 
+- [`http-boundary-verification.md`](http-boundary-verification.md): source-only local HTTP hardening, updated dependency audit, and Linux/Windows verification scope.
+
 - [`authority-hardening-verification.md`](authority-hardening-verification.md): latest guard mitigation, exploit regression, live Codex denial, full test count, and npm 0.1.2 publication proof.
 - [`repo-curation-verification.md`](repo-curation-verification.md): historical public GitHub and npm 0.1.1 synchronization proof.
 - [`headline-run-verification.md`](headline-run-verification.md): actual live mission, with wrong-target Vercel work explicitly PENDING.

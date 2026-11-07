@@ -138,3 +138,20 @@ Distribution surfaces, not capability management (no conflict with ADR-004 - we 
 **Date:** 2026-07-14 · **Status:** Accepted
 
 Publish the CLI to npm by Jul 18 and recruit real users during Build Week. Real installs and permissioned user quotes convert projected impact into demonstrated impact for judging. Constraint: `npx axiomgate` must work with zero config (doctor + replay), and reported numbers must be exact, never inflated.
+
+### ADR-018 - Local HTTP trust boundary and maintained verification
+
+**Date:** 2026-11-07
+
+**Status:** Accepted
+
+Validate exact loopback Host and serialized Origin before every dashboard route.
+Approval POSTs require an exact same-origin JSON request. Bind to loopback as before;
+do not introduce proxy support, a public listener, authentication claims, or a new
+approval store. Catch malformed and asynchronous failures at the HTTP boundary.
+
+Use the existing pinned pnpm toolchain, update affected Zod/Vitest dependencies and
+Vite 7 patches after current advisory research, and add Linux/Windows CI with
+read-only permissions and immutable action revisions. No new runtime dependency or
+npm release. Evidence and compatibility limits are recorded in the
+[assessment](22-PRE-IMPLEMENTATION-ASSESSMENT.md) and task H1.

@@ -257,3 +257,104 @@ Rollback is per atomic commit. Document moves preserve history and can be revert
 ### 7. Feasibility verdict
 
 Feasible with one verified limitation: Linux cannot be claimed because the installed WSL2 Ubuntu instance cannot attach its missing virtual disk. C1-C4 and C6 local preparation are feasible. C5 will record the honest unavailable result. Push and publish remain blocked pending explicit user confirmation.
+
+## Local Dashboard HTTP Boundary Hardening
+
+**Date:** 2026-11-07
+**Starting checkpoint:** `5d599f2fb824701c8ffabf873d494d6835ee707e` on clean `main`
+**Verdict:** Feasible with a narrow HTTP adapter change and continuous verification.
+
+### Understanding and authority
+
+The Mission Compiler, Runway, Environment Guard, Codex Runtime, Verification Engine,
+and Evidence Gate connect an explicit objective to bounded execution and fresh
+machine-backed proof. Completion requires current evidence, not model claims.
+PatchPilot remains an unchanged, separate published CLI integration. Historical
+Build Week implementation and receipts are preserved; this is post-event hardening.
+
+The user requested research-first improvements and authorized direct updates to
+this owned repository's main branch. Local implementation, locked dependencies,
+tests, and the tested GitHub update are in scope. Production deployment, npm
+publication, credentials, other repositories, and provider configuration are not.
+The scoped assessment was delivered and reviewed before implementation.
+
+### Verified repository reality and critique
+
+- GitHub authenticated ownership is `MokiMeow/Axiomgate`; the initial tree is clean.
+- The pnpm 10.33.0 workspace uses TypeScript 5.9.3, Vitest 3.2.6, Zod 4.4.3,
+  an esbuild-bundled CLI/MCP adapter, and a dependency-free Node local dashboard.
+- JSON/JSONL files under `.axiomgate` hold mission state. The HTTP approval route
+  correctly reuses the canonical expiring, command-bound, single-use store.
+- The server binds IPv4 loopback, but accepts arbitrary Host headers, validates
+  Origin only on approval POSTs, and decodes mission URLs outside an error boundary.
+  Loopback binding alone therefore does not establish a browser trust boundary.
+- Existing tests cover helper functions and hosted adapters, but not real local
+  HTTP hostile Host headers or malformed request survival. No CI workflow exists.
+- Node 24.22.1, Git, pnpm, shell, and GitHub tools are available in this Linux
+  workspace. Baseline tests have not yet run; historical Windows results are not
+  substituted for current verification.
+- Sources inspected: the mandatory START_HERE reading set; ADRs and ideas inbox;
+  Phase 7; package manifests and lockfile; web server/security/data/UI modules and
+  tests; CLI manifest; canonical approval store; validation scripts; Git state.
+  Discovery used `git`, `find`, `cat`, `sed`, `rg`, and tool/version queries.
+- Keep the current six-layer architecture. A framework migration, new database,
+  dependency, or UI redesign would not address this boundary more directly.
+  Whole-mission reads on polling remain a potential future performance concern,
+  not a measured bottleneck or a reason to expand this change.
+
+### Implementation, validation, and rollback
+
+1. Harden `apps/web/security.mjs` and `apps/web/server.mjs`: exact loopback Host
+   and origin checks before all routes, JSON-only same-origin approval writes,
+   explicit HTTP methods, bounded parsing failures, and a final async error boundary.
+2. Add helper tests and a real child-process HTTP regression suite proving denials
+   do not mutate approvals, malformed requests do not kill the server, and normal
+   mission and approval flows still use canonical state.
+3. Add read-only-permission GitHub Actions CI with pinned actions, frozen install,
+   build/typecheck/tests, existing documentation gates, replay, and hosting checks.
+4. Run baseline and final checks, dependency audit, diff/secret review, and an
+   independent adversarial review. Record measured check durations and any limits.
+5. Update web/security docs, changelog, task board, and public evidence. Publish
+   atomically to main with expected-head protection, then verify the exact CI commit.
+
+No storage schema or migration changes. Rollback is a commit revert. Unknown
+hosts, absent approval origins, and non-JSON writes fail closed by default;
+ordinary local read clients without Origin remain supported. The server is not
+made safe to expose through a public proxy and does not authenticate local processes.
+
+### Capability-use plan
+
+- Shell/filesystem and Git reads inspect only AxiomGate and capture reproducible
+  evidence. Workspace edits and local test child processes need no external account.
+- Existing pnpm resolves the committed lockfile from the npm registry; authorized
+  dependency installation changes only local workspace state, not published packages.
+- Official Node HTTP docs, OWASP CSRF guidance, and MCP transport security guidance
+  were consulted on 2026-11-07. MCP's HTTP threat is analogous; AxiomGate MCP itself
+  uses stdio and this change is to the dashboard, not an MCP transport claim.
+- GitHub tools verify the authenticated repository, update the approved main ref
+  with a lease, and read checks. No deployment, release, or permission change.
+
+Research: [Node HTTP](https://nodejs.org/docs/latest-v24.x/api/http.html),
+[OWASP CSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html),
+and [MCP transports](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports).
+
+### Research-driven dependency follow-up
+
+The current registry audit reported 14 advisories: two critical, four high, seven
+moderate, and one low. Thirteen concern the test-tool dependency graph; the Zod
+advisory affects the existing core dependency. Severity is the upstream advisory
+rating, not proof of reachability in AxiomGate. The dashboard fixes independently
+passed 374 tests before dependency changes (one opt-in smoke skipped).
+
+Pin Zod 4.6.7 and Vitest 4.1.12, refresh transitive patches, and keep Vite on its
+existing 7.x major rather than introduce Vite 8. Vitest 4 removes Tinypool, and its
+published migration guide is compatible with this Node 24, non-browser test suite.
+No additional production library or architecture is introduced. Review lockfile
+changes, install frozen with lifecycle scripts disabled, then repeat build,
+typecheck, full tests, replay, hosting, packed distribution, and registry audit.
+Rollback remains a commit revert. These updates do not republish npm 0.1.3.
+
+Sources: [Zod advisory](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5),
+[Tinypool advisory](https://github.com/advisories/GHSA-85c8-ppgw-ccpr),
+[Vitest mocker advisory](https://github.com/advisories/GHSA-qxg6-89mg-rqv8), and
+[Vitest 4 migration](https://v4.vitest.dev/guide/migration.html).

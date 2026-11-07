@@ -43,6 +43,33 @@ Same visual family as PatchPilot Watch Commander (dark editorial theme): warm ne
 - The dashboard is read-only over mission state except the web-approval endpoint, which mutates the same exact-hash, expiring, single-use approval record used by the CLI; the hook remains the enforcement point.
 - `LIVE` / `REPLAY` / `SAMPLE` labels are always shown so replayed or sample data is never presented as a live run.
 
+## Local HTTP security boundary
+
+Use `http://localhost:<port>` or `http://127.0.0.1:<port>` on the same machine.
+The server remains bound to IPv4 loopback and rejects other Host headers before
+reading mission data, querying account capacity, or serving files. A supplied
+Origin must be one of those exact local origins on the listening port. Custom
+hostnames, reverse proxies, public tunnels, and remote dashboard access are not
+supported. Telegram remains the supported remote approval surface.
+
+Reads use GET or HEAD. Approval writes use POST with `Content-Type: application/json`
+and an Origin exactly matching the request Host, including the port. Origin-less
+scripts should use the CLI approval command instead. Browser requests from another
+port, opaque origins, and switching between localhost and the IP address within a
+single approval request are refused. The normal dashboard sends same-origin JSON
+automatically; exact-command binding, expiry, and single-use semantics are unchanged.
+
+Malformed URL/JSON input receives 400, an unknown mission receives 404, unsupported
+methods receive 405, oversized approval bodies receive 413, and non-JSON approval
+writes receive 415. Known approval conflicts receive 409. Unexpected data/storage
+failures receive a generic 500 without raw filesystem diagnostics; the server stays
+available for subsequent requests. Pages cannot be framed by another site.
+
+These controls protect the browser-to-local-server boundary. They do not authenticate
+other processes running as the local user or make the dashboard a multi-user server.
+The real HTTP regression suite is `apps/web/test/http-boundary.test.mjs` and runs
+with `pnpm test`; it does not substitute for live provider or visual browser testing.
+
 ## Vercel hosted demo
 
 The root `vercel.json` publishes `apps/web/public` and the read-only functions in `api/`. The hosted API returns eight curated synthetic missions spanning complete, blocked, denied, remediated, waived, and awaiting-approval states, plus SAMPLE capacity. It does not read a Vercel account, a Codex account, or a governed workspace. Hosted approval requests return a friendly local-only response and never write serverless state.

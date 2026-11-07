@@ -4,7 +4,7 @@ import {
   rmSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
@@ -60,8 +60,8 @@ describe("buildVerifierPlan", () => {
       cliEntryPath: "C:/Program Files/AxiomGate/cli.js",
       nodePath: process.execPath,
     };
-    const missionDir = "C:/work project/.axiomgate/missions/msn_review";
-    const projectPath = "C:/work project";
+    const projectPath = resolve("work project");
+    const missionDir = join(projectPath, ".axiomgate", "missions", "msn_review");
     const outputSchemaPath = join(missionDir, "verifier-output-schema.json");
     const plan = buildVerifierPlan({
       contract,
