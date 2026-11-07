@@ -135,6 +135,7 @@ Start with [JUDGE-QUICKSTART.md](JUDGE-QUICKSTART.md). The deterministic replay 
 | Platform | Status | Evidence or limitation |
 |---|---|---|
 | Windows 11, PowerShell, Node.js 24, pnpm 10, Codex CLI 0.144.x | Verified | Full tests, build, replay, package install, live mission, hooks, Telegram, receipt verification, and the Vercel hosting harness. The published CLI retains its Node.js 20+ engine range. |
+| Ubuntu GitHub Actions, Node.js 24, pnpm 10 | Automated checks verified | Build, typecheck, 375 tests plus one opt-in skip, audit, replay, hosting harness, and packed CLI. [2026-11-07 evidence](evidence/public/http-boundary-verification.md). Authenticated Codex/provider missions are not covered. |
 | Linux through WSL2 Ubuntu | Not verified | Not exercised in this release. [Curation evidence](evidence/public/repo-curation-verification.md). |
 | macOS | Not verified | Not exercised in this release. |
 
@@ -176,7 +177,7 @@ already-published npm 0.1.3 artifact or claim that an audit proves code is secur
 - adopt deterministic named custom-agent targeting when Codex exposes it non-interactively;
 - broaden replay coverage beyond the three Build Week security regressions;
 - normalize additional quota providers without inventing capacity data;
-- verify Linux in a working clean environment and add macOS verification.
+- extend Linux verification to authenticated governed missions and add macOS verification.
 
 ## License
 

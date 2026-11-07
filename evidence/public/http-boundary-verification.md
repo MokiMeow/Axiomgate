@@ -57,7 +57,13 @@ Vitest 4.1.12, Zod 4.6.7, Vite 7.3.7.
 The new GitHub workflow has pinned actions, read-only permissions, no retained
 checkout credential, a high/critical audit gate, and Linux/Windows jobs running
 build, typecheck, tests, documentation, demo, replay, hosting, and package checks.
-Remote results are pending publication and must be checked for the exact commit.
+Both jobs passed for source commit
+`0d300a8e73d72ac1e977e87a9f980a0676a3594a` in
+[CI run 42338722785](https://github.com/MokiMeow/Axiomgate/actions/runs/42338722785).
+The published tree hash `307603e247bf83ce51ded2549fa22d097f87e87f` exactly matched
+the locally tested tree. Main was updated using the previous commit as an
+expected-head condition. The existing Vercel integration also reported success;
+no manual deployment command or deployment-setting change was issued.
 
 ## Research and compatibility
 

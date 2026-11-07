@@ -73,8 +73,10 @@ This board is authoritative. Where a phase file conflicts, this board wins. Dead
 
 ## Post-event hardening (2026-11-07)
 
-- [-] H1 Local HTTP boundary and maintained verification (ADR-018): reject hostile
+- [x] H1 Local HTTP boundary and maintained verification (ADR-018): reject hostile
   Host/Origin, malformed URLs, unsafe methods and approval content types; preserve
   canonical approval semantics; update affected dependencies; pass full tests,
   package/replay/hosting/docs gates and registry audit; verify Linux/Windows CI.
   [Assessment](../engineering/22-PRE-IMPLEMENTATION-ASSESSMENT.md).
+  Evidence: [HTTP hardening verification](../../evidence/public/http-boundary-verification.md),
+  [successful Linux/Windows CI](https://github.com/MokiMeow/Axiomgate/actions/runs/42338722785).

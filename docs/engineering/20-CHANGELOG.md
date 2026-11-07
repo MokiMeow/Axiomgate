@@ -12,7 +12,8 @@
 - Updated affected pinned Zod and Vitest dependencies and Vite 7 patches after
   current advisory research; preserved the separate published PatchPilot boundary.
 - Added locked Linux/Windows CI with immutable action revisions and read-only
-  permissions. No npm publication, credential change, or deployment was performed.
+  permissions. Both jobs passed for the source commit. No npm publication, credential
+  change, or manual deployment was performed.
 
 ## 2026-07-20 - 0.1.3
 
